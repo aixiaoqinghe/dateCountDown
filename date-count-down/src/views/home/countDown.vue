@@ -1,6 +1,7 @@
 <template>
   <div>
-    我是homeCountDown
+    <span>距离……还有</span> <br/>
+    <p><span>……</span><span>天</span></p>
   </div>
 </template>
 
