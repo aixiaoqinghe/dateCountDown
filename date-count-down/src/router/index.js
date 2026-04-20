@@ -1,36 +1,64 @@
 import Vue from 'vue'
-import VueRouter from 'vue-router'
-
-import homeIndex from '../views/home/index.vue'
-import loginIndex from '../views/login/index.vue'
-import registerIndex from '../views/register/index.vue'
-
-import countDown from '@/views/home/countDown.vue'
+import Router from 'vue-router'
+import login from '@/views/login/index.vue'
+import register from '@/views/register/index.vue'
+import homeIndex from '@/views/home/index.vue'
 import homeHome from '@/views/home/home.vue'
-import homeMark from '@/views/home/mark.vue'
-import homeMyself from '@/views/home/myself.vue'
-import homeSetting from '@/views/home/setting.vue'
+import markHome from '@/views/home/mark.vue'
+import countDown from '@/views/home/countDown.vue'
+import mine from '@/views/home/myself.vue'
+import setting from '@/views/home/setting.vue'
 
-Vue.use(VueRouter)
+Vue.use(Router)
 
-const router = new VueRouter({
+export default new Router({
+  mode: 'history',
   routes: [
     {
       path: '/',
-      component: homeIndex,
-      redirect: '/home',
-      children: [
-        { path: '/home', component: homeHome },
-        { path: '/mark', component: homeMark },
-        { path: '/myself', component: homeMyself },
-        { path: '/setting', component: homeSetting },
-        { path: '/countDown', component: countDown }
-      ]
+      redirect: '/home'
     },
-    { path: '/login', component: loginIndex },
-    { path: '/register', component: registerIndex }
+    {
+      path: '/login',
+      name: 'login',
+      component: login
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: register
+    },
+    {
+      path: '/home',
+      name: 'homeIndex',
+      component: homeIndex,
+      children: [
+        {
+          path: '',
+          name: 'homeHome',
+          component: homeHome
+        },
+        {
+          path: 'mark',
+          name: 'markHome',
+          component: markHome
+        },
+        {
+          path: 'countDown',
+          name: 'countDown',
+          component: countDown
+        },
+        {
+          path: 'mine',
+          name: 'mine',
+          component: mine
+        },
+        {
+          path: 'setting',
+          name: 'setting',
+          component: setting
+        }
+      ]
+    }
   ]
-
 })
-
-export default router

@@ -1,13 +1,12 @@
 <template>
   <div class="home-container">
-    我是homeIndex
     <router-view></router-view>
     <van-tabbar v-model="active" active-color="#ee0a24" inactive-color="#000" ref="tabbar" class="tabbar-bottom">
-    <van-tabbar-item to="/home" icon="wap-home-o">首页</van-tabbar-item>
-    <van-tabbar-item to="/countDown" icon="clock-o">倒计时</van-tabbar-item>
-    <van-tabbar-item to="/mark" icon="shopping-cart-o">商城</van-tabbar-item>
-    <van-tabbar-item to="/myself" icon="user-o">我的</van-tabbar-item>
-    <van-tabbar-item to="/setting" icon="setting-o">设置</van-tabbar-item>
+    <van-tabbar-item to="/home" icon="wap-home">首页</van-tabbar-item>
+    <van-tabbar-item to="/home/countDown" icon="clock">倒计时</van-tabbar-item>
+    <van-tabbar-item to="/home/mark" icon="shopping-cart">商城</van-tabbar-item>
+    <van-tabbar-item to="/home/myself" icon="user">我的</van-tabbar-item>
+    <van-tabbar-item to="/home/setting" icon="setting">设置</van-tabbar-item>
     </van-tabbar>
   </div>
 </template>
@@ -24,7 +23,7 @@ export default {
     $route (to) {
       // 保持路由和tabbar状态同步
       const path = to.path
-      const index = ['/home', '/countDown', '/mark', '/myself', '/setting'].indexOf(path)
+      const index = ['/home', '/home/countDown', '/home/mark', '/home/myself', '/home/setting'].indexOf(path)
       if (index > -1) {
         this.active = index
       }
@@ -37,7 +36,7 @@ export default {
 .home-container {
   position: relative;
   min-height: 100vh;
-  /* 移除padding-bottom，因为固定定位的tabbar不受这个影响 */
+  padding-bottom: 65px; /* 为固定定位的tabbar留出空间 */
 }
 
 .tabbar-bottom {
