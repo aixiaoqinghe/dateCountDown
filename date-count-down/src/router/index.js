@@ -6,7 +6,7 @@ import homeIndex from '@/views/home/index.vue'
 import homeHome from '@/views/home/home.vue'
 import markHome from '@/views/home/mark.vue'
 import countDown from '@/views/home/countDown.vue'
-import mine from '@/views/home/myself.vue'
+import mine from '@/views/home/mine.vue'
 import setting from '@/views/home/setting.vue'
 
 Vue.use(Router)
