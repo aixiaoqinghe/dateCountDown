@@ -63,6 +63,7 @@
 </template>
 
 <script>
+import { showToast, showSuccessToast } from 'vant'
 export default {
   name: 'homeHome',
   data () {
@@ -153,7 +154,7 @@ export default {
     // 确认删除
     confirmDelete () {
       if (this.selectedItems.length === 0) {
-        alert('请选择要删除的任务')
+        showToast('请选择要删除的任务')
         return
       }
       this.showDeleteModal = true
@@ -172,7 +173,7 @@ export default {
       this.isDeleteMode = false
       this.selectedItems = []
       // 提示用户
-      alert('删除成功！')
+      showSuccessToast('删除成功！')
     }
   },
   mounted () {

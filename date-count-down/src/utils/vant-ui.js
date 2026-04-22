@@ -1,7 +1,12 @@
-import Vue from 'vue'
-import { Calendar, Tabbar, TabbarItem, Icon } from 'vant'
+import { Toast, Tabbar, TabbarItem, Search, Sidebar, SidebarItem } from 'vant'
 
-Vue.use(Calendar)
-Vue.use(Tabbar)
-Vue.use(TabbarItem)
-Vue.use(Icon)
+export default {
+  install: (app) => {
+    app.use(Toast)
+    app.use(Tabbar)
+    app.use(TabbarItem)
+    app.use(Search)
+    app.use(Sidebar)
+    app.use(SidebarItem)
+  }
+}
