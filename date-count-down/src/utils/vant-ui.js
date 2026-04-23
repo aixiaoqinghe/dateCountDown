@@ -1,4 +1,4 @@
-import { Toast, Tabbar, TabbarItem, Search, Sidebar, SidebarItem } from 'vant'
+import { Toast, Tabbar, TabbarItem, Search, Sidebar, SidebarItem, Uploader, Dialog, Button, Popup } from 'vant'
 
 export default {
   install: (app) => {
@@ -8,5 +8,9 @@ export default {
     app.use(Search)
     app.use(Sidebar)
     app.use(SidebarItem)
+    app.use(Uploader)
+    app.use(Dialog)
+    app.use(Button)
+    app.use(Popup)
   }
 }
