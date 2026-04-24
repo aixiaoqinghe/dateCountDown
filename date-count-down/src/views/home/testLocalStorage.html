@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>测试LocalStorage</title>
+</head>
+<body>
+    <h1>LocalStorage测试</h1>
+    <div id="result"></div>
+    
+    <script>
+        // 读取localStorage中的数据
+        const countdownHistory = localStorage.getItem('countdownHistory');
+        
+        // 显示结果
+        const resultDiv = document.getElementById('result');
+        if (countdownHistory) {
+            resultDiv.innerHTML = '<h2>LocalStorage中的数据：</h2><pre>' + countdownHistory + '</pre>';
+        } else {
+            resultDiv.innerHTML = '<h2>LocalStorage中没有数据</h2>';
+        }
+        
+        // 测试写入数据
+        function testWrite() {
+            const testData = [
+                {
+                    id: Date.now(),
+                    taskName: '测试任务',
+                    targetDate: '2023-12-31',
+                    category: 'test',
+                    createdAt: new Date().toISOString()
+                }
+            ];
+            localStorage.setItem('countdownHistory', JSON.stringify(testData));
+            alert('测试数据已写入');
+            location.reload();
+        }
+        
+        // 测试清除数据
+        function testClear() {
+            localStorage.removeItem('countdownHistory');
+            alert('数据已清除');
+            location.reload();
+        }
+    </script>
+    
+    <button onclick="testWrite()">写入测试数据</button>
+    <button onclick="testClear()">清除数据</button>
+</body>
+</html>

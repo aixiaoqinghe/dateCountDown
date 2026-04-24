@@ -81,6 +81,7 @@
 </template>
 
 <script>
+import { showToast, showSuccessToast } from 'vant'
 export default {
   name: 'countDown',
   data () {
@@ -179,12 +180,12 @@ export default {
     saveToHistory (category) {
       // 输入验证
       if (!this.taskName.trim()) {
-        alert('请输入任务名称！')
+        showToast('请输入任务名称！')
         return
       }
 
       if (!this.targetDate) {
-        alert('请选择目标日期！')
+        showToast('请选择目标日期！')
         return
       }
 
@@ -213,17 +214,17 @@ export default {
       this.showCategoryModal = false
 
       // 提示用户保存成功
-      alert('已添加到历史记录！')
+      showSuccessToast('已添加到历史记录！')
     },
     confirmChange () {
       // 输入验证
       if (!this.taskName.trim()) {
-        alert('请输入任务名称！')
+        showToast('请输入任务名称！')
         return
       }
 
       if (!this.targetDate) {
-        alert('请选择目标日期！')
+        showToast('请选择目标日期！')
         return
       }
 
@@ -253,7 +254,7 @@ export default {
       this.showConfirmModal = false
 
       // 提示用户修改成功
-      alert('修改成功！')
+      showSuccessToast('修改成功！')
 
       // 跳转回首页
       this.$router.push('/home')
