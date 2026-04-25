@@ -10,4 +10,33 @@ body {
   font-size: 14px;
   color: #333;
   background-color: #f5f5f5;
+  transition: all 0.3s ease;
+}
+
+/* 深色主题全局样式 */
+.dark-theme body {
+  color: #e0e0e0;
+  background-color: #1a1a1a;
+}
+
+/* 通用深色主题样式 */
+.dark-theme {
+  --text-color: #e0e0e0;
+  --background-color: #1a1a1a;
+  --card-background: #2c2c2c;
+  --border-color: #444;
+  --hover-color: #3a3a3a;
+  --primary-color: #3498db;
+  --secondary-color: #2980b9;
+}
+
+/* 通用浅色主题样式 */
+:root {
+  --text-color: #333;
+  --background-color: #f5f5f5;
+  --card-background: #fff;
+  --border-color: #e0e0e0;
+  --hover-color: #f8f9fa;
+  --primary-color: #3498db;
+  --secondary-color: #2980b9;
 }

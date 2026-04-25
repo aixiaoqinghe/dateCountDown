@@ -485,6 +485,137 @@
   color: #e74c3c;
 }
 
+/* 深色主题样式 */
+.dark-theme .home-container {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+}
+
+.dark-theme .home-container::before {
+  background: radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1px);
+}
+
+.dark-theme .home-title {
+  color: #e0e0e0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .delete-icon-btn:hover {
+  background: rgba(231, 76, 60, 0.2);
+}
+
+.dark-theme .delete-tooltip {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e0e0e0;
+}
+
+.dark-theme .control-btn {
+  background: #2c2c2c;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-theme .control-btn:hover {
+  background: #3a3a3a;
+  border-color: #3498db;
+}
+
+.dark-theme .modal-content {
+  background: #2c2c2c;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .modal-content h3 {
+  color: #e0e0e0;
+}
+
+.dark-theme .confirm-message {
+  color: #ccc;
+}
+
+.dark-theme .countdown-card {
+  background: rgba(44, 44, 44, 0.95);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .countdown-card:hover {
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.dark-theme .countdown-info {
+  background: rgba(52, 52, 52, 0.7);
+}
+
+.dark-theme .countdown-days {
+  color: #e0e0e0;
+  background: rgba(52, 52, 52, 0.7);
+}
+
+.dark-theme .card-title {
+  color: #e0e0e0;
+}
+
+.dark-theme .card-date {
+  color: #95a5a6;
+}
+
+.dark-theme .card-days {
+  color: #95a5a6;
+}
+
+.dark-theme .card-category {
+  color: #7f8c8d;
+}
+
+.dark-theme .add-card {
+  border-color: #444;
+  background: rgba(44, 44, 44, 0.5);
+}
+
+.dark-theme .add-card:hover {
+  border-color: #3498db;
+  background: rgba(52, 152, 219, 0.1);
+}
+
+.dark-theme .add-icon {
+  color: #444;
+}
+
+.dark-theme .add-card:hover .add-icon {
+  color: #3498db;
+}
+
+.dark-theme .add-text {
+  color: #7f8c8d;
+}
+
+.dark-theme .add-card:hover .add-text {
+  color: #3498db;
+}
+
+.dark-theme .home-container.delete-mode {
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.8), rgba(44, 44, 44, 0.8));
+}
+
+.dark-theme .home-container.delete-mode .countdown-card {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .home-container.delete-mode .countdown-card:hover {
+  box-shadow: 0 8px 24px rgba(231, 76, 60, 0.4);
+}
+
+.dark-theme .home-container.delete-mode .add-card {
+  opacity: 0.4;
+}
+
+.dark-theme .home-container.delete-mode .countdown-card:has(.card-checkbox:checked) {
+  background: rgba(231, 76, 60, 0.1);
+}
+
+.dark-theme .home-container.delete-mode .countdown-card:has(.card-checkbox:checked) .countdown-info {
+  background: rgba(52, 52, 52, 0.9);
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
   .home-title {

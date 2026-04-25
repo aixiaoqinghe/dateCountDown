@@ -1133,3 +1133,495 @@
   margin: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+
+/* 退出登录确认弹窗 */
+.logout-confirm-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease;
+}
+
+.logout-confirm-modal .modal-content {
+  background: white;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  animation: scaleIn 0.3s ease;
+}
+
+.logout-confirm-modal .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.logout-confirm-modal .modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2c3e50;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.logout-confirm-modal .modal-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  color: #95a5a6;
+}
+
+.logout-confirm-modal .modal-close:hover {
+  background: #f8f9fa;
+  color: #2c3e50;
+  transform: rotate(90deg);
+}
+
+.logout-confirm-modal .modal-body {
+  padding: 30px 20px;
+  text-align: center;
+}
+
+.logout-confirm-modal .confirm-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.logout-confirm-modal .confirm-message {
+  font-size: 16px;
+  color: #34495e;
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.logout-confirm-modal .modal-footer {
+  display: flex;
+  gap: 10px;
+  padding: 20px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.logout-confirm-modal .cancel-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: 1px solid #bdc3c7;
+  border-radius: 6px;
+  background: white;
+  color: #2c3e50;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.logout-confirm-modal .cancel-btn:hover {
+  background: #f8f9fa;
+  border-color: #95a5a6;
+}
+
+.logout-confirm-modal .confirm-btn {
+  flex: 1;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #e74c3c;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.logout-confirm-modal .confirm-btn:hover {
+  background: #c0392b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 深色主题样式 */
+.dark-theme .mine-container {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+}
+
+.dark-theme .mine-container h2 {
+  color: #e0e0e0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .user-info {
+  background: rgba(44, 44, 44, 0.95);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .user-header {
+  border-bottom: 1px solid #444;
+}
+
+.dark-theme .name-signature h3 {
+  color: #e0e0e0;
+}
+
+.dark-theme .user-signature {
+  color: #ccc;
+}
+
+.dark-theme .user-id {
+  color: #95a5a6;
+}
+
+.dark-theme .user-email {
+  color: #95a5a6;
+}
+
+.dark-theme .signature-input {
+  background: #3a3a3a;
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+.dark-theme .feature-section {
+  background: rgba(44, 44, 44, 0.95);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .section-title {
+  color: #95a5a6;
+}
+
+.dark-theme .feature-item {
+  background: #3a3a3a;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.dark-theme .feature-item:hover {
+  background: #444;
+}
+
+.dark-theme .feature-name {
+  color: #e0e0e0;
+}
+
+.dark-theme .feature-arrow {
+  color: #666;
+}
+
+.dark-theme .logout-btn {
+  background: #e74c3c;
+  color: white;
+}
+
+.dark-theme .logout-btn:hover {
+  background: #c0392b;
+}
+
+.dark-theme .login-prompt {
+  background: rgba(44, 44, 44, 0.95);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .login-prompt p {
+  color: #e0e0e0;
+}
+
+.dark-theme .login-btn {
+  background: #3498db;
+  color: white;
+}
+
+.dark-theme .login-btn:hover {
+  background: #2980b9;
+}
+
+.dark-theme .qrcode-modal .modal-content {
+  background: #2c2c2c;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .qrcode-modal h4 {
+  color: #e0e0e0;
+}
+
+.dark-theme .change-password-modal .modal-content {
+  background: #2c2c2c;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .change-password-modal h4 {
+  color: #e0e0e0;
+}
+
+.dark-theme .form-group label {
+  color: #e0e0e0;
+}
+
+.dark-theme .form-input {
+  background: #3a3a3a;
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+.dark-theme .code-input {
+  background: #3a3a3a;
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+.dark-theme .code-btn {
+  background: #3498db;
+  color: white;
+}
+
+.dark-theme .code-btn:disabled {
+  background: #555;
+  color: #999;
+}
+
+.dark-theme .verification-hint {
+  color: #95a5a6;
+}
+
+.dark-theme .no-methods {
+  color: #e74c3c;
+}
+
+.dark-theme .error-message {
+  color: #e74c3c;
+}
+
+.dark-theme .modal-actions .cancel-btn {
+  background: #3a3a3a;
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+.dark-theme .modal-actions .cancel-btn:hover {
+  background: #444;
+  border-color: #666;
+}
+
+.dark-theme .modal-actions .back-btn {
+  background: #3a3a3a;
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+.dark-theme .modal-actions .back-btn:hover {
+  background: #444;
+  border-color: #666;
+}
+
+.dark-theme .modal-actions .confirm-btn {
+  background: #3498db;
+  color: white;
+}
+
+.dark-theme .modal-actions .confirm-btn:hover {
+  background: #2980b9;
+}
+
+.dark-theme .edit-avatar-modal .modal-content {
+  background: #2c2c2c;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .edit-avatar-modal h4 {
+  color: #e0e0e0;
+}
+
+.dark-theme .upload-btn {
+  background: #3498db;
+  color: white;
+}
+
+.dark-theme .upload-btn:hover {
+  background: #2980b9;
+}
+
+.dark-theme .edit-nickname-modal .modal-content {
+  background: #2c2c2c;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .edit-nickname-modal h4 {
+  color: #e0e0e0;
+}
+
+.dark-theme .edit-phone-modal .modal-content {
+  background: #2c2c2c;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .edit-phone-modal h4 {
+  color: #e0e0e0;
+}
+
+.dark-theme .edit-email-modal .modal-content {
+  background: #2c2c2c;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .edit-email-modal h4 {
+  color: #e0e0e0;
+}
+
+.dark-theme .about-modal .modal-content {
+  background: #2c2c2c;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .about-modal h4 {
+  color: #e0e0e0;
+}
+
+.dark-theme .about-content p {
+  color: #ccc;
+}
+
+.dark-theme .device-management-modal .modal-content {
+  background: #2c2c2c;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .device-management-modal h4 {
+  color: #e0e0e0;
+}
+
+.dark-theme .device-item {
+  background: #3a3a3a;
+  border-bottom: 1px solid #444;
+}
+
+.dark-theme .device-name {
+  color: #e0e0e0;
+}
+
+.dark-theme .device-time {
+  color: #95a5a6;
+}
+
+.dark-theme .current-device {
+  color: #27ae60;
+}
+
+.dark-theme .remove-device-btn {
+  background: #e74c3c;
+  color: white;
+}
+
+.dark-theme .remove-device-btn:hover {
+  background: #c0392b;
+}
+
+.dark-theme .notification-settings-modal .modal-content {
+  background: #2c2c2c;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .notification-settings-modal h4 {
+  color: #e0e0e0;
+}
+
+.dark-theme .setting-section h5 {
+  color: #e0e0e0;
+}
+
+.dark-theme .setting-item span {
+  color: #e0e0e0;
+}
+
+.dark-theme .privacy-settings-modal .modal-content {
+  background: #2c2c2c;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .privacy-settings-modal h4 {
+  color: #e0e0e0;
+}
+
+.dark-theme .visibility-options label {
+  color: #e0e0e0;
+}
+
+.dark-theme .action-btn.export-btn {
+  background: #3498db;
+  color: white;
+}
+
+.dark-theme .action-btn.export-btn:hover {
+  background: #2980b9;
+}
+
+.dark-theme .action-btn.delete-btn {
+  background: #e74c3c;
+  color: white;
+}
+
+.dark-theme .action-btn.delete-btn:hover {
+  background: #c0392b;
+}
+
+.dark-theme .policy-content p {
+  color: #ccc;
+}
+
+.dark-theme .policy-link {
+  color: #3498db;
+}
+
+.dark-theme .policy-updated {
+  color: #7f8c8d;
+}
+
+.dark-theme .logout-confirm-modal .modal-content {
+  background: #2c2c2c;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .logout-confirm-modal h3 {
+  color: #e0e0e0;
+}
+
+.dark-theme .logout-confirm-modal .confirm-message {
+  color: #ccc;
+}
+
+.dark-theme .logout-confirm-modal .cancel-btn {
+  background: #3a3a3a;
+  border-color: #555;
+  color: #e0e0e0;
+}
+
+.dark-theme .logout-confirm-modal .cancel-btn:hover {
+  background: #444;
+  border-color: #666;
+}
+
+.dark-theme .logout-confirm-modal .confirm-btn {
+  background: #e74c3c;
+  color: white;
+}
+
+.dark-theme .logout-confirm-modal .confirm-btn:hover {
+  background: #c0392b;
+}

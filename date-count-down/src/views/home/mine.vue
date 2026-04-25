@@ -499,8 +499,27 @@
         </div>
       </div>
 
-      <button @click="logout" class="logout-btn">退出登录</button>
+      <button @click="openLogoutConfirmModal" class="logout-btn">退出登录</button>
+
+      <!-- 退出登录确认弹窗 -->
+      <div class="logout-confirm-modal" v-if="showLogoutConfirmModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>退出登录</h3>
+            <button class="modal-close" @click="closeLogoutConfirmModal">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="confirm-icon">⚠️</div>
+            <p class="confirm-message">确定要退出登录吗？</p>
+          </div>
+          <div class="modal-footer">
+            <button class="cancel-btn" @click="closeLogoutConfirmModal">取消</button>
+            <button class="confirm-btn" @click="confirmLogout">确定</button>
+          </div>
+        </div>
+      </div>
     </div>
+
     <!-- 未登录状态显示 -->
     <div v-else class="login-prompt">
       <p>请先登录</p>
@@ -961,8 +980,21 @@ export default {
       showAboutModal.value = false
     }
 
-    // 退出登录
-    const logout = function () {
+    // 退出登录确认弹窗
+    const showLogoutConfirmModal = ref(false)
+
+    // 打开退出登录确认弹窗
+    const openLogoutConfirmModal = function () {
+      showLogoutConfirmModal.value = true
+    }
+
+    // 关闭退出登录确认弹窗
+    const closeLogoutConfirmModal = function () {
+      showLogoutConfirmModal.value = false
+    }
+
+    // 确认退出登录
+    const confirmLogout = function () {
       // 清除本地存储的用户信息
       localStorage.removeItem('userInfo')
       // 跳转到登录页面
@@ -1194,7 +1226,10 @@ export default {
       sendEmailVerificationCode,
       showAbout,
       closeAboutModal,
-      logout,
+      showLogoutConfirmModal,
+      openLogoutConfirmModal,
+      closeLogoutConfirmModal,
+      confirmLogout,
       securityLevel,
       securityLevelText,
       showDeviceManagement,
