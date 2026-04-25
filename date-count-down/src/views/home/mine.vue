@@ -12,8 +12,9 @@
           <div class="name-signature">
             <h3>{{ userInfo.nickname || userInfo.username }}</h3>
             <div class="signature-container">
-              <span class="signature-icon" @click="toggleEditSignatureModal">✏️</span>
-              <span class="user-signature">{{ userInfo.signature || '暂无个性签名' }}</span>
+              <span class="signature-icon" @click="toggleSignatureEdit">✏️</span>
+              <span v-if="!isEditingSignature" class="user-signature">{{ userInfo.signature || '暂无个性签名' }}</span>
+              <input v-else type="text" v-model="editSignature" placeholder="请输入个性签名" maxlength="50" class="signature-input" @blur="saveSignature" @keyup.enter="saveSignature" />
             </div>
           </div>
           <div class="id-email-qrcode">
@@ -207,6 +208,220 @@
         </div>
       </div>
 
+      <!-- 登录设备管理弹窗 -->
+      <div v-if="showDeviceManagementModal" class="device-management-modal">
+        <div class="modal-content">
+          <h4>登录设备管理</h4>
+          <div class="device-list">
+            <div v-for="(device, index) in devices" :key="device.id" class="device-item">
+              <div class="device-info">
+                <div class="device-icon">
+                  {{ device.deviceType === '手机' ? '📱' : device.deviceType === '平板' ? '📟' : '💻' }}
+                </div>
+                <div class="device-details">
+                  <div class="device-name-row">
+                    <h5>{{ device.name }}</h5>
+                    <span v-if="device.isCurrent" class="status-current">当前设备</span>
+                  </div>
+                  <p class="device-system">{{ device.os }} · {{ device.browser }}</p>
+                  <p class="device-location">{{ device.location }}</p>
+                  <p class="device-time">最后登录：{{ device.lastLogin }}</p>
+                  <p class="device-ip">IP地址：{{ device.ip }}</p>
+                </div>
+              </div>
+              <div class="device-status">
+                <button v-if="!device.isCurrent" @click="removeDevice(index)" class="remove-device-btn">移除</button>
+              </div>
+            </div>
+          </div>
+          <button @click="closeDeviceManagementModal" class="close-btn">关闭</button>
+        </div>
+      </div>
+
+      <!-- 消息通知设置弹窗 -->
+      <div v-if="showNotificationSettingsModal" class="notification-settings-modal">
+        <div class="modal-content">
+          <h4>消息通知设置</h4>
+
+          <!-- 通知类型 -->
+          <div class="settings-section">
+            <h5>通知类型</h5>
+            <div class="setting-item">
+              <div class="setting-info">
+                <span class="setting-icon">⏰</span>
+                <div>
+                  <p class="setting-name">倒计时提醒</p>
+                  <p class="setting-desc">接收倒计时到期提醒</p>
+                </div>
+              </div>
+              <div class="setting-toggle">
+                <input type="checkbox" v-model="notificationSettings.countdownReminder" id="countdownReminder">
+                <label for="countdownReminder"></label>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <span class="setting-icon">📢</span>
+                <div>
+                  <p class="setting-name">系统消息</p>
+                  <p class="setting-desc">接收系统更新、功能上线等消息</p>
+                </div>
+              </div>
+              <div class="setting-toggle">
+                <input type="checkbox" v-model="notificationSettings.systemMessages" id="systemMessages">
+                <label for="systemMessages"></label>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <span class="setting-icon">🎁</span>
+                <div>
+                  <p class="setting-name">活动通知</p>
+                  <p class="setting-desc">接收活动和优惠信息</p>
+                </div>
+              </div>
+              <div class="setting-toggle">
+                <input type="checkbox" v-model="notificationSettings.activityNotifications" id="activityNotifications">
+                <label for="activityNotifications"></label>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <span class="setting-icon">🔒</span>
+                <div>
+                  <p class="setting-name">重要通知</p>
+                  <p class="setting-desc">账户安全相关通知（不可关闭）</p>
+                </div>
+              </div>
+              <div class="setting-toggle">
+                <input type="checkbox" v-model="notificationSettings.importantNotifications" id="importantNotifications" disabled>
+                <label for="importantNotifications"></label>
+              </div>
+            </div>
+          </div>
+
+          <!-- 通知方式 -->
+          <div class="settings-section">
+            <h5>通知方式</h5>
+            <div class="setting-item">
+              <div class="setting-info">
+                <span class="setting-icon">🖥️</span>
+                <div>
+                  <p class="setting-name">弹窗通知</p>
+                  <p class="setting-desc">应用内弹窗显示通知</p>
+                </div>
+              </div>
+              <div class="setting-toggle">
+                <input type="checkbox" v-model="notificationSettings.popupNotification" id="popupNotification">
+                <label for="popupNotification"></label>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <span class="setting-icon">🔊</span>
+                <div>
+                  <p class="setting-name">声音提醒</p>
+                  <p class="setting-desc">通知时播放提示音</p>
+                </div>
+              </div>
+              <div class="setting-toggle">
+                <input type="checkbox" v-model="notificationSettings.soundNotification" id="soundNotification">
+                <label for="soundNotification"></label>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <span class="setting-icon">📳</span>
+                <div>
+                  <p class="setting-name">震动提醒</p>
+                  <p class="setting-desc">通知时触发震动（仅移动设备）</p>
+                </div>
+              </div>
+              <div class="setting-toggle">
+                <input type="checkbox" v-model="notificationSettings.vibrationNotification" id="vibrationNotification">
+                <label for="vibrationNotification"></label>
+              </div>
+            </div>
+          </div>
+
+          <!-- 通知频率 -->
+          <div class="settings-section">
+            <h5>通知频率</h5>
+            <div class="frequency-options">
+              <div class="frequency-item" :class="{ active: notificationSettings.notificationFrequency === 'realtime' }" @click="notificationSettings.notificationFrequency = 'realtime'">
+                <span class="frequency-icon">⚡</span>
+                <span class="frequency-name">实时通知</span>
+                <span class="frequency-desc">立即发送所有通知</span>
+              </div>
+
+              <div class="frequency-item" :class="{ active: notificationSettings.notificationFrequency === 'daily' }" @click="notificationSettings.notificationFrequency = 'daily'">
+                <span class="frequency-icon">📅</span>
+                <span class="frequency-name">每日摘要</span>
+                <span class="frequency-desc">汇总为每日摘要发送</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="edit-actions">
+            <button @click="saveNotificationSettings" class="save-btn">保存设置</button>
+            <button @click="closeNotificationSettingsModal" class="cancel-btn">取消</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 隐私设置弹窗 -->
+      <div v-if="showPrivacySettingsModal" class="privacy-settings-modal">
+        <div class="modal-content">
+          <h4>隐私设置</h4>
+
+          <!-- 个人信息管理 -->
+          <div class="settings-section">
+            <h5>个人信息管理</h5>
+            <div class="setting-item">
+              <div class="setting-info">
+                <span class="setting-icon">👤</span>
+                <div>
+                  <p class="setting-name">个人信息可见性</p>
+                  <p class="setting-desc">设置个人信息的可见范围</p>
+                </div>
+              </div>
+              <div class="setting-select">
+                <select v-model="privacySettings.personalInfoVisibility" class="select-input">
+                  <option value="private">仅自己可见</option>
+                  <option value="friends">对朋友可见</option>
+                  <option value="public">公开可见</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              <button @click="exportUserData" class="action-btn secondary">导出个人数据</button>
+              <button @click="deleteUserData" class="action-btn danger">删除所有数据</button>
+            </div>
+          </div>
+
+          <!-- 隐私政策 -->
+          <div class="settings-section">
+            <h5>隐私政策</h5>
+            <div class="policy-info">
+              <p class="policy-text">我们致力于保护您的隐私和个人信息。</p>
+              <a href="#" class="policy-link">查看完整隐私政策</a>
+              <p class="policy-updated">最后更新：2026年4月25日</p>
+            </div>
+          </div>
+
+          <div class="edit-actions">
+            <button @click="savePrivacySettings" class="save-btn">保存设置</button>
+            <button @click="closePrivacySettingsModal" class="cancel-btn">取消</button>
+          </div>
+        </div>
+      </div>
+
       <!-- 功能列表 -->
       <div class="features">
         <div class="feature-section">
@@ -311,6 +526,10 @@ export default {
     const showEditEmailModal = ref(false)
     const showAboutModal = ref(false)
     const defaultAvatar = 'https://a0ai.marscode.cn/api/ide/v1/text_to_image?prompt=default%20user%20avatar%20simple%20flat%20design&image_size=square'
+
+    // 个性签名相关
+    const isEditingSignature = ref(false)
+    const editSignature = ref('')
 
     // 密码修改表单
     const passwordForm = ref({
@@ -767,18 +986,158 @@ export default {
     })
 
     // 设备管理
+    const showDeviceManagementModal = ref(false)
+    const devices = ref([
+      {
+        id: 1,
+        name: '当前设备',
+        deviceType: '电脑',
+        os: 'Windows 11',
+        browser: 'Chrome',
+        lastLogin: '2026-04-25 10:30:00',
+        ip: '192.168.1.100',
+        location: '本地网络',
+        isCurrent: true
+      },
+      {
+        id: 2,
+        name: 'iPhone 14',
+        deviceType: '手机',
+        os: 'iOS 17.0',
+        browser: 'Safari',
+        lastLogin: '2026-04-24 15:45:00',
+        ip: '10.0.0.5',
+        location: '北京市',
+        isCurrent: false
+      },
+      {
+        id: 3,
+        name: 'MacBook Pro',
+        deviceType: '电脑',
+        os: 'macOS Sonoma',
+        browser: 'Safari',
+        lastLogin: '2026-04-23 09:20:00',
+        ip: '192.168.1.101',
+        location: '上海市',
+        isCurrent: false
+      }
+    ])
+
     const showDeviceManagement = function () {
-      showToast('登录设备管理功能开发中')
+      showDeviceManagementModal.value = true
     }
 
-    // 通知设置
+    const closeDeviceManagementModal = function () {
+      showDeviceManagementModal.value = false
+    }
+
+    const removeDevice = function (index) {
+      if (devices.value[index].isCurrent) {
+        showToast('不能移除当前设备')
+        return
+      }
+      devices.value.splice(index, 1)
+      // 更新本地存储
+      localStorage.setItem('devices', JSON.stringify(devices.value))
+      showSuccessToast('设备已成功移除')
+    }
+
+    // 消息通知设置
+    const showNotificationSettingsModal = ref(false)
+    const notificationSettings = ref({
+      // 通知类型
+      countdownReminder: true,
+      systemMessages: true,
+      activityNotifications: true,
+      importantNotifications: true, // 默认开启且不可关闭
+
+      // 通知方式
+      popupNotification: true,
+      soundNotification: true,
+      vibrationNotification: true,
+
+      // 通知频率
+      notificationFrequency: 'realtime' // 'realtime', 'daily', 'custom'
+    })
+
     const showNotificationSettings = function () {
-      showToast('消息通知设置功能开发中')
+      // 从本地存储加载设置
+      const savedSettings = localStorage.getItem('notificationSettings')
+      if (savedSettings) {
+        notificationSettings.value = JSON.parse(savedSettings)
+      }
+      showNotificationSettingsModal.value = true
+    }
+
+    const closeNotificationSettingsModal = function () {
+      showNotificationSettingsModal.value = false
+    }
+
+    const saveNotificationSettings = function () {
+      // 保存设置到本地存储
+      localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings.value))
+      showSuccessToast('通知设置已保存')
+      showNotificationSettingsModal.value = false
     }
 
     // 隐私设置
+    const showPrivacySettingsModal = ref(false)
+    const privacySettings = ref({
+      // 个人信息管理
+      personalInfoVisibility: 'private' // 'private', 'friends', 'public'
+    })
+
     const showPrivacySettings = function () {
-      showToast('隐私设置功能开发中')
+      // 从本地存储加载设置
+      const savedSettings = localStorage.getItem('privacySettings')
+      if (savedSettings) {
+        privacySettings.value = JSON.parse(savedSettings)
+      }
+      showPrivacySettingsModal.value = true
+    }
+
+    const closePrivacySettingsModal = function () {
+      showPrivacySettingsModal.value = false
+    }
+
+    const savePrivacySettings = function () {
+      // 保存设置到本地存储
+      localStorage.setItem('privacySettings', JSON.stringify(privacySettings.value))
+      showSuccessToast('隐私设置已保存')
+      showPrivacySettingsModal.value = false
+    }
+
+    const exportUserData = function () {
+      showToast('数据导出功能开发中')
+    }
+
+    const deleteUserData = function () {
+      if (confirm('确定要删除所有个人数据吗？此操作不可恢复。')) {
+        // 清除本地存储
+        localStorage.removeItem('userInfo')
+        localStorage.removeItem('devices')
+        localStorage.removeItem('notificationSettings')
+        localStorage.removeItem('privacySettings')
+        showSuccessToast('个人数据已删除')
+        // 跳转到登录页面
+        router.push('/login')
+      }
+    }
+
+    // 个性签名相关方法
+    const toggleSignatureEdit = function () {
+      isEditingSignature.value = !isEditingSignature.value
+      if (isEditingSignature.value) {
+        editSignature.value = userInfo.value.signature || ''
+      }
+    }
+
+    const saveSignature = function () {
+      userInfo.value.signature = editSignature.value.trim()
+      // 更新本地存储
+      localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+      showSuccessToast('个性签名修改成功')
+      isEditingSignature.value = false
     }
 
     // 组件挂载时检查登录状态
@@ -839,8 +1198,26 @@ export default {
       securityLevel,
       securityLevelText,
       showDeviceManagement,
+      showDeviceManagementModal,
+      closeDeviceManagementModal,
+      devices,
+      removeDevice,
       showNotificationSettings,
-      showPrivacySettings
+      showNotificationSettingsModal,
+      closeNotificationSettingsModal,
+      notificationSettings,
+      saveNotificationSettings,
+      showPrivacySettings,
+      showPrivacySettingsModal,
+      closePrivacySettingsModal,
+      privacySettings,
+      savePrivacySettings,
+      exportUserData,
+      deleteUserData,
+      isEditingSignature,
+      editSignature,
+      toggleSignatureEdit,
+      saveSignature
     }
   }
 }
