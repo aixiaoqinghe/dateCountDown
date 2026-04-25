@@ -59,6 +59,31 @@
       </div>
     </div>
 
+    <!-- 字体设置弹窗 -->
+    <div class="font-modal" v-if="showFontModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>字体设置</h3>
+          <button class="modal-close" @click="closeFontModal">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="font-options">
+            <div v-for="option in fontOptions" :key="option.value" class="font-option" @click="selectedFont = option.value" :style="{ fontFamily: option.fontFamily }">
+              <div class="font-info">
+                <h4>{{ option.label }}</h4>
+                <p class="font-preview">这是字体预览效果，测试中文字体</p>
+              </div>
+              <div class="font-radio" :class="{ active: selectedFont === option.value }"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="cancel-btn" @click="closeFontModal">取消</button>
+          <button class="confirm-btn" @click="applyFont">确定</button>
+        </div>
+      </div>
+    </div>
+
     <h2>设置</h2>
 
     <!-- 其他设置项 -->
@@ -69,20 +94,151 @@
         <span class="feature-name">主题设置</span>
         <span class="feature-arrow">›</span>
       </div>
-      <div class="feature-item">
-        <span class="feature-icon">🔤</span>
-        <span class="feature-name">字体设置</span>
+      <div class="feature-item" @click="openFontModal">
+          <span class="feature-icon">📝</span>
+          <span class="feature-name">字体设置</span>
+          <span class="feature-arrow">›</span>
+        </div>
+        <div class="feature-item" @click="openFontSizeModal">
+          <span class="feature-icon">🔍</span>
+          <span class="feature-name">字体大小</span>
+          <span class="feature-arrow">›</span>
+        </div>
+        <div class="feature-item" @click="goToFeedback">
+        <span class="feature-icon">📢</span>
+        <span class="feature-name">意见反馈</span>
         <span class="feature-arrow">›</span>
       </div>
-      <div class="feature-item">
+      <div class="feature-item" @click="showLanguageSetting">
         <span class="feature-icon">🌐</span>
         <span class="feature-name">语言设置</span>
         <span class="feature-arrow">›</span>
       </div>
-      <div class="feature-item">
-        <span class="feature-icon">🗑️</span>
-        <span class="feature-name">清除缓存</span>
+      <div class="feature-item" @click="checkVersionUpdate">
+        <span class="feature-icon">📱</span>
+        <span class="feature-name">版本更新</span>
         <span class="feature-arrow">›</span>
+      </div>
+
+      <!-- 字体大小设置弹窗 -->
+      <div v-if="showFontSizeModal" class="font-size-modal" @click="closeFontSizeModal">
+        <div class="modal-content" @click.stop>
+          <div class="modal-header">
+            <h3>字体大小设置</h3>
+            <button class="modal-close" @click="closeFontSizeModal">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="font-size-preview">
+              <p :style="{ fontSize: currentFontSize + 'px' }">字体大小预览：这是一段测试文字，用于预览字体大小效果。</p>
+            </div>
+            <div class="font-size-control">
+              <van-slider
+                v-model="currentFontSize"
+                :min="fontSizeRange.min"
+                :max="fontSizeRange.max"
+                :step="1"
+                :bar-height="10"
+                active-color="#3498db"
+                show-input
+                input-size="small"
+              />
+              <div class="font-size-range">
+                <span>{{ fontSizeRange.min }}px</span>
+                <span>{{ fontSizeRange.max }}px</span>
+              </div>
+            </div>
+            <div class="font-size-info">
+              <p>当前字体大小：{{ currentFontSize }}px</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="cancel-btn" @click="resetFontSize">重置</button>
+            <button class="confirm-btn" @click="applyFontSize">确定</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 版本更新弹窗 -->
+      <div class="version-modal" v-if="showVersionModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>版本信息</h3>
+            <button class="modal-close" @click="closeVersionModal">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="version-info">
+              <p class="current-version">当前版本：v{{ currentVersion }}</p>
+              <p v-if="hasUpdate" class="new-version">最新版本：v{{ latestVersion }}</p>
+              <div v-if="hasUpdate" class="update-info">
+                <h4>更新内容：</h4>
+                <ul>
+                  <li v-for="(item, index) in updateContent" :key="index">{{ item }}</li>
+                </ul>
+              </div>
+              <p v-else class="no-update">当前已是最新版本</p>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="cancel-btn" @click="closeVersionModal">关闭</button>
+            <button v-if="hasUpdate" class="confirm-btn" @click="showUpdateConfirmModal = true">更新</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 更新确认弹窗 -->
+      <div class="update-confirm-modal" v-if="showUpdateConfirmModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>确认更新</h3>
+            <button class="modal-close" @click="showUpdateConfirmModal = false">×</button>
+          </div>
+          <div class="modal-body">
+            <p class="update-time">更新预计需要 {{ updateTime }} 分钟</p>
+            <p class="update-note">更新期间暂时无法使用该应用</p>
+          </div>
+          <div class="modal-footer">
+            <button class="cancel-btn" @click="showUpdateConfirmModal = false">取消</button>
+            <button class="confirm-btn" @click="startUpdate">确认</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 更新进度弹窗 -->
+      <div class="update-progress-modal" v-if="showUpdateProgressModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>正在更新</h3>
+            <button class="modal-close" @click="cancelUpdate" :disabled="true">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress-fill" :style="{ width: updateProgress + '%' }">
+                  <div class="progress-icon">🚀</div>
+                </div>
+              </div>
+              <div class="progress-text">{{ updateProgress }}%</div>
+            </div>
+            <p class="update-status">{{ updateStatus }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 更新成功弹窗 -->
+      <div class="update-success-modal" v-if="showUpdateSuccessModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>更新成功</h3>
+            <button class="modal-close" @click="closeUpdateSuccessModal">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="success-icon">🎉</div>
+            <p class="success-message">更新成功，欢迎使用 v{{ latestVersion }} 版本</p>
+          </div>
+          <div class="modal-footer">
+            <button class="confirm-btn" @click="closeUpdateSuccessModal">立即体验</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -90,13 +246,16 @@
 
 <script>
 import { ref, onMounted, onUnmounted } from 'vue'
-import { showLoadingToast, showSuccessToast } from 'vant'
+import { useRouter } from 'vue-router'
+import { showLoadingToast, showSuccessToast, showToast } from 'vant'
 // 注意：实际项目中需要安装axios并导入
 // import axios from 'axios'
 
 export default {
   name: 'homeSetting',
   setup () {
+    const router = useRouter()
+
     const showNotification = ref(false)
     const showNotificationModal = ref(false)
     const notifications = ref([])
@@ -111,6 +270,46 @@ export default {
       { value: 'dark', label: '深色主题' }
     ]
     const selectedTheme = ref(currentTheme.value)
+
+    // 字体设置
+    const currentFont = ref(localStorage.getItem('font') || 'default')
+    const showFontModal = ref(false)
+    const fontOptions = [
+      { value: 'default', label: '默认字体', fontFamily: 'Arial, sans-serif' },
+      { value: 'simsun', label: '宋体', fontFamily: 'SimSun, serif' },
+      { value: 'kaiti', label: '楷书', fontFamily: 'KaiTi, serif' },
+      { value: 'simhei', label: '黑体', fontFamily: 'SimHei, sans-serif' },
+      { value: 'fangsong', label: '仿宋', fontFamily: 'FangSong, serif' },
+      { value: 'microsoftyahei', label: '微软雅黑', fontFamily: 'Microsoft YaHei, sans-serif' }
+    ]
+    const selectedFont = ref(currentFont.value)
+
+    // 字体大小设置
+    const currentFontSize = ref(parseInt(localStorage.getItem('fontSize') || '16'))
+    const showFontSizeModal = ref(false)
+    const fontSizeRange = {
+      min: 12,
+      max: 24
+    }
+
+    // 版本更新相关
+    const currentVersion = ref('1.0.0')
+    const latestVersion = ref('2.0.0')
+    const hasUpdate = ref(true)
+    const updateContent = ref([
+      '新增多种倒计时模板',
+      '优化用户界面',
+      '提升系统性能',
+      '修复已知bug'
+    ])
+    const showVersionModal = ref(false)
+    const showUpdateConfirmModal = ref(false)
+    const showUpdateProgressModal = ref(false)
+    const showUpdateSuccessModal = ref(false)
+    const updateTime = ref(2)
+    const updateProgress = ref(0)
+    const updateStatus = ref('正在准备更新...')
+    let updateInterval = null
 
     // 格式化日期
     const formatDate = function (dateString) {
@@ -211,6 +410,159 @@ export default {
       }, 1000)
     }
 
+    // 语言设置方法
+    const showLanguageSetting = function () {
+      showToast('语言设置功能待开发')
+    }
+
+    // 字体设置方法
+    const openFontModal = function () {
+      selectedFont.value = currentFont.value
+      showFontModal.value = true
+    }
+
+    const closeFontModal = function () {
+      showFontModal.value = false
+    }
+
+    const applyFont = function () {
+      showLoadingToast('正在切换字体...')
+
+      // 模拟网络请求延迟
+      setTimeout(() => {
+        currentFont.value = selectedFont.value
+        localStorage.setItem('font', selectedFont.value)
+
+        // 应用字体到文档
+        const fontOption = fontOptions.find(option => option.value === selectedFont.value)
+        if (fontOption) {
+          // 同时设置多个根元素的字体，确保所有元素都能继承
+          document.documentElement.style.fontFamily = fontOption.fontFamily
+          document.body.style.fontFamily = fontOption.fontFamily
+
+          // 创建或更新全局样式规则，确保所有元素都使用新字体，但不影响图标
+          let styleElement = document.getElementById('font-style')
+          if (!styleElement) {
+            styleElement = document.createElement('style')
+            styleElement.id = 'font-style'
+            document.head.appendChild(styleElement)
+          }
+          styleElement.textContent = `*:not(.van-icon) { font-family: ${fontOption.fontFamily} !important; }`
+
+          console.log('字体已切换为:', fontOption.fontFamily)
+        }
+
+        showSuccessToast('字体切换成功')
+        showFontModal.value = false
+      }, 1000)
+    }
+
+    // 字体大小设置方法
+    const openFontSizeModal = function () {
+      showFontSizeModal.value = true
+    }
+
+    const closeFontSizeModal = function () {
+      showFontSizeModal.value = false
+    }
+
+    const applyFontSize = function () {
+      showLoadingToast('正在调整字体大小...')
+
+      // 模拟网络请求延迟
+      setTimeout(() => {
+        localStorage.setItem('fontSize', currentFontSize.value)
+
+        // 应用字体大小到文档
+        document.documentElement.style.fontSize = currentFontSize.value + 'px'
+
+        // 创建或更新全局样式规则，确保所有元素都使用新字体大小，但不影响图标
+        let fontSizeStyleElement = document.getElementById('font-size-style')
+        if (!fontSizeStyleElement) {
+          fontSizeStyleElement = document.createElement('style')
+          fontSizeStyleElement.id = 'font-size-style'
+          document.head.appendChild(fontSizeStyleElement)
+        }
+        fontSizeStyleElement.textContent = `*:not(.van-icon) { font-size: ${currentFontSize.value}px !important; }`
+
+        showSuccessToast('字体大小调整成功')
+        showFontSizeModal.value = false
+      }, 1000)
+    }
+
+    const resetFontSize = function () {
+      currentFontSize.value = 16
+      localStorage.setItem('fontSize', '16')
+
+      // 应用默认字体大小到文档
+      document.documentElement.style.fontSize = '16px'
+
+      // 更新全局样式规则
+      const fontSizeStyleElement = document.getElementById('font-size-style')
+      if (fontSizeStyleElement) {
+        fontSizeStyleElement.textContent = '*:not(.van-icon) { font-size: 16px !important; }'
+      }
+
+      showSuccessToast('字体大小已重置为默认值')
+    }
+
+    // 跳转到反馈页面
+    const goToFeedback = function () {
+      router.push('/feedback')
+    }
+
+    // 版本更新相关函数
+    const checkVersionUpdate = function () {
+      // 模拟检查版本更新
+      showVersionModal.value = true
+    }
+
+    const closeVersionModal = function () {
+      showVersionModal.value = false
+    }
+
+    const startUpdate = function () {
+      showUpdateConfirmModal.value = false
+      showUpdateProgressModal.value = true
+      updateProgress.value = 0
+      updateStatus.value = '正在准备更新...'
+
+      // 模拟更新进度
+      updateInterval = setInterval(() => {
+        updateProgress.value += 5
+
+        if (updateProgress.value < 20) {
+          updateStatus.value = '正在下载更新包...'
+        } else if (updateProgress.value < 60) {
+          updateStatus.value = '正在解压更新包...'
+        } else if (updateProgress.value < 90) {
+          updateStatus.value = '正在安装更新...'
+        } else {
+          updateStatus.value = '正在完成更新...'
+        }
+
+        if (updateProgress.value >= 100) {
+          clearInterval(updateInterval)
+          showUpdateProgressModal.value = false
+          showUpdateSuccessModal.value = true
+        }
+      }, 300)
+    }
+
+    const cancelUpdate = function () {
+      if (updateInterval) {
+        clearInterval(updateInterval)
+      }
+      showUpdateProgressModal.value = false
+    }
+
+    const closeUpdateSuccessModal = function () {
+      showUpdateSuccessModal.value = false
+      // 模拟更新后的操作，例如刷新页面或跳转到首页
+      currentVersion.value = latestVersion.value
+      hasUpdate.value = false
+    }
+
     onMounted(() => {
       // 初始加载通知
       fetchNotifications()
@@ -224,6 +576,38 @@ export default {
       if (currentTheme.value === 'dark') {
         document.documentElement.classList.add('dark-theme')
       }
+
+      // 初始化字体
+      const fontOption = fontOptions.find(option => option.value === currentFont.value)
+      if (fontOption) {
+        document.documentElement.style.fontFamily = fontOption.fontFamily
+        document.body.style.fontFamily = fontOption.fontFamily
+
+        // 创建或更新全局样式规则，确保所有元素都使用新字体，但不影响图标
+        let styleElement = document.getElementById('font-style')
+        if (!styleElement) {
+          styleElement = document.createElement('style')
+          styleElement.id = 'font-style'
+          document.head.appendChild(styleElement)
+        }
+        styleElement.textContent = `*:not(.van-icon) { font-family: ${fontOption.fontFamily} !important; }`
+
+        console.log('初始化字体为:', fontOption.fontFamily)
+      }
+
+      // 初始化字体大小
+      document.documentElement.style.fontSize = currentFontSize.value + 'px'
+
+      // 创建或更新全局样式规则，确保所有元素都使用新字体大小，但不影响图标
+      let fontSizeStyleElement = document.getElementById('font-size-style')
+      if (!fontSizeStyleElement) {
+        fontSizeStyleElement = document.createElement('style')
+        fontSizeStyleElement.id = 'font-size-style'
+        document.head.appendChild(fontSizeStyleElement)
+      }
+      fontSizeStyleElement.textContent = `*:not(.van-icon) { font-size: ${currentFontSize.value}px !important; }`
+
+      console.log('初始化字体大小为:', currentFontSize.value, 'px')
     })
 
     onUnmounted(() => {
@@ -247,610 +631,48 @@ export default {
       selectedTheme,
       openThemeModal,
       closeThemeModal,
-      applyTheme
+      applyTheme,
+      // 语言设置
+      showLanguageSetting,
+      // 字体设置
+      currentFont,
+      showFontModal,
+      fontOptions,
+      selectedFont,
+      openFontModal,
+      closeFontModal,
+      applyFont,
+      // 字体大小设置
+      currentFontSize,
+      showFontSizeModal,
+      fontSizeRange,
+      openFontSizeModal,
+      closeFontSizeModal,
+      applyFontSize,
+      resetFontSize,
+      // 反馈功能
+      goToFeedback,
+      // 版本更新相关
+      currentVersion,
+      latestVersion,
+      hasUpdate,
+      updateContent,
+      showVersionModal,
+      showUpdateConfirmModal,
+      showUpdateProgressModal,
+      showUpdateSuccessModal,
+      updateTime,
+      updateProgress,
+      updateStatus,
+      checkVersionUpdate,
+      closeVersionModal,
+      startUpdate,
+      cancelUpdate,
+      closeUpdateSuccessModal
     }
   }
 }
 </script>
-
 <style scoped>
-.setting-container {
-  padding: 20px;
-  min-height: 70vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  position: relative;
-  overflow: hidden;
-}
-
-.setting-container h2 {
-  text-align: center;
-  margin-bottom: 30px;
-  font-size: 32px;
-  font-weight: 600;
-  color: #2c3e50;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin-top: 60px; /* 为顶部通知栏留出空间 */
-}
-
-/* 顶部通知栏 */
-.top-notification {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  background: rgba(255, 204, 0, 0.8); /* 透明黄色背景 */
-  color: white;
-  padding: 10px 20px;
-  display: flex;
-  align-items: center;
-  z-index: 1000;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  animation: slideDown 0.3s ease;
-  height: 40px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.top-notification:hover {
-  background: rgba(255, 204, 0, 0.9);
-}
-
-@keyframes slideDown {
-  from {
-    transform: translateY(-100%);
-  }
-  to {
-    transform: translateY(0);
-  }
-}
-
-.notification-content {
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-  height: 20px;
-  display: flex;
-  align-items: center;
-}
-
-.notification-icon {
-  font-size: 14px;
-  margin-right: 10px;
-  flex-shrink: 0;
-}
-
-.scrolling-text {
-  position: absolute;
-  white-space: nowrap;
-  animation: scroll 20s linear infinite;
-  font-size: 14px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-@keyframes scroll {
-  0% {
-    transform: translateX(100%);
-  }
-  100% {
-    transform: translateX(-100%);
-  }
-}
-
-.notification-close {
-  background: none;
-  border: none;
-  color: #ffcc00;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 0;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-  margin-left: 15px;
-}
-
-.notification-close:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: rotate(90deg);
-}
-
-/* 通知详情弹窗 */
-.notification-detail-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.modal-content {
-  background: white;
-  border-radius: 12px;
-  width: 90%;
-  max-width: 500px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-  animation: scaleIn 0.3s ease;
-}
-
-@keyframes scaleIn {
-  from {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  to {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.modal-header h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #2c3e50;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 0;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.3s ease;
-  color: #95a5a6;
-}
-
-.modal-close:hover {
-  background: #f8f9fa;
-  color: #2c3e50;
-  transform: rotate(90deg);
-}
-
-.modal-body {
-  padding: 30px 20px;
-  text-align: center;
-}
-
-.notification-detail-icon {
-  font-size: 48px;
-  margin-bottom: 20px;
-}
-
-.notification-title {
-  font-size: 20px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin: 0 0 10px 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.notification-date {
-  font-size: 14px;
-  color: #95a5a6;
-  margin: 0 0 20px 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.notification-content-detail {
-  text-align: left;
-  line-height: 1.6;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.notification-content-detail p {
-  margin: 10px 0;
-  color: #34495e;
-}
-
-.modal-footer {
-  padding: 20px;
-  border-top: 1px solid #e0e0e0;
-  text-align: center;
-}
-
-.modal-btn {
-  background: #3498db;
-  color: white;
-  border: none;
-  padding: 10px 30px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.modal-btn:hover {
-  background: #2980b9;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* 功能列表样式 */
-.feature-section {
-  margin-bottom: 20px;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(10px);
-}
-
-.section-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #95a5a6;
-  margin-bottom: 10px;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  padding-left: 10px;
-}
-
-.feature-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 10px;
-  background: white;
-  border-radius: 8px;
-  margin-bottom: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.feature-item:hover {
-  background: #f8f9fa;
-  transform: translateX(4px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.feature-icon {
-  font-size: 18px;
-  margin-right: 12px;
-  width: 24px;
-  text-align: center;
-}
-
-.feature-name {
-  flex: 1;
-  font-size: 14px;
-  color: #2c3e50;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.feature-arrow {
-  font-size: 18px;
-  color: #bdc3c7;
-  font-weight: 300;
-}
-
-/* 主题设置弹窗 */
-.theme-modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-  animation: fadeIn 0.3s ease;
-}
-
-.theme-options {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-top: 20px;
-}
-
-.theme-option {
-  display: flex;
-  align-items: center;
-  padding: 15px;
-  background: #f8f9fa;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.theme-option:hover {
-  background: #e9ecef;
-  transform: translateY(-2px);
-}
-
-.theme-preview {
-  width: 60px;
-  height: 60px;
-  border-radius: 8px;
-  margin-right: 15px;
-  border: 2px solid #e0e0e0;
-}
-
-.light-theme-preview {
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-}
-
-.dark-theme-preview {
-  background: linear-gradient(135deg, #2c3e50 0%, #1a252f 100%);
-}
-
-.theme-info {
-  flex: 1;
-}
-
-.theme-info h4 {
-  margin: 0 0 5px 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #2c3e50;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.theme-info p {
-  margin: 0;
-  font-size: 14px;
-  color: #7f8c8d;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.theme-radio {
-  width: 20px;
-  height: 20px;
-  border: 2px solid #bdc3c7;
-  border-radius: 50%;
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-.theme-radio.active {
-  border-color: #3498db;
-}
-
-.theme-radio.active::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 12px;
-  height: 12px;
-  background: #3498db;
-  border-radius: 50%;
-}
-
-.cancel-btn {
-  flex: 1;
-  padding: 10px 16px;
-  border: 1px solid #bdc3c7;
-  border-radius: 6px;
-  background: white;
-  color: #2c3e50;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  margin-right: 10px;
-}
-
-.cancel-btn:hover {
-  background: #f8f9fa;
-  border-color: #95a5a6;
-}
-
-.confirm-btn {
-  flex: 1;
-  padding: 10px 16px;
-  border: none;
-  border-radius: 6px;
-  background: #3498db;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-.confirm-btn:hover {
-  background: #2980b9;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-/* 深色主题 */
-.dark-theme {
-  --background-color: #1a1a1a;
-  --text-color: #e0e0e0;
-  --card-background: #2c2c2c;
-  --border-color: #444;
-  --hover-color: #3a3a3a;
-}
-
-.dark-theme .setting-container {
-  background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
-}
-
-.dark-theme .setting-container h2 {
-  color: #e0e0e0;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.dark-theme .feature-section {
-  background: rgba(44, 44, 44, 0.95);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-}
-
-.dark-theme .section-title {
-  color: #95a5a6;
-}
-
-.dark-theme .feature-item {
-  background: #3a3a3a;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.dark-theme .feature-item:hover {
-  background: #444;
-}
-
-.dark-theme .feature-name {
-  color: #e0e0e0;
-}
-
-.dark-theme .feature-arrow {
-  color: #666;
-}
-
-.dark-theme .top-notification {
-  background: rgba(255, 204, 0, 0.6);
-}
-
-.dark-theme .top-notification:hover {
-  background: rgba(255, 204, 0, 0.8);
-}
-
-.dark-theme .modal-content {
-  background: #2c2c2c;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-}
-
-.dark-theme .modal-header h3 {
-  color: #e0e0e0;
-}
-
-.dark-theme .modal-close {
-  color: #95a5a6;
-}
-
-.dark-theme .modal-close:hover {
-  background: #3a3a3a;
-  color: #e0e0e0;
-}
-
-.dark-theme .notification-title {
-  color: #e0e0e0;
-}
-
-.dark-theme .notification-content-detail p {
-  color: #ccc;
-}
-
-.dark-theme .modal-btn {
-  background: #4a6fa5;
-}
-
-.dark-theme .modal-btn:hover {
-  background: #3a5a8a;
-}
-
-.dark-theme .theme-option {
-  background: #3a3a3a;
-}
-
-.dark-theme .theme-option:hover {
-  background: #444;
-}
-
-.dark-theme .theme-info h4 {
-  color: #e0e0e0;
-}
-
-.dark-theme .theme-info p {
-  color: #95a5a6;
-}
-
-.dark-theme .cancel-btn {
-  background: #3a3a3a;
-  border-color: #555;
-  color: #e0e0e0;
-}
-
-.dark-theme .cancel-btn:hover {
-  background: #444;
-  border-color: #666;
-}
-
-/* 响应式设计 */
-@media (max-width: 768px) {
-  .setting-container h2 {
-    font-size: 24px;
-  }
-
-  .feature-item {
-    padding: 10px;
-  }
-
-  .feature-icon {
-    font-size: 16px;
-  }
-
-  .feature-name {
-    font-size: 13px;
-  }
-
-  .scrolling-text {
-    font-size: 12px;
-  }
-
-  .modal-content {
-    width: 95%;
-    margin: 20px;
-  }
-
-  .modal-body {
-    padding: 20px 15px;
-  }
-
-  .theme-preview {
-    width: 50px;
-    height: 50px;
-  }
-
-  .theme-info h4 {
-    font-size: 14px;
-  }
-
-  .theme-info p {
-    font-size: 12px;
-  }
-}
+@import '../../styles/setting.css';
 </style>

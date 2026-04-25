@@ -15,6 +15,7 @@ import markHome from '@/views/home/mark.vue' // 商城页面
 import countDown from '@/views/home/countDown.vue' // 倒计时页面
 import mine from '@/views/home/mine.vue' // 个人中心页面
 import setting from '@/views/home/setting.vue' // 设置页面
+import feedback from '@/views/feedback/index.vue' // 反馈意见页面
 
 // 创建路由实例
 const router = createRouter({
@@ -22,10 +23,13 @@ const router = createRouter({
   history: createWebHistory(),
   // 路由配置
   routes: [
-    // 根路径重定向到主页
+    // 根路径重定向，根据登录状态决定
     {
       path: '/',
-      redirect: '/home'
+      redirect: () => {
+        const isLoggedIn = localStorage.getItem('userInfo') !== null
+        return isLoggedIn ? '/home' : '/login'
+      }
     },
     // 登录页面路由
     {
@@ -88,15 +92,32 @@ const router = createRouter({
           component: setting
         }
       ]
+    },
+    // 反馈意见页面路由
+    {
+      path: '/feedback',
+      name: 'feedback',
+      component: feedback
     }
   ]
 })
 
 // 全局前置守卫
 router.beforeEach((to, from, next) => {
-  // 不需要登录检查，让组件自己处理登录状态
-  // 这样可以确保底部导航栏始终显示
-  next()
+  // 检查用户是否已登录（通过localStorage中的userInfo判断）
+  const isLoggedIn = localStorage.getItem('userInfo') !== null
+
+  // 定义不需要登录的页面
+  const noAuthPages = ['login', 'register', 'verify', 'completeInfo']
+
+  // 如果用户未登录且访问的不是不需要登录的页面，跳转到登录页
+  if (!isLoggedIn && !noAuthPages.includes(to.name)) {
+    next('/login')
+  } else if (isLoggedIn && to.name === 'login') {
+    next('/home')
+  } else {
+    next()
+  }
 })
 
 // 导出路由实例

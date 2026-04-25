@@ -261,14 +261,14 @@ export default {
       // 显示成功提示
       showSuccessToast('信息完善成功')
 
-      // 跳转到个人中心页面
-      router.push('/home/mine')
+      // 跳转到首页
+      router.push('/home')
     }
 
     // 处理返回按钮点击
     const handleBack = () => {
-      // 跳转到个人中心页面
-      router.push('/home/mine')
+      // 跳转到首页
+      router.push('/home')
     }
 
     // 组件挂载时初始化

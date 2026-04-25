@@ -84,8 +84,8 @@ export default {
 
     // 处理返回按钮点击
     const handleBack = () => {
-      // 跳转到个人中心页面（未登录状态）
-      router.push('/home/mine')
+      // 跳转到首页
+      router.push('/home')
     }
 
     // 完成注册流程
@@ -102,8 +102,8 @@ export default {
       // 显示注册成功提示
       showSuccessToast('注册成功')
 
-      // 跳转到完善信息页面
-      router.push('/complete-info')
+      // 跳转到首页
+      router.push('/home')
     }
 
     return {

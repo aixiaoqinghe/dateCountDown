@@ -31,7 +31,7 @@
 </template>
 
 <script>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showToast } from 'vant'
 export default {
@@ -44,6 +44,22 @@ export default {
       password: '',
       confirmPassword: ''
     })
+
+    // 监听主题变化
+    const updateTheme = () => {
+      const theme = localStorage.getItem('theme') || 'light'
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark-theme')
+      } else {
+        document.documentElement.classList.remove('dark-theme')
+      }
+    }
+
+    // 监听字体变化
+    const updateFont = () => {
+      const selectedFont = localStorage.getItem('font') || 'default'
+      document.documentElement.setAttribute('data-font', selectedFont)
+    }
 
     const handleRegister = () => {
       // 简单的表单验证
@@ -79,9 +95,23 @@ export default {
 
     // 处理返回按钮点击
     const handleBack = () => {
-      // 跳转到个人中心页面（未登录状态）
-      router.push('/home/mine')
+      // 跳转到首页
+      router.push('/home')
     }
+
+    onMounted(() => {
+      updateTheme()
+      updateFont()
+
+      // 监听本地存储变化，实时更新主题和字体
+      window.addEventListener('storage', (event) => {
+        if (event.key === 'theme') {
+          updateTheme()
+        } else if (event.key === 'font') {
+          updateFont()
+        }
+      })
+    })
 
     return {
       registerForm,
@@ -92,7 +122,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 /* 注册页面样式 */
 .register-container {
   padding: 20px;
@@ -120,6 +150,8 @@ export default {
   transition: all 0.3s ease;
   color: #2c3e50;
   z-index: 2;
+  white-space: nowrap;
+  min-width: 60px;
 }
 
 .back-btn:hover {
@@ -430,4 +462,139 @@ export default {
   background: linear-gradient(135deg, #2980b9, #1f618d);
   transform: translateY(-2px);
 }
+
+/* 深色主题 */
+.dark-theme .register-container {
+  background: linear-gradient(135deg, #1a1a1a 0%, #2c2c2c 100%);
+}
+
+.dark-theme .back-btn {
+  background: rgba(58, 58, 58, 0.8);
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-theme .back-btn:hover {
+  background: #444;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .register-container h2 {
+  color: #e0e0e0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .register-container form {
+  background: rgba(44, 44, 44, 0.95);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.dark-theme .form-group label {
+  color: #e0e0e0;
+}
+
+.dark-theme .form-group input {
+  background: #3a3a3a;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-theme .form-group input:focus {
+  border-color: #27ae60;
+  box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.2);
+  background: #444;
+}
+
+.dark-theme .login-link {
+  color: #999;
+}
+
+.dark-theme .login-link a {
+  color: #27ae60;
+}
+
+.dark-theme .login-link a:hover {
+  color: #229954;
+}
+
+.dark-theme .code-content {
+  color: #e0e0e0;
+}
+
+.dark-theme .code-desc {
+  color: #999;
+}
+
+.dark-theme .code-display {
+  background: #3a3a3a;
+}
+
+.dark-theme .code-text {
+  color: #e0e0e0;
+}
+
+.dark-theme .code-input {
+  background: #3a3a3a;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-theme .code-input:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
+.dark-theme .popup-content {
+  background: #2c2c2c;
+  border: 1px solid #444;
+}
+
+.dark-theme .popup-header h3 {
+  color: #e0e0e0;
+}
+
+.dark-theme .close-btn {
+  color: #999;
+}
+
+.dark-theme .close-btn:hover {
+  background: #444;
+  color: #e0e0e0;
+}
+
+.dark-theme .cancel-btn {
+  background: #444;
+  color: #999;
+  border-color: #555;
+}
+
+.dark-theme .cancel-btn:hover {
+  background: #555;
+}
+
+/* 字体切换 */
+[data-font="sans-serif"] .register-container h2,
+[data-font="sans-serif"] .form-group label,
+[data-font="sans-serif"] .form-group input,
+[data-font="sans-serif"] .register-btn,
+[data-font="sans-serif"] .login-link {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+[data-font="serif"] .register-container h2,
+[data-font="serif"] .form-group label,
+[data-font="serif"] .form-group input,
+[data-font="serif"] .register-btn,
+[data-font="serif"] .login-link {
+  font-family: 'Times New Roman', serif;
+}
+
+[data-font="monospace"] .register-container h2,
+[data-font="monospace"] .form-group label,
+[data-font="monospace"] .form-group input,
+[data-font="monospace"] .register-btn,
+[data-font="monospace"] .login-link {
+  font-family: 'Courier New', monospace;
+}
+
 </style>
