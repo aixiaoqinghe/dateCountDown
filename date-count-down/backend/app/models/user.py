@@ -1,5 +1,8 @@
 from app import db
 from passlib.hash import pbkdf2_sha256 as sha256
+import logging
+
+logger = logging.getLogger(__name__)
 
 class User(db.Model):
     # 表名（默认会将类名转为小写作为表名，这里显示指定）

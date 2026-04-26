@@ -1,5 +1,8 @@
 from app import db
 from datetime import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Feedback(db.Model):
     # 表名
@@ -12,4 +15,3 @@ class Feedback(db.Model):
     feedback_type = db.Column(db.String(50), nullable = False)    # 反馈类型（如“功能建议”）
     content = db.Column(db.Text, nullable = False)   # 反馈内容
     created_at = db.Column(db.DateTime, default = datetime.utcnow)    # 创建时间
-    

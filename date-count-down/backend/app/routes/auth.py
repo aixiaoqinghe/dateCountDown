@@ -2,6 +2,9 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from app.models.user import User
 from app import db
+import logging
+
+logger = logging.getLogger(__name__)
 
 # 创建蓝图（用于分组路由）
 auth_bp = Blueprint('auth', __name__)
@@ -9,17 +12,21 @@ auth_bp = Blueprint('auth', __name__)
 # 注册接口
 @auth_bp.route('/register', methods=['POST'])    # 定义了 POST/api/auth/register 接口
 def register():
+    logger.info('接收到注册请求')
     # 获取前端发送的JSON数据
     data = request.get_json()     # 获取前端发送的JSON数据
+    logger.info(f'注册数据: {data}')
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
 
     # 检查用户名是否已存在
     if User.query.filter_by(username=username).first():
+        logger.warning(f'用户名 {username} 已存在')
         return jsonify({'message':'用户已存在'}), 400
     # 检查邮箱是否已存在
     if User.query.filter_by(email=email).first():
+        logger.warning(f'邮箱 {email} 已存在')
         return jsonify({'message':'邮箱已存在'}), 400
     
     # 创建新用户
@@ -27,24 +34,29 @@ def register():
     user.set_password(password)   # 哈希处理密码
     db.session.add(user)   # 添加到数据库会话（临时存储，未写入数据库）
     db.session.commit()     # 提交会话，保存到MySQL
+    logger.info(f'用户 {username} 注册成功')
 
     return jsonify({'message':'注册成功'}), 201
 
 # 登录接口
 @auth_bp.route('/login', methods=['POST'])
 def login():
+    logger.info('接收到登录请求')
     # 获取前端发送的JSON数据
     data = request.get_json()
+    logger.info(f'登录数据: {data}')
     username = data.get('username')
     password = data.get('password')
 
     # 查询用户
     user = User.query.filter_by(username=username).first()
     if not user or not user.check_password(password):
+        logger.warning(f'用户 {username} 登录失败：用户名或密码错误')
         return jsonify({'message':'用户名或密码错误'}), 401
     
     # 创建JWT令牌（用于后续身份认证）
-    access_token = create_access_token(identity=user.id)
+    access_token = create_access_token(identity=str(user.id))
+    logger.info(f'用户 {username} 登录成功')
     return jsonify({
         'access_token':access_token,
         'user': {
