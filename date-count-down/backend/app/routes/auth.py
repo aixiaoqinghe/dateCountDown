@@ -65,3 +65,56 @@ def login():
             'email': user.email
         }
     }), 200
+
+# 获取用户信息接口（需要登录）
+@auth_bp.route('/user', methods=['GET'])
+@jwt_required()     # 要求携带JWT令牌
+def get_user_info():
+    logger.info('接收到获取用户信息请求')
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if not user:
+        logger.warning(f'用户ID {user_id} 不存在')
+        return jsonify({'message': '用户不存在'}), 404
+    
+    logger.info(f'获取用户 {user.username} 信息成功')
+    return jsonify({
+        'id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'created_at': user.created_at.strftime('%Y-%m-%d %H:%M:%S')
+    }), 200
+
+# 更新用户资料接口（需要登录）
+@auth_bp.route('/user', methods=['PUT'])
+@jwt_required()
+def update_user_info():
+    logger.info('接收到更新用户资料请求')
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if not user:
+        logger.warning(f'用户ID {user_id} 不存在')
+        return jsonify({'message': '用户不存在'}), 404
+    
+    data = request.get_json()
+    logger.info(f'更新用户资料： {data}')
+
+    # 更新用户名
+    if 'username' in data:
+        # 检查用户名是否已存在
+        if User.query.filter_by(username=data['username']).first() and data['username'] and data['username'] != user.username:
+            logger.warning(f'用户名 {data["username"]} 已存在')
+            return jsonify({'message': '用户名已存在'}), 400
+        user.username = data['username']
+
+    # 更新邮箱
+    if 'email' in data:
+        # 检查邮箱是否已存在
+        if User.query.filter_by(email=data['email']).first() and data['email'] != user.email:
+            logger.warning(f'邮箱 {data["email"]} 已存在')
+            return jsonify({'message':'邮箱已存在'}), 400
+        user.email = data['email']
+
+    db.session.commit()   # 提交会话，保存到MySQL
+    logger.info(f'用户 {user.username} 资料更新成功')
+    return jsonify({'message': '资料更新成功'}), 200
