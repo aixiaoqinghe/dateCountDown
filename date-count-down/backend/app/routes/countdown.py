@@ -4,6 +4,9 @@ from app.models.countdown import Countdown
 from app import db
 import logging
 from datetime import datetime 
+from app.utils.schemas import countdown_schema
+from marshmallow import ValidationError
+from app.utils.error_handlers import handle_errors, APIError
 
 logger = logging.getLogger(__name__)
 
@@ -13,6 +16,7 @@ countdown_bp = Blueprint('countdown', __name__)
 # 创建倒计时
 @countdown_bp.route('', methods=['POST'])
 @jwt_required()
+@handle_errors
 def create_countdown():
     logger.info('接受到创建倒计时请求')
     user_id = int(get_jwt_identity())
@@ -20,17 +24,33 @@ def create_countdown():
     logger.info(f'创建倒计时数据：{ data }')
 
     # 验证数据
-    if not data.get('task_name') or not data.get('target_date') or not data.get('category'):
-        logger.warning('缺少必要参数')
-        return jsonify({'message': '缺少必要参数'}), 400
+    try:
+        validated_data = countdown_schema.load(data)
+    except ValidationError as err:
+        logger.error(f'数据验证失败：{ err.messages}')
+        return jsonify({'message': '数据验证失败', 'errors': err.messages}), 400
+    
+    # 验证日期格式
+    try:
+        countdown_schema.validate_target_date(data.get('target_date'))
+    except ValidationError as err:
+        logger.warning(f'日期格式验证失败：{ err.messages }')
+        return jsonify({'message': err.messages[0]}), 400
+
+    logger.info(f'创建倒计时数据： {validated_data}')    
+
+    # 在验证失败时抛出自定义错误
+
+    if not validated_data.get('task_name'):
+        raise APIError('任务名称不能为空', 400)
     
     # 创建倒计时
     countdown = Countdown(
         user_id = user_id,
-        task_name = data['task_name'],
-        target_date = datetime.fromisoformat(data['target_date']),
-        category = data['category'],
-        background_image = data.get('background_image')
+        task_name = validated_data['task_name'],
+        target_date = datetime.fromisoformat(validated_data['target_date']),
+        category = validated_data['category'],
+        background_image = validated_data.get('background_image')
     )
 
     db.session.add(countdown)

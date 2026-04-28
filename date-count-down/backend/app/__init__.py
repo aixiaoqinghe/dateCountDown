@@ -1,9 +1,11 @@
 import logging
+from logging import RotatingFileHandler
 from flask import Flask    # 用于创建Flask应用实例
 from flask_sqlalchemy import SQLAlchemy   # 用于ORM(对象关系映射)操作数据库
 from flask_cors import CORS   # 用于处理跨域请求（允许前端访问后端API）
 from flask_jwt_extended import JWTManager   # 用于JWT认证(保护需要登录的接口)
 from config import Config   # 用于加载应用配置（如数据库连接信息）
+from app.utils.error_handlers import APIError
 
 # 配置日志
 logging.basicConfig(
@@ -25,6 +27,36 @@ def create_app():
     app = Flask(__name__)   # 创建Flask应用实例，__name__用于确定应用的根目录（用于查找静态文件、模板等）
     app.config.from_object(Config)   # 加载Config类中的配置（如数据库连接字符串、密钥等）到应用实例中
 
+    # 配置日志
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+
+    # 控制台处理器
+    console_handler = logging.StreamHandler()
+    console_handler.setLevel(logging.INFO)
+
+    # 文件处理器（带轮转）
+    file_handler = RotatingFileHandler(
+        'app.log',
+        maxBytes=1024 * 1024 * 10,    # 10MB
+        backupCount=5,
+        encoding='utf-8'
+    )
+    file_handler.setLevel(logging.INFO)
+
+    # 日志格式
+    formatter = logging.Formatter(
+        '%(asctime)s - %(name)s - %(levelname)s - %(funcName)s:%(lineno)d - %(message)s'
+    )
+    console_handler.setFormatter(formatter)
+    file_handler.setFormatter(formatter)
+
+    # 添加处理器
+    logger.addHandler(console_handler)
+    logger.addHandler(file_handler)
+
+    # 控制台处理器
+    console_handler = logging.S
     # 初始化扩展
     db.init_app(app)    # 初始化SQLAlchemy扩展，将应用实例绑定到数据库会话
     jwt.init_app(app)    # 初始化JWTManager扩展，将应用实例绑定到JWT令牌的生成和验证
@@ -46,3 +78,13 @@ def create_app():
         logger.info('数据库表创建成功')
 
     return app    # 返回创建好的Flask应用实例，供run.py文件启动使用
+
+@app.errorhandler(APIError)
+def handle_api_error(error):
+    response = jsonify({'message': error.message})
+    response.status_code = error.status_code
+    return response 
+
+@app.errorhandler(500)
+def handle_internal_error(error):
+    return jsonify({'message': '服务器内部错误'}), 500
