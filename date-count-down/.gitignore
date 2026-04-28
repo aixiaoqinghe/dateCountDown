@@ -24,3 +24,27 @@ pnpm-debug.log*
 
 # Backend virtual environment
 backend/venv/
+
+# Python compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Log files
+*.log
+backend/app.log
+
+# Database
+*.sqlite
+*.db
+
+# Migration folders
+# backend/migrations/  # 暂时不忽略，因为我们需要提交迁移文件
+
+# Flask configuration
+instance/
+.pytest_cache/
+.coverage
+htmlcov/

@@ -18,9 +18,15 @@ countdown_bp = Blueprint('countdown', __name__)
 @jwt_required()
 @handle_errors
 def create_countdown():
-    logger.info('接受到创建倒计时请求')
+    logger.info("=======创建倒计时请求开始=======")
+    logger.info(f'请求方法：{request.method}')
+    logger.info(f'请求路径：{request.path}')
+    logger.info(f'请求头:{dict(request.headers)}')
+    logger.info(f'请求体：{request.get_json()}')
+
     user_id = int(get_jwt_identity())
     data = request.get_json()
+    logger.info(f'当前用户ID:{user_id}')
     logger.info(f'创建倒计时数据：{ data }')
 
     # 验证数据
@@ -56,6 +62,7 @@ def create_countdown():
     db.session.add(countdown)
     db.session.commit()
     logger.info(f'倒计时创建成功，ID: {countdown.id}')
+    logger.info('=======创建倒计时请求结束=======')
 
     return jsonify({
         'id': countdown.id,

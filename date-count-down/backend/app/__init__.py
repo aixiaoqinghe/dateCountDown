@@ -1,6 +1,6 @@
 import logging
-from logging import RotatingFileHandler
-from flask import Flask    # 用于创建Flask应用实例
+from logging.handlers import RotatingFileHandler
+from flask import Flask, jsonify    # 用于创建Flask应用实例和返回JSON响应
 from flask_sqlalchemy import SQLAlchemy   # 用于ORM(对象关系映射)操作数据库
 from flask_cors import CORS   # 用于处理跨域请求（允许前端访问后端API）
 from flask_jwt_extended import JWTManager   # 用于JWT认证(保护需要登录的接口)
@@ -55,8 +55,6 @@ def create_app():
     logger.addHandler(console_handler)
     logger.addHandler(file_handler)
 
-    # 控制台处理器
-    console_handler = logging.S
     # 初始化扩展
     db.init_app(app)    # 初始化SQLAlchemy扩展，将应用实例绑定到数据库会话
     jwt.init_app(app)    # 初始化JWTManager扩展，将应用实例绑定到JWT令牌的生成和验证
@@ -77,14 +75,15 @@ def create_app():
         db.create_all()    # 根据models中定义的模型，在MySQL中生成对应的表结构（如user表和feedback表）
         logger.info('数据库表创建成功')
 
+    # 注册错误处理器
+    @app.errorhandler(APIError)
+    def handle_api_error(error):
+        response = jsonify({'message': error.message})
+        response.status_code = error.status_code
+        return response 
+
+    @app.errorhandler(500)
+    def handle_internal_error(error):
+        return jsonify({'message': '服务器内部错误'}), 500
+
     return app    # 返回创建好的Flask应用实例，供run.py文件启动使用
-
-@app.errorhandler(APIError)
-def handle_api_error(error):
-    response = jsonify({'message': error.message})
-    response.status_code = error.status_code
-    return response 
-
-@app.errorhandler(500)
-def handle_internal_error(error):
-    return jsonify({'message': '服务器内部错误'}), 500

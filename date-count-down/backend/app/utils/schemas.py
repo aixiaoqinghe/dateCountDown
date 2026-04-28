@@ -6,10 +6,10 @@ from datetime import datetime
 class CountdownSchema(Schema):
     # 倒计时数据验证 Schema
     task_name = fields.Str(required = True, validate = validate.Length(min = 1, max = 100),
-                           error_message={"required": "任务名称不能为空", "length": "任务名称长度必须在1-100之间"})
-    task_date = fields.Str(required = True, error_massage = {"required": "目标日期不能为空"})
+                           error_messages={"required": "任务名称不能为空", "length": "任务名称长度必须在1-100之间"})
+    target_date = fields.Str(required = True, error_messages = {"required": "目标日期不能为空"})
     category = fields.Str(required = True, validate = validate.Length(min = 1, max = 50),
-                          error_message = {"required": "分类不能为空", "Length": "分类长度必须在1-50之间"})
+                          error_messages = {"required": "分类不能为空", "Length": "分类长度必须在1-50之间"})
     background_image = fields.Str(allow_none = True)
 
     @staticmethod
