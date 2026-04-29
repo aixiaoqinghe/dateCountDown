@@ -23,7 +23,7 @@
         class="code-input"
         v-model="inputCode"
         placeholder="请输入验证码"
-        maxlength="4"
+        maxlength="6"
         @keyup.enter="handleVerify"
       >
       <div class="button-group">

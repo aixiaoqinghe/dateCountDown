@@ -16,7 +16,7 @@ def generate_captcha_text(length = 6):
     """ 生成指定长度的随机验证码"""
     # 可选字符： 数字 + 大写字母（去掉容易混淆的字符：0/O, 1/I/l）
     chars = '23456789ABCDEFGHJKLMNOPQRSTUVWXYZ'
-    return ''.join(random.choices(chars) for _ in range(length))
+    return ''.join(random.choice(chars) for _ in range(length))
 
 # 获取验证码图片接口
 @captcha_bp.route('/captcha')
@@ -32,7 +32,7 @@ def get_captcha():
     image = ImageCaptcha(
         width = 120,    # 图片宽度
         height = 40,    # 图片高度
-        font_size = [28]    # 字体大小
+        font_sizes = [28]    # 字体大小（注意是复数形式）
     )
 
     # 生成图片数据
