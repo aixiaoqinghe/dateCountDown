@@ -7,15 +7,23 @@
     <h2>验证码验证</h2>
     <div class="verify-content">
       <p class="verify-desc">请输入下方验证码</p>
+      <!-- 图片验证码区域 -->
       <div class="code-display">
-        <span class="code-text">{{ code }}</span>
+        <img
+          id="captcha-img"
+          src="/api/captcha"
+          alt="验证码"
+          @click="refreshCaptcha"
+          class="captcha-image"
+        >
+        <button class="refresh-btn" @click="refreshCaptcha">刷新</button>
       </div>
       <input
         type="text"
         class="code-input"
         v-model="inputCode"
         placeholder="请输入验证码"
-        maxlength="6"
+        maxlength="4"
         @keyup.enter="handleVerify"
       >
       <div class="button-group">
@@ -36,7 +44,6 @@ export default {
   setup () {
     const router = useRouter()
     const route = useRoute()
-    const code = ref('')
     const inputCode = ref('')
 
     // 从路由参数中获取注册信息
@@ -47,34 +54,53 @@ export default {
       confirmPassword: route.query.confirmPassword || ''
     })
 
-    // 生成随机验证码
-    const generateCode = () => {
-      const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-      let result = ''
-      for (let i = 0; i < 6; i++) {
-        result += chars[Math.floor(Math.random() * chars.length)]
-      }
-      return result
+    // 刷新验证码
+    const refreshCaptcha = () => {
+      document.getElementById('captcha-img').src = '/api/captcha?' + Date.now()
+      inputCode.value = '' // 清空输入
     }
 
-    // 组件挂载时生成验证码
+    // 组件挂载时加载验证码图片
     onMounted(() => {
-      code.value = generateCode()
+      // 图片会自动从 src 属性加载
     })
 
     // 处理验证
-    const handleVerify = () => {
+    const handleVerify = async () => {
       // 验证验证码
       if (!inputCode.value) {
         showToast('请输入验证码')
         return
       }
-      if (inputCode.value.toUpperCase() !== code.value) {
-        showToast('验证码错误')
-        return
+
+      // 调用后端注册接口（包含验证码验证）
+      try {
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: registerForm.value.username,
+            email: registerForm.value.email,
+            password: registerForm.value.password,
+            captcha: inputCode.value
+          })
+        })
+
+        const result = await response.json()
+
+        if (response.ok) {
+          // 注册成功
+          showSuccessToast('注册成功')
+          router.push('/home')
+        } else {
+          showToast(result.message || '注册失败')
+          refreshCaptcha() // 刷新验证码
+        }
+      } catch (error) {
+        showToast('网络错误')
       }
-      // 验证码验证通过，完成注册
-      completeRegister()
     }
 
     // 处理取消
@@ -84,34 +110,15 @@ export default {
 
     // 处理返回按钮点击
     const handleBack = () => {
-      // 跳转到首页
-      router.push('/home')
-    }
-
-    // 完成注册流程
-    const completeRegister = () => {
-      // 模拟注册成功（调用后端API）
-      const userInfo = {
-        username: registerForm.value.username,
-        email: registerForm.value.email
-      }
-
-      // 保存用户信息到本地存储
-      localStorage.setItem('userInfo', JSON.stringify(userInfo))
-
-      // 显示注册成功提示
-      showSuccessToast('注册成功')
-
-      // 跳转到首页
       router.push('/home')
     }
 
     return {
-      code,
       inputCode,
       handleVerify,
       handleCancel,
-      handleBack
+      handleBack,
+      refreshCaptcha
     }
   }
 }
@@ -218,23 +225,44 @@ export default {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* 验证码显示 */
+/* 验证码显示区域 */
 .code-display {
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 15px;
   margin-bottom: 30px;
   padding: 20px;
   background: #f8f9fa;
   border-radius: 12px;
 }
 
-.code-text {
-  font-size: 32px;
-  font-weight: 600;
-  letter-spacing: 8px;
-  color: #2c3e50;
-  font-family: 'Courier New', monospace;
+/* 验证码图片 */
+.captcha-image {
+  width: 120px;
+  height: 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid #bdc3c7;
+}
+
+/* 刷新按钮 */
+.refresh-btn {
+  padding: 10px 16px;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+}
+
+.refresh-btn:hover {
+  background: linear-gradient(135deg, #2980b9, #1f618d);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
 }
 
 /* 验证码输入框 */
@@ -319,9 +347,18 @@ export default {
     margin: 0 10px;
   }
 
-  .code-text {
-    font-size: 24px;
-    letter-spacing: 4px;
+  .code-display {
+    padding: 15px;
+  }
+
+  .captcha-image {
+    width: 100px;
+    height: 35px;
+  }
+
+  .refresh-btn {
+    padding: 8px 12px;
+    font-size: 12px;
   }
 
   .code-input {

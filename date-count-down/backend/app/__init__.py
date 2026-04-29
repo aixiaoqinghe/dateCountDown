@@ -65,10 +65,12 @@ def create_app():
     from app.routes.feedback import feedback_bp
     from app.routes.version import version_bp
     from app.routes.countdown import countdown_bp
+    from app.routes.captcha import captcha_bp
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(feedback_bp, url_prefix='/api/feedback')
     app.register_blueprint(version_bp, url_prefix = '/api/version')
     app.register_blueprint(countdown_bp, url_prefix='/api/countdown')
+    app.register_blueprint(captcha_bp, url_prefix='/api')
 
     # 创建数据库表（在MySQL中生成表结构）
     with app.app_context():       # 进入Flask应用的上下文环境。Flask的很多操作（如数据库操作）需要在应用上下文中执行

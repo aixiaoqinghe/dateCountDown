@@ -12,3 +12,4 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URI', 'mysql+pymysql://root:20051021@localhost:3306/countdown_app')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'your-jwt-secret-key')
+    SECRET_KEY = 'e7c3640ebf0f26a1fc46c1fa0b59be96'    # 替换为一个安全的随机字符串

@@ -3,6 +3,7 @@ from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identi
 from app.models.user import User
 from app import db
 import logging
+from app.routes.captcha import verify_captcha
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +20,16 @@ def register():
     username = data.get('username')
     email = data.get('email')
     password = data.get('password')
+    input_captcha = data.get('captcha')
+
+    # 验证验证码（先验证，再检查其他）
+    if not input_captcha:
+        logger.warning('请输入验证码')
+        return jsonify({'message': '请输入验证码'}), 400
+    
+    if not verify_captcha(input_captcha):
+        logger.warning(f'验证码错误：{input_captcha}')
+        return jsonify({'message': '验证码错误'}), 400
 
     # 检查用户名是否已存在
     if User.query.filter_by(username=username).first():
@@ -36,7 +47,8 @@ def register():
     db.session.commit()     # 提交会话，保存到MySQL
     logger.info(f'用户 {username} 注册成功')
 
-    return jsonify({'message':'注册成功'}), 201
+    return jsonify({'message':'注册成功'}), 201 
+
 
 # 登录接口
 @auth_bp.route('/login', methods=['POST'])

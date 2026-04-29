@@ -1,4 +1,4 @@
-import { Toast, Tabbar, TabbarItem, Search, Sidebar, SidebarItem, Uploader, Dialog, Button, Popup, Progress, Slider, Rate, ActionSheet, Field } from 'vant'
+import { Toast, Tabbar, TabbarItem, Search, Sidebar, SidebarItem, Uploader, Dialog, Button, Popup, Progress, Slider, Rate, ActionSheet, Field, showFailToast } from 'vant'
 
 export default {
   install: (app) => {
@@ -17,5 +17,6 @@ export default {
     app.use(Rate)
     app.use(ActionSheet)
     app.use(Field)
+    app.use(showFailToast)
   }
 }
