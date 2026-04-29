@@ -128,40 +128,45 @@ export default {
       document.documentElement.setAttribute('data-font', selectedFont)
     }
 
-    const handleLogin = () => {
+    const handleLogin = async () => {
       // 简单的表单验证
       if (!loginForm.value.username || !loginForm.value.password) {
         showToast('请输入用户名和密码')
         return
       }
 
-      // 验证邮箱格式（如果输入的是邮箱）
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+      try {
+        // 调用后端登录接口
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: loginForm.value.username,
+            password: loginForm.value.password
+          })
+        })
 
-      // 先检查本地存储中是否已存在用户信息
-      let userInfo = null
-      const storedUser = localStorage.getItem('userInfo')
-      if (storedUser) {
-        userInfo = JSON.parse(storedUser)
-        // 更新用户名和邮箱
-        userInfo.username = loginForm.value.username
-        userInfo.email = emailRegex.test(loginForm.value.username) ? loginForm.value.username : `${loginForm.value.username}@example.com`
-      } else {
-        // 如果本地存储中没有用户信息，创建新的
-        userInfo = {
-          username: loginForm.value.username,
-          email: emailRegex.test(loginForm.value.username) ? loginForm.value.username : `${loginForm.value.username}@example.com`
+        const result = await response.json()
+
+        if (response.ok) {
+          // 登录成功，保存用户信息和token
+          localStorage.setItem('userInfo', JSON.stringify(result.user))
+          localStorage.setItem('access_token', result.access_token)
+
+          // 显示登录成功提示
+          showSuccessToast('登录成功')
+
+          // 跳转到首页
+          router.push('/home')
+        } else {
+          // 登录失败，显示错误信息
+          showToast(result.message || '登录失败')
         }
+      } catch (error) {
+        showToast('网络错误')
       }
-
-      // 保存用户信息到本地存储
-      localStorage.setItem('userInfo', JSON.stringify(userInfo))
-
-      // 显示登录成功提示
-      showSuccessToast('登录成功')
-
-      // 跳转到首页
-      router.push('/home')
     }
 
     // 处理返回按钮点击

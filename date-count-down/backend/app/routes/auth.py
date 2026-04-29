@@ -127,6 +127,46 @@ def update_user_info():
             return jsonify({'message':'邮箱已存在'}), 400
         user.email = data['email']
 
+    # 更新昵称
+    if 'nickname' in data:
+        user.nickname = data['nickname']
+
+    # 更新手机号
+    if 'phone' in data:
+        user.phone = data['phone']
+
+    # 更新头像
+    if 'avatar' in data:
+        user.avatar = data['avatar']
+
     db.session.commit()   # 提交会话，保存到MySQL
     logger.info(f'用户 {user.username} 资料更新成功')
     return jsonify({'message': '资料更新成功'}), 200
+
+# 修改密码接口（需要登录）
+@auth_bp.route('/change_password', methods=['POST'])
+@jwt_required()
+def change_password():
+    logger.info('接收到修改密码请求')
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if not user:
+        logger.warning(f'用户ID {user_id} 不存在')
+        return jsonify({'message': '用户不存在'}), 404
+    
+    data = request.get_json()
+    old_password = data.get('old_password')
+    new_password = data.get('new_password')
+
+    # 验证旧密码
+    if not user.check_password(old_password):
+        logger.warning(f'用户{ user.username }修改密码失败：旧密码错误')
+        return jsonify({'message': '旧密码错误'}), 400
+    
+    # 设置新密码
+    user.set_password(new_password)
+    db.session.commit()
+
+    logger.info(f'用户 { user.username } 修改密码成功')
+    return jsonify({'message': '密码修改成功'}), 200
+

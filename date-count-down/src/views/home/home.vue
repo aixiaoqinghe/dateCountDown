@@ -126,11 +126,36 @@ export default {
       }
     },
     // 加载存储的倒计时记录
-    loadCountdowns () {
+    async loadCountdowns () {
+      const token = localStorage.getItem('access_token')
+
+      if (token) {
+        // 如果有token，尝试从后端获取数据
+        try {
+          const response = await fetch('/api/countdown', {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+
+          if (response.ok) {
+            const data = await response.json()
+            this.countdown = data 
+            // 同时保存到本地存储作为缓存
+            localStorage.setItem('countdownHistory', JSON.stringify(data))
+            return 
+          }
+        } catch (error) {
+          console.error('从后端获取数据失败:', error)
+        }
+      }
+
+      // 如果没有token或后端请求失败，使用本地存储
       const history = JSON.parse(localStorage.getItem('countdownHistory') || '[]')
       console.log('加载的历史记录:', history)
       this.countdowns = history
-    },
+    }
+    
     // 进入删除模式
     enterDeleteMode () {
       this.isDeleteMode = true

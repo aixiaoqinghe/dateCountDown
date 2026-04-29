@@ -606,12 +606,12 @@ export default {
     })
 
     // 生成二维码URL（使用在线API）
-    // 生成二维码URL（使用在线API）
     const qrcodeUrl = computed(() => {
       if (!userInfo.value) return ''
       const userData = `用户: ${userInfo.value.nickname || userInfo.value.username}\nID: ${userId.value}\n邮箱: ${userInfo.value.email}`
       const encodedData = encodeURIComponent(userData)
-      return `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodedData}`
+      // 使用更稳定的二维码API
+      return `https://api.pwmqr.com/qrcode/create?url=${encodedData}&size=150x150`
     })
 
     // 检查登录状态
@@ -682,7 +682,7 @@ export default {
     }
 
     // 保存密码
-    const savePassword = function () {
+    const savePassword = async function () {
       const { oldPassword, newPassword, confirmPassword } = passwordForm.value
       if (!oldPassword) {
         showToast('请输入旧密码')
@@ -692,17 +692,39 @@ export default {
         showToast('请输入新密码')
         return
       }
-      if (newPassword.length < 6) {
-        showToast('新密码长度不能少于6位')
-        return
-      }
       if (newPassword !== confirmPassword) {
         showToast('两次输入的密码不一致')
         return
       }
-      // 模拟保存密码
-      showSuccessToast('密码修改成功')
-      showChangePasswordModal.value = false
+
+      try {
+        const token = localStorage.getItem('access_token')
+        if (token) {
+          const response = await fetch('/api/auth/change_password', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              old_password: oldPassword,
+              new_password: newPassword
+            })
+          })
+
+          const result = await response.json()
+          if (response.ok) {
+            showSuccessToast('密码修改成功')
+            showChangePasswordModal.value = false
+          } else {
+            showToast(result.message || '修改失败')
+          }
+        } else {
+          showToast('请先登录')
+        }
+      } catch (error) {
+        showToast('网络错误')
+      }
     }
 
     // 切换修改头像弹窗
@@ -719,13 +741,46 @@ export default {
     }
 
     // 保存头像
-    const saveAvatar = function () {
+    const saveAvatar = async function () {
       if (editAvatarForm.value.avatar) {
-        userInfo.value.avatar = editAvatarForm.value.avatar
-        // 更新本地存储
-        localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
-        showSuccessToast('头像修改成功')
-        showEditAvatarModal.value = false
+        try {
+          const token = localStorage.getItem('access_token')
+          if (token) {
+            const response = await fetch('/api/auth/user', {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                avatar: editAvatarForm.value.avatar
+              })
+            })
+
+            const result = await response.json()
+            if (response.ok) {
+              userInfo.value.avatar = editAvatarForm.value.avatar
+              localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+              showSuccessToast('头像修改成功')
+              showEditAvatarModal.value = false
+            } else {
+              userInfo.value.avatar = editAvatarForm.value.avatar
+              localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+              showSuccessToast('头像修改成功（本地）')
+              showEditAvatarModal.value = false
+            }
+          } else {
+            userInfo.value.avatar = editAvatarForm.value.avatar
+            localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+            showSuccessToast('头像修改成功（本地）')
+            showEditAvatarModal.value = false
+          }
+        } catch (error) {
+          userInfo.value.avatar = editAvatarForm.value.avatar
+          localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+          showSuccessToast('头像修改成功（本地）')
+          showEditAvatarModal.value = false
+        }
       } else {
         showToast('请选择头像')
       }
@@ -760,21 +815,50 @@ export default {
     }
 
     // 保存昵称
-    const saveNickname = function () {
-      const nickname = editNicknameForm.value.nickname.trim()
-      if (!nickname) {
+    const saveNickname = async function () {
+      if (!editNicknameForm.value.nickname.trim()) {
         showToast('请输入昵称')
         return
       }
-      if (nicknameError.value) {
-        showToast(nicknameError.value)
+      if (editNicknameForm.value.nickname.length > 20) {
+        showToast('昵称长度不能超过20位')
         return
       }
-      userInfo.value.nickname = nickname
-      // 更新本地存储
-      localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
-      showSuccessToast('昵称修改成功')
-      showEditNicknameModal.value = false
+
+      try {
+        const token = localStorage.getItem('access_token')
+        if (token) {
+          const response = await fetch('/api/auth/user', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              nickname: editNicknameForm.value.nickname
+            })
+          })
+
+          const result = await response.json()
+          if (response.ok) {
+            const storedUser = localStorage.getItem('userInfo')
+            if (storedUser) {
+              const user = JSON.parse(storedUser)
+              user.nickname = editNicknameForm.value.nickname
+              localStorage.setItem('userInfo', JSON.stringify(user))
+              userInfo.value = user
+            }
+            showSuccessToast('昵称修改成功')
+            showEditNicknameModal.value = false
+          } else {
+            showToast(result.message || '修改失败')
+          }
+        } else {
+          showToast('请先登录')
+        }
+      } catch (error) {
+        showToast('网络错误')
+      }
     }
 
     // 切换修改手机号弹窗
