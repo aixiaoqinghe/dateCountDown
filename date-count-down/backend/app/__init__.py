@@ -6,6 +6,7 @@ from flask_cors import CORS   # 用于处理跨域请求（允许前端访问后
 from flask_jwt_extended import JWTManager   # 用于JWT认证(保护需要登录的接口)
 from config import Config   # 用于加载应用配置（如数据库连接信息）
 from app.utils.error_handlers import APIError
+from flask_mail import Mail
 
 # 配置日志
 logging.basicConfig(
@@ -22,6 +23,7 @@ logger = logging.getLogger(__name__)
 # 初始化扩展
 db = SQLAlchemy()    # 创建SQLAlchemy实例，后续用于数据库操作（如创建表、查询数据）
 jwt = JWTManager()    # 创建JWTManager实例，后续用于JWT令牌的生成和验证
+mail = Mail()    # 创建Mail实例，后续用于发送邮件
 
 def create_app():
     app = Flask(__name__)   # 创建Flask应用实例，__name__用于确定应用的根目录（用于查找静态文件、模板等）
@@ -60,17 +62,30 @@ def create_app():
     jwt.init_app(app)    # 初始化JWTManager扩展，将应用实例绑定到JWT令牌的生成和验证
     CORS(app)    # 允许跨域请求
 
+    # 邮箱配置（放在create_app函数内部）
+    app.config['MAIL_SERVER'] = 'smtp.163.com'   # SMTP服务器地址
+    app.config['MAIL_PORT'] = 465               # SSL端口
+    app.config['MAIL_USE_SSL'] = True           # 使用SSL加密
+    app.config['MAIL_USERNAME'] = 'xiaoqinghe_verify@163.com'   # 发送邮件的邮箱
+    app.config['MAIL_PASSWORD'] = 'PUXuj3PRqGXvWdmd'      # 邮箱授权码（不是登录密码）
+    app.config['MAIL_DEFAULT_SENDER'] = 'xiaoqinghe_verify@163.com'  # 默认发件人
+
+    # 初始化邮件扩展
+    mail.init_app(app)
+
     # 注册路由
     from app.routes.auth import auth_bp
     from app.routes.feedback import feedback_bp
     from app.routes.version import version_bp
     from app.routes.countdown import countdown_bp
     from app.routes.captcha import captcha_bp
+    from app.routes.verify_code import verify_code_bp
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(feedback_bp, url_prefix='/api/feedback')
     app.register_blueprint(version_bp, url_prefix = '/api/version')
     app.register_blueprint(countdown_bp, url_prefix='/api/countdown')
     app.register_blueprint(captcha_bp, url_prefix='/api')
+    app.register_blueprint(verify_code_bp, url_prefix='/api/verify')
 
     # 创建数据库表（在MySQL中生成表结构）
     with app.app_context():       # 进入Flask应用的上下文环境。Flask的很多操作（如数据库操作）需要在应用上下文中执行

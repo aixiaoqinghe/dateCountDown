@@ -134,16 +134,16 @@ export default {
         try {
           const response = await fetch('/api/countdown', {
             headers: {
-              'Authorization': `Bearer ${token}`
+              Authorization: `Bearer ${token}`
             }
           })
 
           if (response.ok) {
             const data = await response.json()
-            this.countdown = data 
+            this.countdown = data
             // 同时保存到本地存储作为缓存
             localStorage.setItem('countdownHistory', JSON.stringify(data))
-            return 
+            return
           }
         } catch (error) {
           console.error('从后端获取数据失败:', error)
@@ -154,8 +154,8 @@ export default {
       const history = JSON.parse(localStorage.getItem('countdownHistory') || '[]')
       console.log('加载的历史记录:', history)
       this.countdowns = history
-    }
-    
+    },
+
     // 进入删除模式
     enterDeleteMode () {
       this.isDeleteMode = true

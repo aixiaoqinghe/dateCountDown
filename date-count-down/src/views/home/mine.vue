@@ -757,7 +757,7 @@ export default {
               })
             })
 
-            const result = await response.json()
+            // const result = await response.json()
             if (response.ok) {
               userInfo.value.avatar = editAvatarForm.value.avatar
               localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
