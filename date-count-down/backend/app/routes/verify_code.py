@@ -59,15 +59,18 @@ def verify_email_code():
     stored_email = session.get('email_verify_email')
 
     if not stored_code or not stored_email:
-        return jsonify({'message': '验证码已过期，请重新获取'}), 400
+        return jsonify({'message': '验证码已过期，请重新获取'}), 400  # 注意逗号
     
     if stored_email != email or stored_code != code:
         logger.error(f'邮箱{email}验证码错误')
-        return jsonify({'message': '验证码错误'}), 400
+        return jsonify({'message': '验证码错误'}), 400  # 注意逗号
     
     # 验证成功，清除session
-    session.pop('email_verify_code', None)
-    session.pop('email_verify_email', None)
+    session.pop('email_verify_code', None)  # 注意逗号
+    session.pop('email_verify_email', None)  # 注意逗号
+    
+    # 验证成功，返回响应
+    return jsonify({'message': '验证成功'}), 200
 
 # 重置密码
 @verify_code_bp.route('/reset_password', methods=['POST'])
@@ -94,31 +97,49 @@ def reset_password():
     else:
         # 手机验证逻辑(先清理格式)
         cleaned_phone = phone.strip().replace(' ', '').replace('-', '')
+        if cleaned_phone.startswith('+86'):
+            cleaned_phone = cleaned_phone[3:]
+
+        # 获取手机验证的session
+        stored_code = session.get('sms_verify_code')
+        stored_target = session.get('sms_verify_phone')
+        target = cleaned_phone
         
 
-    if not stored_code or not stored_email:
-        logger.error(f'邮箱{email}验证码已过期，请重新获取')
+    if not stored_code or not stored_target:
+        logger.error(f'{target}验证码已过期，请重新获取')
         return jsonify({'message': '验证码已过期，请重新获取'}), 400
     
-    if stored_email != email or stored_code != code:
-        logger.error(f'邮箱{email}验证码错误')
+    if stored_target != target or stored_code != code:
+        logger.error(f'邮箱{target}验证码错误')
         return jsonify({'message': '验证码错误'}), 400
     
-    # 更新密码
-    user = User.query.filter_by(email=email).first()
+    # 根据验证方式查询用户
+    if is_email_verify:
+        user = User.query.filter_by(email=email).first()
+    else:
+        user = User.query.filter_by(phone=target).first()
+
     if not user:
-        return jsonify({'message': '用户不存在'}), 404
+        logger.error(f'用户 {target} 不存在')
+        return jsonify({'message': '用户不存在'}), 400
     
+    # 更新密码
     user.set_password(new_password)
 
     from app import db 
     db.session.commit()
 
-    # 清除session
-    session.pop('email_verify_code', None)
-    session.pop('email_verify_email', None)
+    # 清除对应类型的session
+    if is_email_verify:
+        session.pop('email_verify_code', None)
+        session.pop('email_verify_email', None)
+    else:
+        session.pop('sms_verify_code', None)
+        session.pop('sms_verify_phone', None)
+    
 
-    logger.info(f'用户{email}密码重置成功')
+    logger.info(f'用户{target}密码重置成功')
     return jsonify({'message': '密码重置成功'}), 200
 
 # 发送短信验证码
