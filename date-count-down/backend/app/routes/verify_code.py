@@ -5,6 +5,7 @@ from app.models import User
 import random 
 import string 
 import logging 
+import datetime 
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ def validate_phone_number(phone):
     return None 
 
 # 工具函数：检查是否可以发送验证码
-def can_send_verify_code(phone):
+def can_send_verify_code(session_key, cool_down_seconds=60):
     """ 检查是否可以发送验证码（冷却时间）"""
     last_send_time = session.get(f'{session_key}_last_send_time')
     if last_send_time:
@@ -75,6 +76,12 @@ def send_email_code():
     if not email:
         return jsonify({'message': '请输入邮箱'}), 400
     
+    # 检查发送频率
+    can_send, message = can_send_verify_code('email')
+    if not can_send:
+        logger.info(message)
+        return jsonify({'message': message}), 429    # too many requests
+    
     user = User.query.filter_by(email=email).first()
     if not user:
         logger.error(f'邮箱 {email} 未注册')
@@ -86,6 +93,7 @@ def send_email_code():
     # 保存验证码到session(有效期为5分钟)
     session['email_verify_code'] = code 
     session['email_verify_email'] = email
+    session['email_verify_send_time'] = datetime.datetime.now().timestamp()
     session.permanent = True    # 设置session永久有效
 
     # 发送邮件
@@ -94,6 +102,7 @@ def send_email_code():
 
     try:
         mail.send(msg)
+        record_send_time('email')    # 记录发送时间
         logger.info(f'验证码已发送到邮箱：{email}')
         return jsonify({'message': '验证码已发送'}), 200
     except Exception as e:
@@ -110,16 +119,26 @@ def verify_email_code():
     stored_code = session.get('email_verify_code')
     stored_email = session.get('email_verify_email')
 
+    # 检查验证码是否过期
+    if is_code_expired('email_verify'):
+        session.pop('email_verify_code', None)
+        session.pop('email_verify_email', None)
+        session.pop('email_verify_send_time', None)
+        return jsonify({'message': '验证码已过期，请重新获取'}), 400
+
     if not stored_code or not stored_email:
+        logger.error(f'邮箱{email}验证码已过期，请重新获取')
         return jsonify({'message': '验证码已过期，请重新获取'}), 400  # 注意逗号
     
     if stored_email != email or stored_code != code:
         logger.error(f'邮箱{email}验证码错误')
-        return jsonify({'message': '验证码错误'}), 400  # 注意逗号
+        return jsonify({'message': '验证码错误'}), 400  
+        session.pop('email_verify_send_time', None)
     
     # 验证成功，清除session
-    session.pop('email_verify_code', None)  # 注意逗号
-    session.pop('email_verify_email', None)  # 注意逗号
+    session.pop('email_verify_code', None)  
+    session.pop('email_verify_email', None) 
+    session.pop('email_verify_send_time', None)
     
     # 验证成功，返回响应
     return jsonify({'message': '验证成功'}), 200
@@ -204,15 +223,17 @@ def send_sms_code():
     if not phone:
         return jsonify({'message': '请输入手机号'}), 400
     
-    # 清理手机号格式（支持 +86、空格、短横线等格式）
-    cleaned_phone = phone.strip().replace(' ', '').replace('-', '')
-    if cleaned_phone.startswith('+86'):
-        cleaned_phone = cleaned_phone[3:]
-
-    # 验证手机号格式
-    if not cleaned_phone.isdigit() or len(cleaned_phone) != 11:
+    # 使用封装的函数验证手机号
+    cleaned_phone = validate_phone_number(phone) 
+    if not cleaned_phone:
+        logger.error(f'手机号{phone}格式错误')
         return jsonify({'message': '请输入正确的手机号'}), 400
     
+    # 检查发送频率
+    can_send, message = can_send_verify_code('sms_verify')
+    if not can_send:
+        return jsonify({'message': message}), 429
+
     # 查询用户
     user = User.query.filter_by(phone=cleaned_phone).first()
     if not user:
@@ -225,11 +246,14 @@ def send_sms_code():
     # 保存验证码到session
     session['sms_verify_code'] = code
     session['sms_verify_phone'] = cleaned_phone
+    session['sms_verify_send_time'] = datetime.datetime.now().timestamp()
     session.permanent = True  # 设置session永久有效
 
     # 模拟发送短信（实际项目中需要；接入短信API）
     logger.info(f'【模拟发送】向手机号 {cleaned_phone} 发送验证码： {code}')
 
+    record_send_time('sms_verify')   # 记录发送时间
+    logger.info(f'手机号{cleaned_phone}验证码已发送')
     return jsonify({'message': '验证码已发送'}), 200
 
 # 验证短信验证码
@@ -239,24 +263,34 @@ def verify_sms_code():
     phone = data.get('phone')
     code = data.get('code')
 
-    # 清理手机号格式
-    cleaned_phone = phone.strip().replace(' ', '').replace('-', '')
-    if cleaned_phone.startswith('+86'):
-        cleaned_phone = cleaned_phone[3:]
-
+    # 使用封装的函数清理手机号
+    cleaned_phone = clean_phone_number(phone)
+    if not cleaned_phone:
+        logger.error(f'手机号{phone}格式错误')
+        return jsonify({'message': '请输入正确的手机号'}), 400
+    
     stored_code = session.get('sms_verify_code')
     stored_phone = session.get('sms_verify_phone')
 
+    # 检查验证码是否过期
+    if is_code_expired('sms_verify'):
+        session.pop('sms_verify_code', None)
+        session.pop('sms_verify_phone', None)
+        session.pop('sms_verify_send_time', None)
+        return jsonify({'message': '验证码已过期，请重新获取'}), 400
+    
     if not stored_code or not stored_phone:
+        logger.error(f'手机号{cleaned_phone}验证码已过期，请重新获取')
         return jsonify({'message': '验证码已过期，请重新获取'}), 400
     
     if stored_phone != cleaned_phone or stored_code != code:
         logger.error(f'手机号{cleaned_phone}验证码错误')
         return jsonify({'message': '验证码错误'}), 400
-    
+
     # 验证成功，清除session
     session.pop('sms_verify_code', None)
     session.pop('sms_verify_phone', None)
+    session.pop('sms_verify_send_time', None)
 
     logger.info(f'手机号{stored_phone}验证成功')
     return jsonify({'message': '验证成功'}), 200

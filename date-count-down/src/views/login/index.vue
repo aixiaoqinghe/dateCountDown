@@ -227,42 +227,89 @@ export default {
       forgotPasswordStep.value = 3
     }
 
-    const sendCode = () => {
-      // 模拟发送验证码
-      showToast('验证码已发送')
-
-      // 开始倒计时
-      countdown.value = 60
-      if (countdownTimer) {
-        clearInterval(countdownTimer)
+    const sendCode = async () => {
+      const contact = forgotPasswordForm.value.contact
+      if (!contact) {
+        showToast('请输入手机号/邮箱')
+        return
       }
-      countdownTimer = setInterval(() => {
-        countdown.value--
-        if (countdown.value <= 0) {
-          clearInterval(countdownTimer)
+
+      try {
+        const url = selectedVerifyMethod.value === 'phone'
+          ? '/api/verify/send_sms_code'
+          : '/api/verify/send_email_code'
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            [selectedVerifyMethod.value]: contact
+          })
+        })
+
+        const result = await response.json()
+
+        if (response.ok) {
+          showToast('验证码已发送')
+          // 开始倒计时
+          countdown.value = 60
+          if (countdownTimer) {
+            clearInterval(countdownTimer)
+          }
+          countdownTimer = setInterval(() => {
+            countdown.value--
+            if (countdown.value <= 0) {
+              clearInterval(countdownTimer)
+            }
+          }, 1000)
+        } else {
+          showToast(result.message || '发送失败')
         }
-      }, 1000)
+      } catch (error) {
+        showToast('网络错误')
+      }
     }
 
-    const verifyCode = () => {
+    const verifyCode = async () => {
       const code = forgotPasswordForm.value.code
       if (!code) {
         showToast('请输入验证码')
         return
       }
 
-      // 简单模拟验证码验证
-      if (code.length !== 6) {
-        showToast('验证码错误')
-        return
-      }
+      try {
+        const url = selectedVerifyMethod.value === 'phone'
+          ? '/api/verify/verify_sms_code'
+          : '/api/verify/verify_email_code'
 
-      // 进入重置密码步骤
-      forgotPasswordStep.value = 4
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            [selectedVerifyMethod.value]: forgotPasswordForm.value.contact,
+            code: code
+          })
+        })
+
+        const result = await response.json()
+
+        if (response.ok) {
+          showSuccessToast('验证成功')
+          forgotPasswordStep.value = 4
+        } else {
+          showToast(result.message || '验证码错误')
+        }
+      } catch (error) {
+        showToast('网络错误')
+      }
     }
 
-    const resetPassword = () => {
-      const { newPassword, confirmPassword } = forgotPasswordForm.value
+    const resetPassword = async () => {
+      const { newPassword, confirmPassword, contact } = forgotPasswordForm.value
 
       if (!newPassword || !confirmPassword) {
         showToast('请输入新密码和确认密码')
@@ -274,15 +321,28 @@ export default {
         return
       }
 
-      // 保存新密码到本地存储
-      const storedUser = localStorage.getItem('userInfo')
-      if (storedUser) {
-        const userInfo = JSON.parse(storedUser)
-        userInfo.password = newPassword
-        localStorage.setItem('userInfo', JSON.stringify(userInfo))
+      try {
+        const response = await fetch('/api/verify/reset_password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            [selectedVerifyMethod.value]: contact,
+            new_password: newPassword
+          })
+        })
 
-        showToast('密码重置成功')
-        resetForgotPassword()
+        const result = await response.json()
+
+        if (response.ok) {
+          showToast('密码重置成功')
+          resetForgotPassword()
+        } else {
+          showToast(result.message || '重置失败')
+        }
+      } catch (error) {
+        showToast('网络错误')
       }
     }
 

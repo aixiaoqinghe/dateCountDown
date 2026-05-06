@@ -980,22 +980,89 @@ export default {
     }
 
     // 发送密码验证码
-    const sendPasswordVerificationCode = function () {
+    const sendPasswordVerificationCode = async function () {
       if (isSendingCode.value) return
-      // 模拟发送验证码
-      isSendingCode.value = true
-      let countdown = 60
-      codeBtnText.value = `${countdown}秒后重新获取`
-      const timer = setInterval(() => {
-        countdown--
-        codeBtnText.value = `${countdown}秒后重新获取`
-        if (countdown <= 0) {
-          clearInterval(timer)
-          isSendingCode.value = false
-          codeBtnText.value = '获取验证码'
+
+      const target = passwordForm.value.verificationMethod === 'phone'
+      ? userInfo.value.phone : userInfo.value.email
+
+      if (!target) {
+        showToast('验证目标不存在')
+        return
+      }
+
+      try {
+        const url = passwordForm.value.verificationMethod === 'phone'
+        ? '/api/verify/send_sms_code' : '/api/verify/send_email_code'
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            [passwordForm.value.verificationMethod]: target
+          })
+        })
+
+        const result = await response.json()
+
+        if (response.ok) {
+          showSuccessToast('验证码已发送')
+          // 开始倒计时
+          isSendingCode.value = true
+          let countdown = 60
+          codeBtnText.value = `${countdown}秒后重新获取`
+          const timer = setInterval(() => {
+            countdown--
+            codeBtnText.value = `${countdown}秒后重新获取`
+            if (countdown <= 0) {
+              clearInterval(timer)
+              isSendingCode.value = false
+              codeBtnText.value = '获取验证码'
+            }
+          }, 1000)
+        } else {
+          showToast(result.message || '发送失败')
         }
-      }, 1000)
-      showSuccessToast('验证码已发送（模拟）')
+      } catch (error) {
+        showToast('网络错误')
+      }
+    }
+
+    // 验证验证码（修改密码场景）
+    const verifyCode = async function () {
+      if (!passwordForm.value.verificationCode) {
+        showToast('请输入验证码')
+        return 
+      }
+
+      try {
+        const url = passwordForm.value.verificationMethod === 'phone'
+        ? '/api/verify/verify_sms_code' : '/api/verify/verify_email_code'
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            [passwordForm.value.verificationMethod]: passwordForm.value.verificationMethod === 'phone' ? userInfo.value.phone : userInfo.value.email,
+            code: passwordForm.value.verificationCode
+          })
+        })
+
+        const result = await response.json()
+
+        if (response.ok) {
+          passwordForm.value.verificationPassed = true
+          showSuccessToast('验证成功')
+        } else {
+          showFailToast(result.message || '验证失败')
+        }
+      } catch (error) {
+        showFailToast('网络错误')
+      }
     }
 
     // 发送手机号验证码
