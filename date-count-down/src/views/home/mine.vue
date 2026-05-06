@@ -667,20 +667,6 @@ export default {
       passwordForm.value.verificationPassed = false
     }
 
-    // 验证验证码
-    const verifyCode = function () {
-      if (!passwordForm.value.verificationCode) {
-        showToast('请输入验证码')
-        return
-      }
-      // 模拟验证验证码
-      if (passwordForm.value.verificationCode !== '123456') {
-        showFailToast('验证码错误')
-        return
-      }
-      passwordForm.value.verificationPassed = true
-    }
-
     // 保存密码
     const savePassword = async function () {
       const { oldPassword, newPassword, confirmPassword } = passwordForm.value
@@ -922,7 +908,7 @@ export default {
     }
 
     // 保存邮箱
-    const saveEmail = function () {
+    const saveEmail = async function () {
       const email = editEmailForm.value.email
       const code = editEmailForm.value.verificationCode
       if (!email) {
@@ -937,16 +923,38 @@ export default {
         showToast('请输入验证码')
         return
       }
-      // 模拟验证验证码
-      if (code !== '123456') {
-        showFailToast('验证码错误')
-        return
+
+      try {
+        const token = localStorage.getItem('access_token')
+        const url = userInfo.value.email
+          ? '/api/auth/change_email'
+          : '/api/auth/bind_email'
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            email: email,
+            verification_code: code
+          })
+        })
+
+        const result = await response.json()
+
+        if (response.ok) {
+          userInfo.value.email = email
+          localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+          showSuccessToast('邮箱' + (userInfo.value.email ? '修改' : '绑定') + '成功')
+          showEditEmailModal.value = false
+        } else {
+          showToast(result.message || '操作失败')
+        }
+      } catch (error) {
+        showToast('网络错误')
       }
-      userInfo.value.email = email
-      // 更新本地存储
-      localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
-      showSuccessToast('邮箱' + (userInfo.value.email ? '修改' : '绑定') + '成功')
-      showEditEmailModal.value = false
     }
 
     // 触发头像上传
@@ -984,7 +992,8 @@ export default {
       if (isSendingCode.value) return
 
       const target = passwordForm.value.verificationMethod === 'phone'
-      ? userInfo.value.phone : userInfo.value.email
+        ? userInfo.value.phone
+        : userInfo.value.email
 
       if (!target) {
         showToast('验证目标不存在')
@@ -993,7 +1002,8 @@ export default {
 
       try {
         const url = passwordForm.value.verificationMethod === 'phone'
-        ? '/api/verify/send_sms_code' : '/api/verify/send_email_code'
+          ? '/api/verify/send_sms_code'
+          : '/api/verify/send_email_code'
 
         const response = await fetch(url, {
           method: 'POST',
@@ -1034,12 +1044,13 @@ export default {
     const verifyCode = async function () {
       if (!passwordForm.value.verificationCode) {
         showToast('请输入验证码')
-        return 
+        return
       }
 
       try {
         const url = passwordForm.value.verificationMethod === 'phone'
-        ? '/api/verify/verify_sms_code' : '/api/verify/verify_email_code'
+          ? '/api/verify/verify_sms_code'
+          : '/api/verify/verify_email_code'
 
         const response = await fetch(url, {
           method: 'POST',
@@ -1094,7 +1105,7 @@ export default {
     }
 
     // 发送邮箱验证码
-    const sendEmailVerificationCode = function () {
+    const sendEmailVerificationCode = async function () {
       if (isSendingCode.value) return
       const email = editEmailForm.value.email
       if (!email) {
@@ -1105,20 +1116,46 @@ export default {
         showToast('请输入正确的邮箱')
         return
       }
-      // 模拟发送验证码
-      isSendingCode.value = true
-      let countdown = 60
-      codeBtnText.value = `${countdown}秒后重新获取`
-      const timer = setInterval(() => {
-        countdown--
-        codeBtnText.value = `${countdown}秒后重新获取`
-        if (countdown <= 0) {
-          clearInterval(timer)
-          isSendingCode.value = false
-          codeBtnText.value = '获取验证码'
+
+      try {
+        const token = localStorage.getItem('access_token')
+        const url = userInfo.value.email
+          ? '/api/auth/send_change_email_code'
+          : '/api/auth/send_bind_email_code'
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            email: email
+          })
+        })
+
+        const result = await response.json()
+
+        if (response.ok) {
+          showSuccessToast('验证码已发送')
+          isSendingCode.value = true
+          let countdown = 60
+          codeBtnText.value = `${countdown}秒后重新获取`
+          const timer = setInterval(() => {
+            countdown--
+            codeBtnText.value = `${countdown}秒后重新获取`
+            if (countdown <= 0) {
+              clearInterval(timer)
+              isSendingCode.value = false
+              codeBtnText.value = '获取验证码'
+            }
+          }, 1000)
+        } else {
+          showToast(result.message || '发送失败')
         }
-      }, 1000)
-      showSuccessToast('验证码已发送（模拟）')
+      } catch (error) {
+        showToast('网络错误')
+      }
     }
 
     // 显示关于应用

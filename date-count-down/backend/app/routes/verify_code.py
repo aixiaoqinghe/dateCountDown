@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, session
 from flask_mail import Message
+from flask_jwt_extended import jwt_required, get_jwt_identity
 from app import mail 
 from app.models import User 
 import random 
@@ -9,60 +10,16 @@ import datetime
 
 logger = logging.getLogger(__name__)
 
+# 从公共工具模块导入
+from app.utils import (
+    clean_phone_number,
+    validate_phone_number,
+    can_send_verify_code,
+    record_send_time,
+    is_code_expired
+)
+
 verify_code_bp = Blueprint('verify_code', __name__)
-
-# 工具函数：清理手机号格式
-def clean_phone_number(phone):
-    """ 清理手机号格式，支持+86、空格、短横线等格式 """
-    if not phone:
-        return None
-    
-    # 去除空格和短横线
-    cleaned = phone.strip().replace(' ', '').replace('-', '')
-
-    # 去除 +86 前缀
-    if cleaned.startswith('+86'):
-        cleaned = cleaned[3:]
-    elif cleaned.startswith('86'):
-        cleaned = cleaned[2:]
-
-    return cleaned
-
-# 工具函数：验证手机号格式
-def validate_phone_number(phone):
-    """ 验证手机号格式是否正确，返回标准化的手机号 """
-    cleaned = clean_phone_number(phone)
-    if cleaned and cleaned.isdigit() and len(cleaned) == 11:
-        return cleaned 
-    return None 
-
-# 工具函数：检查是否可以发送验证码
-def can_send_verify_code(session_key, cool_down_seconds=60):
-    """ 检查是否可以发送验证码（冷却时间）"""
-    last_send_time = session.get(f'{session_key}_last_send_time')
-    if last_send_time:
-        current_time  = datetime.datetime.now().timestamp()
-        if current_time - last_send_time < cool_down_seconds:
-            remaining = int(cool_down_seconds - (current_time - last_send_time))
-            return False, f'请{remaining}秒后再发送'
-    return True, ''
-
-# 工具函数：记录发送时间
-def record_send_time(session_key):
-    """ 记录发送验证码的时间 """
-    session[f'{session_key}_last_send_time'] = datetime.datetime.now().timestamp()
-
-# 工具函数：检查验证码是否过期
-def is_code_expired(session_key, valid_minutes=5):
-    """ 检查验证码是否过期 """
-    send_time = session.get(f'{session_key}_send_time')
-    if send_time:
-        current_time = datetime.datetime.now().timestamp()
-        if current_time - send_time > valid_minutes * 60:
-            return True
-    return False
-    
-
 # 生成6位数字验证码
 def generate_verify_code():
     return ''.join(random.choices(string.digits, k = 6))
@@ -215,6 +172,7 @@ def reset_password():
 
 # 发送短信验证码
 @verify_code_bp.route('/send_sms_code', methods=['POST'])
+@jwt_required(optional=True)
 def send_sms_code():
     data = request.get_json()
     phone = data.get('phone')
@@ -234,27 +192,53 @@ def send_sms_code():
     if not can_send:
         return jsonify({'message': message}), 429
 
-    # 查询用户
-    user = User.query.filter_by(phone=cleaned_phone).first()
-    if not user:
-        logger.error(f'手机号 {cleaned_phone} 未注册')
-        return jsonify({'message': '该手机号未注册'}), 400
+    # 获取当前登录用户（如果已登录）
+    current_user_id = get_jwt_identity()
     
-    # 生成验证码
-    code = generate_verify_code()
+    if current_user_id:
+        # 如果已登录，检查手机号是否属于当前用户
+        user = User.query.get(current_user_id)
+        if user and user.phone == cleaned_phone:
+            # 生成验证码
+            code = generate_verify_code()
 
-    # 保存验证码到session
-    session['sms_verify_code'] = code
-    session['sms_verify_phone'] = cleaned_phone
-    session['sms_verify_send_time'] = datetime.datetime.now().timestamp()
-    session.permanent = True  # 设置session永久有效
+            # 保存验证码到session
+            session['sms_verify_code'] = code
+            session['sms_verify_phone'] = cleaned_phone
+            session['sms_verify_send_time'] = datetime.datetime.now().timestamp()
+            session.permanent = True
 
-    # 模拟发送短信（实际项目中需要；接入短信API）
-    logger.info(f'【模拟发送】向手机号 {cleaned_phone} 发送验证码： {code}')
+            # 模拟发送短信
+            logger.info(f'【模拟发送】向手机号 {cleaned_phone} 发送验证码： {code}')
 
-    record_send_time('sms_verify')   # 记录发送时间
-    logger.info(f'手机号{cleaned_phone}验证码已发送')
-    return jsonify({'message': '验证码已发送'}), 200
+            record_send_time('sms_verify')
+            logger.info(f'手机号{cleaned_phone}验证码已发送')
+            return jsonify({'message': '验证码已发送'}), 200
+        else:
+            logger.error(f'手机号 {cleaned_phone} 不属于当前用户')
+            return jsonify({'message': '该手机号不属于当前用户'}), 400
+    else:
+        # 如果未登录，检查手机号是否已注册（用于忘记密码场景）
+        user = User.query.filter_by(phone=cleaned_phone).first()
+        if not user:
+            logger.error(f'手机号 {cleaned_phone} 未注册')
+            return jsonify({'message': '该手机号未注册'}), 400
+        
+        # 生成验证码
+        code = generate_verify_code()
+
+        # 保存验证码到session
+        session['sms_verify_code'] = code
+        session['sms_verify_phone'] = cleaned_phone
+        session['sms_verify_send_time'] = datetime.datetime.now().timestamp()
+        session.permanent = True
+
+        # 模拟发送短信
+        logger.info(f'【模拟发送】向手机号 {cleaned_phone} 发送验证码： {code}')
+
+        record_send_time('sms_verify')
+        logger.info(f'手机号{cleaned_phone}验证码已发送')
+        return jsonify({'message': '验证码已发送'}), 200
 
 # 验证短信验证码
 @verify_code_bp.route('/verify_sms_code', methods=['POST'])
@@ -294,6 +278,3 @@ def verify_sms_code():
 
     logger.info(f'手机号{stored_phone}验证成功')
     return jsonify({'message': '验证成功'}), 200
-
-
-

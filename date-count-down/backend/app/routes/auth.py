@@ -7,6 +7,17 @@ from app.routes.captcha import verify_captcha
 
 logger = logging.getLogger(__name__)
 
+# 从公共工具模块导入
+from app.utils import (
+    clean_phone_number,
+    validate_phone_number,
+    generate_verify_code,
+    can_send_verify_code,
+    record_send_time,
+    is_code_expired,
+    validate_email
+)
+
 # 创建蓝图（用于分组路由）
 auth_bp = Blueprint('auth', __name__)
 
@@ -170,3 +181,205 @@ def change_password():
     logger.info(f'用户 { user.username } 修改密码成功')
     return jsonify({'message': '密码修改成功'}), 200
 
+# 发送修改邮箱验证码
+@auth_bp.route('/send_change_email_code', methods=['POST'])
+@jwt_required()
+def send_change_email_code():
+    from flask import session
+    from flask_mail import Message
+    from app import mail
+    import random
+    import string
+    import datetime
+    
+    data = request.get_json()
+    new_email = data.get('email')
+    
+    if not new_email:
+        logger.error(f'邮箱{new_email}格式错误')
+        return jsonify({'message': '请输入新邮箱'}), 400
+    
+    # 验证邮箱格式
+    if not validate_email(new_email):
+        logger.error(f'邮箱{new_email}格式错误')
+        return jsonify({'message': '请输入正确的邮箱'}), 400
+    
+    # 检查新邮箱是否已被使用
+    existing_user = User.query.filter_by(email=new_email).first()
+    if existing_user:
+        return jsonify({'message': '该邮箱已被注册'}), 400
+    
+    # 检查发送频率
+    last_send_time = session.get('change_email_last_send_time')
+    if last_send_time:
+        current_time = datetime.datetime.now().timestamp()
+        if current_time - last_send_time < 60:
+            remaining = int(60 - (current_time - last_send_time))
+            return jsonify({'message': f'请{remaining}秒后再发送'}), 429
+    
+    # 生成验证码
+    code = ''.join(random.choices(string.digits, k=6))
+    
+    # 保存验证码到session
+    session['change_email_code'] = code
+    session['change_email_email'] = new_email
+    session['change_email_last_send_time'] = datetime.datetime.now().timestamp()
+    session.permanent = True
+    
+    # 发送邮件
+    msg = Message('倒计时APP邮箱验证', recipients=[new_email])
+    msg.body = f'您的验证码是:{code},有效期为5分钟。'
+    
+    try:
+        mail.send(msg)
+        logger.info(f'修改邮箱验证码已发送到：{new_email}')
+        return jsonify({'message': '验证码已发送'}), 200
+    except Exception as e:
+        logger.error(f'发送邮箱失败：{e}')
+        return jsonify({'message': '发送失败，请稍后重试'}), 500
+
+# 修改邮箱
+@auth_bp.route('/change_email', methods=['POST'])
+@jwt_required()
+def change_email():
+    from flask import session
+    
+    data = request.get_json()
+    new_email = data.get('email')
+    verification_code = data.get('verification_code')
+    
+    if not new_email:
+        return jsonify({'message': '请输入新邮箱'}), 400
+    
+    if not verification_code:
+        return jsonify({'message': '请输入验证码'}), 400
+    
+    # 获取当前用户
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    
+    if not user:
+        return jsonify({'message': '用户不存在'}), 400
+    
+    # 验证验证码
+    stored_code = session.get('change_email_code')
+    stored_email = session.get('change_email_email')
+    
+    if not stored_code or not stored_email:
+        return jsonify({'message': '验证码已过期，请重新获取'}), 400
+    
+    if stored_email != new_email or stored_code != verification_code:
+        return jsonify({'message': '验证码错误'}), 400
+    
+    # 更新邮箱
+    user.email = new_email
+    db.session.commit()
+    
+    # 清除session
+    session.pop('change_email_code', None)
+    session.pop('change_email_email', None)
+    session.pop('change_email_last_send_time', None)
+    
+    logger.info(f'用户 {user.username} 邮箱修改成功')
+    return jsonify({'message': '邮箱修改成功', 'user': {'email': new_email}}), 200
+
+# 发送绑定手机号验证码
+@auth_bp.route('/send_bind_phone_code', methods=['POST'])
+@jwt_required()
+def send_bind_phone_code():
+    from flask import session
+    import random
+    import string
+    import datetime
+    
+    data = request.get_json()
+    phone = data.get('phone')
+
+    if not phone:
+        return jsonify({'message': '请输入手机号'}), 400
+    
+    # 使用公共模块的验证函数
+    cleaned_phone = validate_phone_number(phone)
+    if not cleaned_phone:
+        logger.error(f'手机号{phone}格式错误')
+        return jsonify({'message': '请输入正确的手机号'}), 400
+    
+    # 使用 can_send_verify_code 检查频率
+    can_send, message = can_send_verify_code('bind_phone')
+    if not can_send:
+        return jsonify({'message': message}), 429
+    
+    code = generate_verify_code()
+    
+    # 检查手机号是否已被使用
+    existing_user = User.query.filter_by(phone=cleaned_phone).first()
+    if existing_user:
+        logger.error(f'手机号{cleaned_phone}已被绑定')
+        return jsonify({'message': '该手机号已被绑定'}), 400
+    
+    # 使用频率限制函数
+    can_send, message = can_send_verify_code('bind_phone')
+    if not can_send:
+        return jsonify({'message': message}), 429
+    
+    # 使用生成验证码函数
+    code = generate_verify_code()
+
+    # 保存验证码到session
+    session['bind_phone_code'] = code
+    session['bind_phone_phone'] = cleaned_phone
+    session['bind_phone_send_time'] = datetime.datetime.now().timestamp()
+    session.permanent = True
+
+    # 模拟发送短信
+    logger.info(f'【模拟发送】向手机号{cleaned_phone}发送验证码：{code}')
+
+    # 记录发送时间
+    record_send_time('bind_phone')
+
+    logger.info(f'用户 {user.username} 绑定手机号验证码已发送到：{cleaned_phone}')
+    return jsonify({'message': '验证码已发送'}), 200
+
+# 绑定手机号
+@auth_bp.route('/bind_phone', methods=['POST'])
+@jwt_required()
+def bind_phone():
+    data = request.get_json()
+    phone = data.get('phone')
+    verification_code = data.get('verification_code')
+
+    if not phone:
+        return jsonify({'message': '请输入手机号'}), 400
+    
+    if not verification_code:
+        return jsonify({'message': '请输入验证码'}), 400
+    
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    
+    if not user:
+        logger.error(f'用户{current_user_id}不存在')
+        return jsonify({'message': '用户不存在'}), 400
+    
+    cleaned_phone = validate_phone_number(phone)
+    if not cleaned_phone:
+        logger.error(f'手机号{phone}格式错误')
+        return jsonify({'message': '请输入正确的手机号'}), 400
+    
+    if is_code_expired('bind_phone'):
+        logger.error(f'验证码已过期：{verification_code}')
+        return jsonify({'message': '验证码已过期，请重新获取'}), 400
+    
+    if stored_code != cleaned_phone or stored_code != verification_code:
+        logger.error(f'验证码错误：{verification_code}')
+        return jsonify({'message': '验证码错误'}), 400
+    
+    user.phone = cleaned_phone
+    db.session.commit()
+
+    session.pop('bind_phone_code', None)
+    session.pop('bind_phone_phone', None)
+    session.pop('bind_phone_send_time', None)
+
+    logger.info(f'用户{user.username}绑定手机号成功')
+    return jsonify({'message': '手机号绑定成功', 'user': {'phone': cleaned_phone}}), 200
