@@ -864,31 +864,49 @@ export default {
     }
 
     // 保存手机号
-    const savePhone = function () {
+    const savePhone = async function () {
       const phone = editPhoneForm.value.phone
       const code = editPhoneForm.value.verificationCode
       if (!phone) {
         showToast('请输入手机号')
         return
       }
-      if (!/^1[3-9]\d{9}$/.test(phone)) {
-        showToast('请输入正确的手机号')
-        return
-      }
       if (!code) {
         showToast('请输入验证码')
         return
       }
-      // 模拟验证验证码
-      if (code !== '123456') {
-        showFailToast('验证码错误')
-        return
+
+      try {
+        const token = localStorage.getItem('access_token')
+        const url = userInfo.value.phone
+          ? '/api/auth/change_phone'
+          : '/api/auth/bind_phone'
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            phone: phone,
+            verification_code: code
+          })
+        })
+
+        const result = await response.json()
+
+        if (response.ok) {
+          userInfo.value.phone = phone.replace(/[^0-9]/g, '')
+          localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+          showSuccessToast('手机号' + (userInfo.value.phone ? '修改' : '绑定') + '成功')
+          showEditPhoneModal.value = false
+        } else {
+          showToast(result.message || '操作失败')
+        }
+      } catch (error) {
+        showToast('网络错误')
       }
-      userInfo.value.phone = phone
-      // 更新本地存储
-      localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
-      showSuccessToast('手机号' + (userInfo.value.phone ? '修改' : '绑定') + '成功')
-      showEditPhoneModal.value = false
     }
 
     // 切换修改邮箱弹窗
@@ -1077,31 +1095,47 @@ export default {
     }
 
     // 发送手机号验证码
-    const sendPhoneVerificationCode = function () {
+    const sendPhoneVerificationCode = async function () {
       if (isSendingCode.value) return
       const phone = editPhoneForm.value.phone
       if (!phone) {
         showToast('请输入手机号')
         return
       }
-      if (!/^1[3-9]\d{9}$/.test(phone)) {
-        showToast('请输入正确的手机号')
-        return
-      }
-      // 模拟发送验证码
-      isSendingCode.value = true
-      let countdown = 60
-      codeBtnText.value = `${countdown}秒后重新获取`
-      const timer = setInterval(() => {
-        countdown--
-        codeBtnText.value = `${countdown}秒后重新获取`
-        if (countdown <= 0) {
-          clearInterval(timer)
-          isSendingCode.value = false
-          codeBtnText.value = '获取验证码'
+
+      try {
+        const token = localStorage.getItem('access_token')
+        const response = await fetch('/api/auth/send_bind_phone_code', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            phone: phone
+          })
+        })
+        const result = await response.json()
+        if (response.ok) {
+          showSuccessToast('验证码已发送')
+          isSendingCode.value = true
+          let countdown = 60
+          codeBtnText.value = `${countdown}秒后重新获取`
+          const timer = setInterval(() => {
+            countdown--
+            codeBtnText.value = `${countdown}秒后重新获取`
+            if (countdown <= 0) {
+              clearInterval(timer)
+              isSendingCode.value = false
+              codeBtnText.value = '获取验证码'
+            }
+          }, 1000)
+        } else {
+          showToast(result.message || '发送失败')
         }
-      }, 1000)
-      showSuccessToast('验证码已发送（模拟）')
+      } catch (error) {
+        showToast('网络错误')
+      }
     }
 
     // 发送邮箱验证码

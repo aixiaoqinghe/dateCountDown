@@ -196,7 +196,7 @@ def send_change_email_code():
     new_email = data.get('email')
     
     if not new_email:
-        logger.error(f'邮箱{new_email}格式错误')
+        logger.error(f'邮箱{new_email}格式错误') 
         return jsonify({'message': '请输入新邮箱'}), 400
     
     # 验证邮箱格式
@@ -210,20 +210,17 @@ def send_change_email_code():
         return jsonify({'message': '该邮箱已被注册'}), 400
     
     # 检查发送频率
-    last_send_time = session.get('change_email_last_send_time')
-    if last_send_time:
-        current_time = datetime.datetime.now().timestamp()
-        if current_time - last_send_time < 60:
-            remaining = int(60 - (current_time - last_send_time))
-            return jsonify({'message': f'请{remaining}秒后再发送'}), 429
+    can_send, message = can_send_verify_code('change_email')
+    if not can_send:
+        return jsonify({'message': message}), 429
     
     # 生成验证码
-    code = ''.join(random.choices(string.digits, k=6))
+    code = generate_verify_code()
     
     # 保存验证码到session
     session['change_email_code'] = code
     session['change_email_email'] = new_email
-    session['change_email_last_send_time'] = datetime.datetime.now().timestamp()
+    session['change_email_send_time'] = datetime.datetime.now().timestamp()
     session.permanent = True
     
     # 发送邮件
@@ -304,25 +301,18 @@ def send_bind_phone_code():
         logger.error(f'手机号{phone}格式错误')
         return jsonify({'message': '请输入正确的手机号'}), 400
     
-    # 使用 can_send_verify_code 检查频率
-    can_send, message = can_send_verify_code('bind_phone')
-    if not can_send:
-        return jsonify({'message': message}), 429
-    
-    code = generate_verify_code()
-    
     # 检查手机号是否已被使用
     existing_user = User.query.filter_by(phone=cleaned_phone).first()
     if existing_user:
         logger.error(f'手机号{cleaned_phone}已被绑定')
         return jsonify({'message': '该手机号已被绑定'}), 400
     
-    # 使用频率限制函数
+    # 使用 can_send_verify_code 检查频率
     can_send, message = can_send_verify_code('bind_phone')
     if not can_send:
         return jsonify({'message': message}), 429
     
-    # 使用生成验证码函数
+    # 生成验证码
     code = generate_verify_code()
 
     # 保存验证码到session
@@ -337,7 +327,7 @@ def send_bind_phone_code():
     # 记录发送时间
     record_send_time('bind_phone')
 
-    logger.info(f'用户 {user.username} 绑定手机号验证码已发送到：{cleaned_phone}')
+    logger.info(f'用户绑定手机号验证码已发送到：{cleaned_phone}')
     return jsonify({'message': '验证码已发送'}), 200
 
 # 绑定手机号
@@ -366,7 +356,15 @@ def bind_phone():
         logger.error(f'手机号{phone}格式错误')
         return jsonify({'message': '请输入正确的手机号'}), 400
     
+    # 检查验证码是否过期
     if is_code_expired('bind_phone'):
+        session.pop('bind_phone_code', None)
+        session.pop('bind_phone_phone', None)
+        session.pop('bind_phone_send_time', None)
+        logger.error(f'验证码已过期：{verification_code}')
+        return jsonify({'message': '验证码已过期，请重新获取'}), 400
+
+    if not stored_code or not stored_phone:
         logger.error(f'验证码已过期：{verification_code}')
         return jsonify({'message': '验证码已过期，请重新获取'}), 400
     
