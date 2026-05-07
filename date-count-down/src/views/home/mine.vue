@@ -26,6 +26,10 @@
                   <img :src="qrcodeUrl" alt="个人二维码" class="qrcode-mini" />
                 </div>
               </div>
+              <div class="user-phone-container">
+                <span class="user-phone-label">📱</span>
+                <span class="user-phone">{{ userInfo.phone || '未绑定' }}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1103,9 +1107,19 @@ export default {
         return
       }
 
+      if (!/^1[3-9]\d{9}$/.test(phone.replace(/[^0-9]/g, ''))) {
+        showToast('请输入正确的手机号')
+        return
+      }
+
       try {
         const token = localStorage.getItem('access_token')
-        const response = await fetch('/api/auth/send_bind_phone_code', {
+        // 根据是否已绑定手机号选择不同的API
+        const url = userInfo.value.phone
+          ? '/api/auth/send_change_phone_code'
+          : '/api/auth/send_bind_phone_code'
+
+        const response = await fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

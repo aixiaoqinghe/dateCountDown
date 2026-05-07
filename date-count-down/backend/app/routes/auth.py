@@ -339,9 +339,11 @@ def bind_phone():
     verification_code = data.get('verification_code')
 
     if not phone:
+        logger.error('手机号不能为空')
         return jsonify({'message': '请输入手机号'}), 400
     
     if not verification_code:
+        logger.error('验证码不能为空')
         return jsonify({'message': '请输入验证码'}), 400
     
     current_user_id = get_jwt_identity()
@@ -364,6 +366,10 @@ def bind_phone():
         logger.error(f'验证码已过期：{verification_code}')
         return jsonify({'message': '验证码已过期，请重新获取'}), 400
 
+    # 获取session中的验证码
+    stored_code = session.get('bind_phone_code')
+    stored_phone = session.get('bind_phone_phone')
+    
     if not stored_code or not stored_phone:
         logger.error(f'验证码已过期：{verification_code}')
         return jsonify({'message': '验证码已过期，请重新获取'}), 400
@@ -381,3 +387,119 @@ def bind_phone():
 
     logger.info(f'用户{user.username}绑定手机号成功')
     return jsonify({'message': '手机号绑定成功', 'user': {'phone': cleaned_phone}}), 200
+
+# 发送修改手机号验证码
+@auth_bp.route('/send_change_phone_code', methods=['POST'])
+@jwt_required()
+def send_change_phone_code():
+    from flask import session
+    import random
+    import string
+    import datetime
+    
+    data = request.get_json()
+    phone = data.get('phone')
+
+    if not phone:
+        logger.error('手机号不能为空')
+        return jsonify({'message': '请输入手机号'}), 400
+    
+    cleaned_phone = validate_phone_number(phone)
+    if not cleaned_phone:
+        logger.error(f'手机号{phone}格式错误')
+        return jsonify({'message': '请输入正确的手机号'}), 400
+    
+    # 检查手机号是否已被使用
+    existing_user = User.query.filter_by(phone=cleaned_phone).first()
+    if existing_user:
+        logger.error(f'手机号{cleaned_phone}已被绑定')
+        return jsonify({'message': '该手机号已被绑定'}), 400
+    
+    # 使用 can_send_verify_code 检查频率
+    can_send, message = can_send_verify_code('change_phone')
+    if not can_send:
+        return jsonify({'message': message}), 429
+    
+    # 生成验证码
+    code = generate_verify_code()
+
+    # 保存验证码到session
+    session['change_phone_code'] = code
+    session['change_phone_phone'] = cleaned_phone
+    session['change_phone_send_time'] = datetime.datetime.now().timestamp()
+    session.permanent = True
+
+    # 模拟发送短信
+    logger.info(f'【模拟发送】向手机号{cleaned_phone}发送验证码：{code}')
+
+    # 记录发送时间
+    record_send_time('change_phone')
+    
+    logger.info(f'用户修改手机号验证码已发送到：{cleaned_phone}')
+    return jsonify({'message': '验证码已发送'}), 200
+
+# 修改手机号
+@auth_bp.route('/change_phone', methods=['POST'])
+@jwt_required()
+def change_phone():
+    data = request.get_json()
+    phone = data.get('phone')
+    verification_code = data.get('verification_code')
+
+    if not phone:
+        logger.error('手机号不能为空')
+        return jsonify({'message': '请输入手机号'}), 400
+    
+    if not verification_code:
+        logger.error('验证码不能为空')
+        return jsonify({'message': '请输入验证码'}), 400
+    
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    
+    if not user:
+        logger.error(f'用户{current_user_id}不存在')
+        return jsonify({'message': '用户不存在'}), 400
+    
+    # 检查用户是否已绑定手机号
+    if not user.phone:
+        return jsonify({'message': '用户未绑定手机号'}), 400
+    
+    cleaned_phone = validate_phone_number(phone)
+    if not cleaned_phone:
+        logger.error(f'手机号{phone}格式错误')
+        return jsonify({'message': '请输入正确的手机号'}), 400
+    
+    # 检查验证码是否过期
+    if is_code_expired('change_phone'):
+        session.pop('change_phone_code', None)
+        session.pop('change_phone_phone', None)
+        session.pop('change_phone_send_time', None)
+        logger.error(f'验证码已过期：{verification_code}')
+        return jsonify({'message': '验证码已过期，请重新获取'}), 400        
+    
+    # 获取session中的验证码
+    stored_code = session.get('change_phone_code')
+    stored_phone = session.get('change_phone_phone')
+
+    if not stored_code or not stored_phone:
+        logger.error(f'验证码已过期：{verification_code}')
+        return jsonify({'message': '验证码已过期，请重新获取'}), 400
+    
+    if stored_code != cleaned_phone or stored_code != verification_code:
+        logger.error(f'验证码错误：{verification_code}')
+        return jsonify({'message': '验证码错误'}), 400
+    
+    # 更新用户手机号
+    user.phone = cleaned_phone
+    db.session.commit()
+
+    # 清除session中的验证码
+    session.pop('change_phone_code', None)
+    session.pop('change_phone_phone', None)
+    session.pop('change_phone_send_time', None)
+
+    logger.info(f'用户{user.username}修改手机号成功')
+    return jsonify({'message': '手机号修改成功', 'user': {'phone': cleaned_phone}}), 200
+
+    

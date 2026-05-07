@@ -153,6 +153,24 @@
   gap: 10px;
 }
 
+/* 手机号容器 */
+.user-phone-container {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+}
+
+.user-phone-label {
+  font-size: 14px;
+}
+
+.user-phone {
+  font-size: 14px;
+  color: #7f8c8d;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
 /* ID、邮箱和二维码布局 */
 .id-email-qrcode {
   display: flex;
@@ -209,10 +227,10 @@
 
 .modal-content {
   background: white;
-  border-radius: 12px;
-  padding: 24px;
-  width: 90%;
-  max-width: 400px;
+  border-radius: 20px;
+  padding: 22px;
+  width: 80%;
+  max-width: 320px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   animation: modalFadeIn 0.3s ease;
 }
@@ -272,6 +290,27 @@
 .cancel-btn:hover {
   background: #d5dbdb;
   transform: translateY(-1px);
+}
+
+/* 弹窗基础样式 */
+.edit-avatar-modal,
+.edit-nickname-modal,
+.edit-phone-modal,
+.edit-email-modal,
+.change-password-modal,
+.about-modal,
+.device-management-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  z-index: 1000;
+  padding-top: 15vh;
 }
 
 /* 二维码弹窗 */
@@ -1291,6 +1330,10 @@
 }
 
 .dark-theme .user-email {
+  color: #95a5a6;
+}
+
+.dark-theme .user-phone {
   color: #95a5a6;
 }
 
