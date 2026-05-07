@@ -85,7 +85,10 @@ def login():
         'user': {
             'id': user.id,
             'username': user.username,
-            'email': user.email
+            'email': user.email,
+            'avatar': user.avatar,
+            'nickname': user.nickname,
+            'phone': user.phone
         }
     }), 200
 
@@ -105,6 +108,9 @@ def get_user_info():
         'id': user.id,
         'username': user.username,
         'email': user.email,
+        'avatar': user.avatar,
+        'nickname': user.nickname,
+        'phone': user.phone,
         'created_at': user.created_at.strftime('%Y-%m-%d %H:%M:%S')
     }), 200
 
@@ -501,5 +507,3 @@ def change_phone():
 
     logger.info(f'用户{user.username}修改手机号成功')
     return jsonify({'message': '手机号修改成功', 'user': {'phone': cleaned_phone}}), 200
-
-    

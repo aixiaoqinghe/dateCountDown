@@ -476,14 +476,14 @@ export default {
         // 应用字体大小到文档
         document.documentElement.style.fontSize = currentFontSize.value + 'px'
 
-        // 创建或更新全局样式规则，确保所有元素都使用新字体大小，但不影响图标
+        // 创建或更新全局样式规则，确保所有元素都使用新字体大小，但不影响图标和标题
         let fontSizeStyleElement = document.getElementById('font-size-style')
         if (!fontSizeStyleElement) {
           fontSizeStyleElement = document.createElement('style')
           fontSizeStyleElement.id = 'font-size-style'
           document.head.appendChild(fontSizeStyleElement)
         }
-        fontSizeStyleElement.textContent = `*:not(.van-icon) { font-size: ${currentFontSize.value}px !important; }`
+        fontSizeStyleElement.textContent = `*:not(.van-icon):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) { font-size: ${currentFontSize.value}px !important; }`
 
         showSuccessToast('字体大小调整成功')
         showFontSizeModal.value = false
@@ -500,7 +500,7 @@ export default {
       // 更新全局样式规则
       const fontSizeStyleElement = document.getElementById('font-size-style')
       if (fontSizeStyleElement) {
-        fontSizeStyleElement.textContent = '*:not(.van-icon) { font-size: 16px !important; }'
+        fontSizeStyleElement.textContent = '*:not(.van-icon):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) { font-size: 16px !important; }'
       }
 
       showSuccessToast('字体大小已重置为默认值')
@@ -598,15 +598,14 @@ export default {
       // 初始化字体大小
       document.documentElement.style.fontSize = currentFontSize.value + 'px'
 
-      // 创建或更新全局样式规则，确保所有元素都使用新字体大小，但不影响图标
+      // 创建或更新全局样式规则，确保所有元素都使用新字体大小，但不影响图标和标题
       let fontSizeStyleElement = document.getElementById('font-size-style')
       if (!fontSizeStyleElement) {
         fontSizeStyleElement = document.createElement('style')
         fontSizeStyleElement.id = 'font-size-style'
         document.head.appendChild(fontSizeStyleElement)
       }
-      fontSizeStyleElement.textContent = `*:not(.van-icon) { font-size: ${currentFontSize.value}px !important; }`
-
+      fontSizeStyleElement.textContent = `*:not(.van-icon):not(h1):not(h2):not(h3):not(h4):not(h5):not(h6) { font-size: ${currentFontSize.value}px !important; }`
       console.log('初始化字体大小为:', currentFontSize.value, 'px')
     })
 
