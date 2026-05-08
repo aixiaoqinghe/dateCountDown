@@ -7,12 +7,15 @@ import logging
 notification_bp = Blueprint('notification', __name__)
 logger = logging.getLogger(__name__)
 
-# 获取通知列表
+# 获取通知列表（包含系统通知和个人通知）
 @notification_bp.route('', methods=['GET'])
 @jwt_required()
 def get_notifications():
     user_id = int(get_jwt_identity())
-    notifications = Notification.query.filter_by(user_id=user_id).order_by(Notification.created_at.desc()).all()
+    # 获取系统通知（user_id为NULL）和个人通知（user_id为当前用户）
+    notifications = Notification.query.filter(
+        (Notification.user_id == user_id) | (Notification.user_id.is_(None))
+    ).order_by(Notification.priority.desc(), Notification.created_at.desc()).all()
     return jsonify([n.to_dict() for n in notifications]), 200
 
 # 获取单个通知

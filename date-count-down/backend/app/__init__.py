@@ -7,6 +7,8 @@ from flask_jwt_extended import JWTManager   # 用于JWT认证(保护需要登录
 from config import Config   # 用于加载应用配置（如数据库连接信息）
 from app.utils.error_handlers import APIError
 from flask_mail import Mail
+import os
+from flask import Flask, jsonify, send_from_directory
 
 # 配置日志
 logging.basicConfig(
@@ -73,6 +75,14 @@ def create_app():
     # 初始化邮件扩展
     mail.init_app(app)
 
+    # 配置文件上传路径
+    app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
+    # 限制上传的文件大小为16MB\
+    app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
+    # 创建上传目录（如果不存在）
+    os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
     # 注册路由
     from app.routes.auth import auth_bp
     from app.routes.feedback import feedback_bp
@@ -81,6 +91,7 @@ def create_app():
     from app.routes.captcha import captcha_bp
     from app.routes.verify_code import verify_code_bp
     from app.routes.notification import notification_bp
+    from app.routes.device import device_bp
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(feedback_bp, url_prefix='/api/feedback')
     app.register_blueprint(version_bp, url_prefix = '/api/version')
@@ -88,6 +99,7 @@ def create_app():
     app.register_blueprint(captcha_bp, url_prefix='/api')
     app.register_blueprint(verify_code_bp, url_prefix='/api/verify')
     app.register_blueprint(notification_bp, url_prefix='/api/notification')
+    app.register_blueprint(device_bp, url_prefix='/api/devices')
 
     # 创建数据库表（在MySQL中生成表结构）
     with app.app_context():       # 进入Flask应用的上下文环境。Flask的很多操作（如数据库操作）需要在应用上下文中执行
@@ -104,5 +116,15 @@ def create_app():
     @app.errorhandler(500)
     def handle_internal_error(error):
         return jsonify({'message': '服务器内部错误'}), 500
+    
+    # 配置静态文件服务（让前端可以访问上传的图片）
+    @app.route('/uploads/<filename>')
+    def uploaded_file(filename):
+        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+    
+    # 处理文件过大的错误
+    @app.errorhandler(413)
+    def request_entity_too_large(error):
+        return jsonify({'message': '上传文件大小超过限制（最大16MB）'}), 413
 
     return app    # 返回创建好的Flask应用实例，供run.py文件启动使用

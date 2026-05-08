@@ -22,7 +22,7 @@
         class="countdown-card"
         :class="item.category"
         @click="isDeleteMode ? () => {} : navigateToCountdown(item)"
-        :style="item.backgroundImage ? { backgroundImage: `url(${item.backgroundImage})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' } : {}"
+        :style="getCardStyle(item)"
       >
         <!-- 复选框 -->
         <input
@@ -104,6 +104,18 @@ export default {
       }
       return categories[category] || '其他'
     },
+    // 获取卡片样式（处理背景图片）
+    getCardStyle (item) {
+      if (item.backgroundImage && item.backgroundImage.trim()) {
+        return {
+          backgroundImage: `url(${item.backgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }
+      }
+      return {}
+    },
     // 格式化日期
     formatDate (dateString) {
       const date = new Date(dateString)
@@ -115,6 +127,7 @@ export default {
         this.$router.push({
           path: '/home/countDown',
           query: {
+            id: item.id,
             taskName: item.taskName,
             targetDate: item.targetDate,
             category: item.category,
@@ -140,9 +153,18 @@ export default {
 
           if (response.ok) {
             const data = await response.json()
-            this.countdown = data
+            // 将后端返回的字段名转换为前端使用的格式
+            const formattedData = data.map(item => ({
+              id: item.id,
+              taskName: item.task_name,
+              targetDate: item.target_date,
+              category: item.category,
+              backgroundImage: item.background_image,
+              createdAt: item.created_at
+            }))
+            this.countdowns = formattedData
             // 同时保存到本地存储作为缓存
-            localStorage.setItem('countdownHistory', JSON.stringify(data))
+            localStorage.setItem('countdownHistory', JSON.stringify(formattedData))
             return
           }
         } catch (error) {
@@ -152,7 +174,6 @@ export default {
 
       // 如果没有token或后端请求失败，使用本地存储
       const history = JSON.parse(localStorage.getItem('countdownHistory') || '[]')
-      console.log('加载的历史记录:', history)
       this.countdowns = history
     },
 
@@ -185,10 +206,27 @@ export default {
       this.showDeleteModal = true
     },
     // 执行删除
-    performDelete () {
-      // 过滤掉选中的项目
+    async performDelete () {
+      const token = localStorage.getItem('access_token')
+
+      // 如果有token，先调用后端删除API
+      if (token) {
+        try {
+          for (const id of this.selectedItems) {
+            await fetch(`/api/countdown/${id}`, {
+              method: 'DELETE',
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            })
+          }
+        } catch (error) {
+          console.error('从后端删除失败:', error)
+        }
+      }
+
+      // 更新本地存储
       const updatedHistory = this.countdowns.filter(item => !this.selectedItems.includes(item.id))
-      // 保存到localStorage
       localStorage.setItem('countdownHistory', JSON.stringify(updatedHistory))
       // 重新加载数据
       this.loadCountdowns()

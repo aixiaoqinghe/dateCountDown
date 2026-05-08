@@ -322,34 +322,67 @@ export default {
       })
     }
 
-    // 获取通知（模拟后端API返回）
+    // 获取通知（调用后端API）
     const fetchNotifications = async function () {
       try {
-        // 实际项目中使用以下代码
-        // const response = await axios.get('/api/notifications')
-        // notifications.value = response.data
+        const token = localStorage.getItem('access_token')
+        if (!token) {
+          // 如果未登录，使用模拟数据
+          notifications.value = [
+            {
+              id: 1,
+              title: '系统维护通知',
+              content: '尊敬的用户：\n您好！为了提供更好的服务体验，本应用将于2026年5月1日进行系统维护，预计维护时间为1天。\n维护期间，您可能无法使用部分功能，给您带来的不便敬请谅解。\n维护完成后，我们将为您提供更加稳定和优质的服务。\n感谢您的理解与支持！',
+              message: '系统通知：本应用将于2026年5月1日进行系统维护，预计维护时间为1天。',
+              start_time: '2026-04-25T00:00:00',
+              end_time: '2026-05-02T00:00:00',
+              priority: 10
+            },
+            {
+              id: 2,
+              title: '新版本通知',
+              content: '尊敬的用户：\n您好！我们很高兴地通知您，本应用V2.0版本已正式发布。\n本次更新新增了多种倒计时模板，优化了用户界面，提升了系统性能。\n请及时更新到最新版本，享受更好的使用体验。\n感谢您一直以来的支持！',
+              message: '新版本通知：V2.0版本已发布，新增多种倒计时模板。',
+              start_time: '2026-04-20T00:00:00',
+              end_time: '2026-05-20T00:00:00',
+              priority: 8
+            }
+          ]
+        } else {
+          // 调用后端API获取通知
+          const response = await fetch('/api/notification', {
+            method: 'GET',
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          })
 
-        // 模拟后端返回的数据
-        notifications.value = [
-          {
-            id: 1,
-            title: '系统维护通知',
-            content: '尊敬的用户：\n您好！为了提供更好的服务体验，本应用将于2026年5月1日进行系统维护，预计维护时间为1天。\n维护期间，您可能无法使用部分功能，给您带来的不便敬请谅解。\n维护完成后，我们将为您提供更加稳定和优质的服务。\n感谢您的理解与支持！',
-            message: '系统通知：本应用将于2026年5月1日进行系统维护，预计维护时间为1天。',
-            start_time: '2026-04-25T00:00:00',
-            end_time: '2026-05-02T00:00:00',
-            priority: 10
-          },
-          {
-            id: 2,
-            title: '新版本通知',
-            content: '尊敬的用户：\n您好！我们很高兴地通知您，本应用V2.0版本已正式发布。\n本次更新新增了多种倒计时模板，优化了用户界面，提升了系统性能。\n请及时更新到最新版本，享受更好的使用体验。\n感谢您一直以来的支持！',
-            message: '新版本通知：V2.0版本已发布，新增多种倒计时模板。',
-            start_time: '2026-04-20T00:00:00',
-            end_time: '2026-05-20T00:00:00',
-            priority: 8
+          if (response.ok) {
+            notifications.value = await response.json()
+          } else {
+            // 如果后端接口失败，使用模拟数据
+            notifications.value = [
+              {
+                id: 1,
+                title: '系统维护通知',
+                content: '尊敬的用户：\n您好！为了提供更好的服务体验，本应用将于2026年5月1日进行系统维护，预计维护时间为1天。\n维护期间，您可能无法使用部分功能，给您带来的不便敬请谅解。\n维护完成后，我们将为您提供更加稳定和优质的服务。\n感谢您的理解与支持！',
+                message: '系统通知：本应用将于2026年5月1日进行系统维护，预计维护时间为1天。',
+                start_time: '2026-04-25T00:00:00',
+                end_time: '2026-05-02T00:00:00',
+                priority: 10
+              },
+              {
+                id: 2,
+                title: '新版本通知',
+                content: '尊敬的用户：\n您好！我们很高兴地通知您，本应用V2.0版本已正式发布。\n本次更新新增了多种倒计时模板，优化了用户界面，提升了系统性能。\n请及时更新到最新版本，享受更好的使用体验。\n感谢您一直以来的支持！',
+                message: '新版本通知：V2.0版本已发布，新增多种倒计时模板。',
+                start_time: '2026-04-20T00:00:00',
+                end_time: '2026-05-20T00:00:00',
+                priority: 8
+              }
+            ]
           }
-        ]
+        }
 
         // 显示优先级最高的通知
         if (notifications.value.length > 0) {

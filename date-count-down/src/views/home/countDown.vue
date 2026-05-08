@@ -177,7 +177,7 @@ export default {
       // 只更新日期，不自动开始倒计时
       // this.startCountdown()
     },
-    saveToHistory (category) {
+    async saveToHistory (category) {
       // 输入验证
       if (!this.taskName.trim()) {
         showToast('请输入任务名称！')
@@ -189,34 +189,81 @@ export default {
         return
       }
 
-      // 获取现有历史记录
+      const token = localStorage.getItem('access_token')
+
+      // 如果有token，调用后端API创建倒计时
+      if (token) {
+        try {
+          const response = await fetch('/api/countdown', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              task_name: this.taskName,
+              target_date: this.targetDate,
+              category: category,
+              background_image: this.backgroundImage
+            })
+          })
+
+          if (response.ok) {
+            const result = await response.json()
+            console.log('后端返回的数据:', result)
+            console.log('后端返回的background_image:', result.background_image)
+            console.log('后端返回的background_image长度:', result.background_image ? result.background_image.length : 0)
+            // 更新本地存储
+            const history = JSON.parse(localStorage.getItem('countdownHistory') || '[]')
+            const newItem = {
+              id: result.id,
+              taskName: result.task_name,
+              targetDate: result.target_date,
+              category: result.category,
+              backgroundImage: result.background_image,
+              createdAt: result.created_at
+            }
+            history.push(newItem)
+            localStorage.setItem('countdownHistory', JSON.stringify(history))
+            showSuccessToast('已添加到历史记录！')
+          } else {
+            // 如果后端失败，降级到本地存储
+            this.saveToLocalHistory(category)
+          }
+        } catch (error) {
+          console.error('保存到后端失败:', error)
+          // 降级到本地存储
+          this.saveToLocalHistory(category)
+        }
+      } else {
+        // 未登录，只保存到本地
+        this.saveToLocalHistory(category)
+      }
+
+      // 关闭弹窗
+      this.showCategoryModal = false
+    },
+
+    // 保存到本地存储（降级方案）
+    saveToLocalHistory (category) {
       const history = JSON.parse(localStorage.getItem('countdownHistory') || '[]')
       console.log('保存前的历史记录:', history)
 
-      // 创建新的历史记录项
       const newItem = {
-        id: Date.now(), // 唯一ID
+        id: Date.now(),
         taskName: this.taskName,
         targetDate: this.targetDate,
         category: category,
         createdAt: new Date().toISOString(),
-        backgroundImage: this.backgroundImage // 保存背景图片
+        backgroundImage: this.backgroundImage
       }
 
-      // 添加到历史记录
       history.push(newItem)
-
-      // 保存到localStorage
       localStorage.setItem('countdownHistory', JSON.stringify(history))
       console.log('保存后的历史记录:', history)
-
-      // 关闭弹窗
-      this.showCategoryModal = false
-
-      // 提示用户保存成功
       showSuccessToast('已添加到历史记录！')
     },
-    confirmChange () {
+    async confirmChange () {
       // 输入验证
       if (!this.taskName.trim()) {
         showToast('请输入任务名称！')
@@ -228,36 +275,86 @@ export default {
         return
       }
 
-      // 获取现有历史记录
+      const token = localStorage.getItem('access_token')
+
+      // 如果有token，调用后端API更新倒计时
+      if (token && this.originalItem && this.originalItem.id) {
+        try {
+          const putData = {
+            task_name: this.taskName,
+            target_date: this.targetDate,
+            category: this.originalItem.category || 'other',
+            background_image: this.backgroundImage
+          }
+          console.log('更新时发送到后端的数据:', putData)
+
+          const response = await fetch(`/api/countdown/${this.originalItem.id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(putData)
+          })
+
+          if (response.ok) {
+            // 更新本地存储
+            const history = JSON.parse(localStorage.getItem('countdownHistory') || '[]')
+            const updatedHistory = history.map(item => {
+              if (item.id === this.originalItem.id) {
+                return {
+                  ...item,
+                  taskName: this.taskName,
+                  targetDate: this.targetDate,
+                  backgroundImage: this.backgroundImage
+                }
+              }
+              return item
+            })
+            localStorage.setItem('countdownHistory', JSON.stringify(updatedHistory))
+            showSuccessToast('修改成功！')
+          } else {
+            // 如果后端失败，降级到本地存储
+            this.updateLocalHistory()
+          }
+        } catch (error) {
+          console.error('更新到后端失败:', error)
+          // 降级到本地存储
+          this.updateLocalHistory()
+        }
+      } else {
+        // 未登录或没有原始ID，只更新本地存储
+        this.updateLocalHistory()
+      }
+
+      // 关闭弹窗
+      this.showConfirmModal = false
+
+      // 跳转回首页
+      this.$router.push('/home')
+    },
+
+    // 更新本地存储（降级方案）
+    updateLocalHistory () {
       const history = JSON.parse(localStorage.getItem('countdownHistory') || '[]')
       console.log('修改前的历史记录:', history)
       console.log('原始项:', this.originalItem)
 
-      // 找到要更新的项并更新
       const updatedHistory = history.map(item => {
         if (item.taskName === this.originalItem.taskName && item.targetDate === this.originalItem.targetDate) {
           return {
             ...item,
             taskName: this.taskName,
             targetDate: this.targetDate,
-            backgroundImage: this.backgroundImage // 更新背景图片
+            backgroundImage: this.backgroundImage
           }
         }
         return item
       })
 
-      // 保存到localStorage
       localStorage.setItem('countdownHistory', JSON.stringify(updatedHistory))
       console.log('修改后的历史记录:', updatedHistory)
-
-      // 关闭弹窗
-      this.showConfirmModal = false
-
-      // 提示用户修改成功
       showSuccessToast('修改成功！')
-
-      // 跳转回首页
-      this.$router.push('/home')
     },
     // 这个函数用于处理图片上传，将用户选择的图片转换为base64格式并存储
     handleImageUpload (event) {
@@ -277,9 +374,11 @@ export default {
 
     // 检查URL查询参数，接收从home.vue传递的数据
     const query = new URLSearchParams(window.location.search)
+    const idParam = query.get('id')
     const taskNameParam = query.get('taskName')
     const targetDateParam = query.get('targetDate')
     const backgroundImageParam = query.get('backgroundImage')
+    const categoryParam = query.get('category')
 
     if (taskNameParam && targetDateParam) {
       this.taskName = taskNameParam
@@ -287,8 +386,11 @@ export default {
       this.backgroundImage = backgroundImageParam || ''
       this.isEditMode = true
       this.originalItem = {
+        id: idParam ? parseInt(idParam) : null,
         taskName: taskNameParam,
-        targetDate: targetDateParam
+        targetDate: targetDateParam,
+        category: categoryParam || 'other',
+        backgroundImage: backgroundImageParam || ''
       }
       // 自动开始倒计时
       this.startCountdown()

@@ -155,6 +155,9 @@ export default {
           localStorage.setItem('userInfo', JSON.stringify(result.user))
           localStorage.setItem('access_token', result.access_token)
 
+          // 清除之前的倒计时缓存，确保登录新账号时获取新数据
+          localStorage.removeItem('countdownHistory')
+
           // 显示登录成功提示
           showSuccessToast('登录成功')
 

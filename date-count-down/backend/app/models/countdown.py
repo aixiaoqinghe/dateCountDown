@@ -12,7 +12,7 @@ class Countdown(db.Model):
     task_name = db.Column(db.String(100), nullable = False)
     target_date = db.Column(db.DateTime, nullable = False)
     category = db.Column(db.String(50), nullable = True)
-    background_image = db.Column(db.Text, nullable = True)
+    background_image = db.Column(db.Text(length=4294967295), nullable = True)
     created_at = db.Column(db.DateTime, default = datetime.utcnow)
     updated_at = db.Column(db.DateTime, default = datetime.utcnow, onupdate = datetime.utcnow)
 
