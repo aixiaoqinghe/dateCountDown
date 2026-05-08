@@ -1,9 +1,12 @@
-from flask import Blueprint, request, jsonify 
+from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from app.models.user import User
 from app import db
 import logging
 from app.routes.captcha import verify_captcha
+from app.models import User
+from datetime import datetime
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -507,3 +510,51 @@ def change_phone():
 
     logger.info(f'用户{user.username}修改手机号成功')
     return jsonify({'message': '手机号修改成功', 'user': {'phone': cleaned_phone}}), 200
+
+# 头像上传接口
+@auth_bp.route('/avatar', methods=['POST'])
+@jwt_required()
+def upload_avatar():
+    """
+    用户上传头像
+    请求格式： multipart/form-data
+    参数：avatar - 图片文件
+    返回：头像URL
+    """
+    # 获取当前用户
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+
+    # 检查是否有文件上传
+    if 'avatar' not in request.files:
+        return jsonify({'message': '没有上传文件'}), 400
+    
+    avatar = request.files['avatar']
+
+    # 检查文件名是否为空
+    if avatar.filename == '':
+        return jsonify({'message': '文件名不能为空'}), 400
+    
+    # 检查文件类型（只允许图片）
+    allowed_extensions = {'png', 'jpg', 'jpeg', 'gif'}
+    file_extension = avatar.filename.split('.')[-1].lower()
+
+    if file_extension not in allowed_extensions:
+        return jsonify({'message': '只允许上传图片文件(PNG、JPG、JPEG、GIF)'}), 400
+    
+    # 生成唯一文件名（避免覆盖）
+    # 格式：avatar_用户ID_时间戳.扩展名
+    filename = f"avatar_{user_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}.{file_extension}"
+
+    # 保存文件到服务器
+    avatar.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+
+    # 更新用户头像路径（存储相对路径，便于部署）
+    user.avatar = f"/uploads/{filename}"
+    db.session.commit()
+
+    # 返回成功响应
+    return jsonify({
+        'message': '头像上传成功',
+        'avatar': user.avatar
+    }), 200

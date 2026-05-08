@@ -19,6 +19,13 @@ module.exports = defineConfig({
         pathRewrite: {
           '^/api': '/api' // 路径重写
         }
+      },
+      '/uploads': {
+        target: 'http://localhost:5000', // 后端服务地址
+        changeOrigin: true, // 支持跨域
+        pathRewrite: {
+          '^/uploads': '/uploads' // 路径重写
+        }
       }
     }
   }

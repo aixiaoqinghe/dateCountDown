@@ -737,36 +737,48 @@ export default {
         try {
           const token = localStorage.getItem('access_token')
           if (token) {
-            const response = await fetch('/api/auth/user', {
-              method: 'PUT',
+            // 将 Base64 图片转换为 Blob 对象
+            const blob = await fetch(editAvatarForm.value.avatar).then(res => res.blob())
+
+            // 创建 FormData 对象（用于文件上传）
+            const formData = new FormData()
+            formData.append('avatar', blob, 'avatar.png')
+
+            // 调用后端专门的头像上传接口
+            const response = await fetch('/api/auth/avatar', {
+              method: 'POST',
               headers: {
-                'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`
+                // 注意：不要设置 Content-Type，浏览器会自动设置正确的 multipart/form-data
               },
-              body: JSON.stringify({
-                avatar: editAvatarForm.value.avatar
-              })
+              body: formData
             })
 
-            // const result = await response.json()
             if (response.ok) {
-              userInfo.value.avatar = editAvatarForm.value.avatar
+              // 获取后端返回的头像 URL
+              const result = await response.json()
+              // 添加时间戳参数防止浏览器缓存旧图片
+              userInfo.value.avatar = result.avatar + '?t=' + Date.now()
               localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
               showSuccessToast('头像修改成功')
               showEditAvatarModal.value = false
             } else {
+              // 如果后端接口失败，降级到本地保存
               userInfo.value.avatar = editAvatarForm.value.avatar
               localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
               showSuccessToast('头像修改成功（本地）')
               showEditAvatarModal.value = false
             }
           } else {
+            // 未登录，只保存到本地
             userInfo.value.avatar = editAvatarForm.value.avatar
             localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
             showSuccessToast('头像修改成功（本地）')
             showEditAvatarModal.value = false
           }
         } catch (error) {
+          // 网络错误时降级到本地保存
+          console.error('头像上传失败:', error)
           userInfo.value.avatar = editAvatarForm.value.avatar
           localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
           showSuccessToast('头像修改成功（本地）')
