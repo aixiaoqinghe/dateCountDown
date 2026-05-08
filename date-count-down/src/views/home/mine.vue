@@ -234,7 +234,8 @@
                 </div>
               </div>
               <div class="device-status">
-                <button v-if="!device.isCurrent" @click="removeDevice(index)" class="remove-device-btn">移除</button>
+                <!-- <button v-if="!device.isCurrent" @click="removeDevice(index)" class="remove-device-btn">移除</button> -->
+                <button v-if="!device.isCurrent" @click="removeDevice(device.id, index)" class="remove-device-btn">移除</button>
               </div>
             </div>
           </div>
@@ -1115,9 +1116,7 @@ export default {
       try {
         const token = localStorage.getItem('access_token')
         // 根据是否已绑定手机号选择不同的API
-        const url = userInfo.value.phone
-          ? '/api/auth/send_change_phone_code'
-          : '/api/auth/send_bind_phone_code'
+        const url = userInfo.value.phone ? '/api/auth/send_change_phone_code' : '/api/auth/send_bind_phone_code'
 
         const response = await fetch(url, {
           method: 'POST',
@@ -1255,41 +1254,175 @@ export default {
 
     // 设备管理
     const showDeviceManagementModal = ref(false)
-    const devices = ref([
-      {
-        id: 1,
-        name: '当前设备',
-        deviceType: '电脑',
-        os: 'Windows 11',
-        browser: 'Chrome',
-        lastLogin: '2026-04-25 10:30:00',
-        ip: '192.168.1.100',
-        location: '本地网络',
-        isCurrent: true
-      },
-      {
-        id: 2,
-        name: 'iPhone 14',
-        deviceType: '手机',
-        os: 'iOS 17.0',
-        browser: 'Safari',
-        lastLogin: '2026-04-24 15:45:00',
-        ip: '10.0.0.5',
-        location: '北京市',
-        isCurrent: false
-      },
-      {
-        id: 3,
-        name: 'MacBook Pro',
-        deviceType: '电脑',
-        os: 'macOS Sonoma',
-        browser: 'Safari',
-        lastLogin: '2026-04-23 09:20:00',
-        ip: '192.168.1.101',
-        location: '上海市',
-        isCurrent: false
+    // 模拟数据
+    // const devices = ref([
+    //   {
+    //     id: 1,
+    //     name: '当前设备',
+    //     deviceType: '电脑',
+    //     os: 'Windows 11',
+    //     browser: 'Chrome',
+    //     lastLogin: '2026-04-25 10:30:00',
+    //     ip: '192.168.1.100',
+    //     location: '本地网络',
+    //     isCurrent: true
+    //   },
+    //   {
+    //     id: 2,
+    //     name: 'iPhone 14',
+    //     deviceType: '手机',
+    //     os: 'iOS 17.0',
+    //     browser: 'Safari',
+    //     lastLogin: '2026-04-24 15:45:00',
+    //     ip: '10.0.0.5',
+    //     location: '北京市',
+    //     isCurrent: false
+    //   },
+    //   {
+    //     id: 3,
+    //     name: 'MacBook Pro',
+    //     deviceType: '电脑',
+    //     os: 'macOS Sonoma',
+    //     browser: 'Safari',
+    //     lastLogin: '2026-04-23 09:20:00',
+    //     ip: '192.168.1.101',
+    //     location: '上海市',
+    //     isCurrent: false
+    //   }
+    // ])
+
+    // 调用API
+    // 设备信息相关
+    const devices = ref([])
+
+    // 生成设备唯一标识（只生成一次，保存在localStorage）
+    const generateDeviceId = () => {
+      const id = 'device-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9)
+      localStorage.setItem('device_id', id)
+      return id
+    }
+
+    const currentDeviceId = ref(localStorage.getItem('device_id') || generateDeviceId())
+
+    // 自动获取浏览器信息
+    const getBrowserInfo = () => {
+      const userAgent = navigator.userAgent
+
+      // 检查浏览器
+      let browser = '未知浏览器'
+      if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+        browser = 'Chrome'
+      } else if (userAgent.includes('Firefox')) {
+        browser = 'Firefox'
+      } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+        browser = 'Safari'
+      } else if (userAgent.includes('Edge')) {
+        browser = 'Edge'
+      } else if (userAgent.includes('Opera') || userAgent.includes('OPR')) {
+        browser = 'Opera'
       }
-    ])
+
+      // 检查操作系统
+      let os = '未知系统'
+      if (userAgent.includes('Windows')) {
+        os = 'Windows'
+      } else if (userAgent.includes('Mac OS')) {
+        os = 'macOS'
+      } else if (userAgent.includes('Linux') && !userAgent.includes('Android')) {
+        os = 'Linux'
+      } else if (userAgent.includes('Android')) {
+        os = 'Android'
+      } else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) {
+        os = 'iOS'
+      }
+
+      // 检测设备类型
+      let deviceType = '电脑'
+      if (/Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent)) {
+        deviceType = '手机'
+      } else if (/Tablet|iPad/i.test(userAgent)) {
+        deviceType = '平板'
+      }
+
+      return { browser, os, deviceType }
+    }
+
+    // 获取设备名称
+    const getDeviceName = () => {
+      const { browser, os } = getBrowserInfo()
+      return `${browser} - ${os}`
+    }
+
+    // 获取IP地理位置信息
+    const getLocationByIP = async () => {
+      try {
+        const response = await fetch('https://ipapi.co/json/')
+        if (response.ok) {
+          const data = await response.json()
+          const city = data.city || ''
+          const region = data.region || ''
+          const country = data.country_name || ''
+          if (city && region && country) {
+            return `${country} ${region} ${city}`
+          } else if (region && country) {
+            return `${country} ${region}`
+          } else if (country) {
+            return country
+          }
+        }
+      } catch (error) {
+        console.error('获取地理位置失败：', error)
+      }
+      return '未知位置'
+    }
+
+    // 保存当前设备信息（登录时调用）
+    const saveCurrentDevice = async () => {
+      const token = localStorage.getItem('access_token')
+      if (!token) return
+
+      const { browser, os, deviceType } = getBrowserInfo()
+      const location = await getLocationByIP()
+
+      try {
+        await fetch('/api/devices/current', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            device_id: currentDeviceId.value,
+            name: getDeviceName(),
+            deviceType: deviceType,
+            os: os,
+            browser: browser,
+            location: location
+          })
+        })
+      } catch (error) {
+        console.error('保存设备信息失败：', error)
+      }
+    }
+
+    // 获取设备列表
+    const fetchDevices = async () => {
+      const token = localStorage.getItem('access_token')
+      if (token) {
+        try {
+          const response = await fetch('/api/devices', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          })
+          if (response.ok) {
+            devices.value = await response.json()
+          }
+        } catch (error) {
+          console.error('获取列表失败：', error)
+        }
+      }
+    }
 
     const showDeviceManagement = function () {
       showDeviceManagementModal.value = true
@@ -1299,15 +1432,62 @@ export default {
       showDeviceManagementModal.value = false
     }
 
-    const removeDevice = function (index) {
-      if (devices.value[index].isCurrent) {
+    // 只是修改本地数据
+    // const removeDevice = function (index) {
+    //   if (devices.value[index].isCurrent) {
+    //     showToast('不能移除当前设备')
+    //     return
+    //   }
+    //   devices.value.splice(index, 1)
+    //   // 更新本地存储
+    //   localStorage.setItem('devices', JSON.stringify(devices.value))
+    //   showSuccessToast('设备已成功移除')
+    // }
+
+    // 调用API
+    // 删除设备
+    const removeDevice = async (deviceId, deviceIndex) => {
+      const token = localStorage.getItem('access_token')
+      const currentDeviceId = localStorage.getItem('device_id')
+
+      // 检查是否当前设备
+      if (devices.value[deviceIndex].isCurrent) {
         showToast('不能移除当前设备')
         return
       }
-      devices.value.splice(index, 1)
-      // 更新本地存储
-      localStorage.setItem('devices', JSON.stringify(devices.value))
-      showSuccessToast('设备已成功移除')
+
+      try {
+        const response = await fetch(`/api/devices/${deviceId}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            current_device_id: currentDeviceId
+          })
+        })
+
+        if (response.ok) {
+          // 从本地列表中移除
+          devices.value.splice(deviceIndex, 1)
+          showSuccessToast('设备已成功移除')
+        } else {
+          const data = await response.json()
+          showToast(data.message)
+        }
+      } catch (error) {
+        console.error('删除设备失败:', error)
+        showToast('删除设备失败')
+      }
+    }
+
+    // 在登录成功后调用
+    const handleLoginSuccess = async () => {
+      // 保存设备信息
+      await saveCurrentDevice()
+      // 获取设备列表
+      await fetchDevices()
     }
 
     // 消息通知设置
@@ -1410,7 +1590,13 @@ export default {
 
     // 组件挂载时检查登录状态
     onMounted(() => {
+      // 检查登录状态
       checkLoginStatus()
+
+      // 如果已登录，保存设备信息并获取设备列表
+      if (localStorage.getItem('access_token')) {
+        handleLoginSuccess()
+      }
     })
 
     return {
