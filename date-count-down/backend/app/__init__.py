@@ -92,6 +92,7 @@ def create_app():
     from app.routes.verify_code import verify_code_bp
     from app.routes.notification import notification_bp
     from app.routes.device import device_bp
+    from app.routes.privacy import privacy_bp
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(feedback_bp, url_prefix='/api/feedback')
     app.register_blueprint(version_bp, url_prefix = '/api/version')
@@ -100,6 +101,7 @@ def create_app():
     app.register_blueprint(verify_code_bp, url_prefix='/api/verify')
     app.register_blueprint(notification_bp, url_prefix='/api/notification')
     app.register_blueprint(device_bp, url_prefix='/api/devices')
+    app.register_blueprint(privacy_bp, url_prefix='/api/privacy')
 
     # 创建数据库表（在MySQL中生成表结构）
     with app.app_context():       # 进入Flask应用的上下文环境。Flask的很多操作（如数据库操作）需要在应用上下文中执行
@@ -116,6 +118,22 @@ def create_app():
     @app.errorhandler(500)
     def handle_internal_error(error):
         return jsonify({'message': '服务器内部错误'}), 500
+    
+    # JWT 错误处理
+    @jwt.expired_token_loader
+    def expired_token_callback(jwt_header, jwt_payload):
+        logger.error(f'JWT token 过期: {jwt_payload}')
+        return jsonify({'message': '登录已过期，请重新登录'}), 401
+    
+    @jwt.invalid_token_loader
+    def invalid_token_callback(error):
+        logger.error(f'JWT token 无效: {error}')
+        return jsonify({'message': '无效的登录凭证'}), 422
+    
+    @jwt.unauthorized_loader
+    def unauthorized_callback(error):
+        logger.error(f'未授权访问: {error}')
+        return jsonify({'message': '请先登录'}), 401
     
     # 配置静态文件服务（让前端可以访问上传的图片）
     @app.route('/uploads/<filename>')

@@ -416,7 +416,7 @@
             <div class="policy-info">
               <p class="policy-text">我们致力于保护您的隐私和个人信息。</p>
               <a href="#" class="policy-link">查看完整隐私政策</a>
-              <p class="policy-updated">最后更新：2026年4月25日</p>
+              <p class="policy-updated">最后更新：2026年5月8日</p>
             </div>
           </div>
 
@@ -1547,24 +1547,86 @@ export default {
       personalInfoVisibility: 'private' // 'private', 'friends', 'public'
     })
 
-    const showPrivacySettings = function () {
-      // 从本地存储加载设置
-      const savedSettings = localStorage.getItem('privacySettings')
-      if (savedSettings) {
-        privacySettings.value = JSON.parse(savedSettings)
+    const showPrivacySettings = async function () {
+      try {
+        const token = localStorage.getItem('access_token')
+        if (token) {
+          const response = await fetch('/api/privacy/settings', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          })
+
+          if (response.ok) {
+            const result = await response.json()
+            privacySettings.value = result
+            // 同时保存到本地
+            localStorage.setItem('privacySettings', JSON.stringify(privacySettings.value))
+          } else {
+            // 如果后端获取失败，从本地存储加载
+            const savedSettings = localStorage.getItem('privacySettings')
+            if (savedSettings) {
+              privacySettings.value = JSON.parse(savedSettings)
+            }
+          }
+        } else {
+          // 未登录，从本地存储加载
+          const savedSettings = localStorage.getItem('privacySettings')
+          if (savedSettings) {
+            privacySettings.value = JSON.parse(savedSettings)
+          }
+        }
+        showPrivacySettingsModal.value = true
+      } catch (error) {
+        console.error('获取隐私设置失败:', error)
+        // 网络错误时从本地存储加载
+        const savedSettings = localStorage.getItem('privacySettings')
+        if (savedSettings) {
+          privacySettings.value = JSON.parse(savedSettings)
+        }
+        showPrivacySettingsModal.value = true
       }
-      showPrivacySettingsModal.value = true
     }
 
     const closePrivacySettingsModal = function () {
       showPrivacySettingsModal.value = false
     }
 
-    const savePrivacySettings = function () {
-      // 保存设置到本地存储
-      localStorage.setItem('privacySettings', JSON.stringify(privacySettings.value))
-      showSuccessToast('隐私设置已保存')
-      showPrivacySettingsModal.value = false
+    const savePrivacySettings = async function () {
+      try {
+        const token = localStorage.getItem('access_token')
+        if (token) {
+          const response = await fetch('/api/privacy/settings', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(privacySettings.value)
+          })
+
+          if (response.ok) {
+            // 保存到本地存储
+            localStorage.setItem('privacySettings', JSON.stringify(privacySettings.value))
+            showSuccessToast('隐私设置已保存')
+            showPrivacySettingsModal.value = false
+          } else {
+            const result = await response.json()
+            showToast(result.message || '保存失败')
+          }
+        } else {
+          // 未登录，只保存到本地
+          localStorage.setItem('privacySettings', JSON.stringify(privacySettings.value))
+          showSuccessToast('隐私设置已保存（本地）')
+          showPrivacySettingsModal.value = false
+        }
+      } catch (error) {
+        console.error('保存隐私设置失败:', error)
+        // 网络错误时保存到本地
+        localStorage.setItem('privacySettings', JSON.stringify(privacySettings.value))
+        showSuccessToast('隐私设置已保存（本地）')
+        showPrivacySettingsModal.value = false
+      }
     }
 
     const exportUserData = function () {

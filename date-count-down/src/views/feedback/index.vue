@@ -87,7 +87,7 @@ export default {
     }
 
     // 提交反馈
-    const submitFeedback = function () {
+    const submitFeedback = async function () {
       if (feedbackRating.value === 0) {
         showToast('请先进行评分')
         return
@@ -103,23 +103,38 @@ export default {
         return
       }
 
-      // 模拟网络请求延迟
-      setTimeout(() => {
-        // 这里可以添加实际的反馈提交逻辑
-        console.log('提交的反馈:', {
-          rating: feedbackRating.value,
-          content: feedbackContent.value,
-          type: feedbackType.value,
-          date: new Date().toISOString()
+      try {
+        const token = localStorage.getItem('access_token')
+        console.log('Token exists:', !!token)
+        console.log('Token:', token ? token.substring(0, 20) + '...' : null)
+        const response = await fetch('/api/feedback/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` })
+          },
+          body: JSON.stringify({
+            rating: feedbackRating.value,
+            content: feedbackContent.value,
+            feedback_type: feedbackType.value
+          })
         })
 
-        showSuccessToast('反馈提交成功，感谢您的建议！')
+        if (response.ok) {
+          showSuccessToast('反馈提交成功，感谢您的建议！')
 
-        // 提交成功后返回上一页
-        setTimeout(() => {
-          router.back()
-        }, 1000)
-      }, 1000)
+          // 提交成功后返回上一页
+          setTimeout(() => {
+            router.back()
+          }, 1000)
+        } else {
+          const result = await response.json()
+          showToast(result.message || '提交失败，请重试')
+        }
+      } catch (error) {
+        console.error('提交反馈失败:', error)
+        showToast('网络错误，请稍后重试')
+      }
     }
 
     onMounted(() => {
