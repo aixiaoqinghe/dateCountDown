@@ -95,7 +95,7 @@ def create_app():
     from app.routes.privacy import privacy_bp
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(feedback_bp, url_prefix='/api/feedback')
-    app.register_blueprint(version_bp, url_prefix = '/api/version')
+    app.register_blueprint(version_bp, url_prefix='/api/version')
     app.register_blueprint(countdown_bp, url_prefix='/api/countdown')
     app.register_blueprint(captcha_bp, url_prefix='/api')
     app.register_blueprint(verify_code_bp, url_prefix='/api/verify')
