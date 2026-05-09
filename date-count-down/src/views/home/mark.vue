@@ -12,6 +12,28 @@
       shape="round"
     />
 
+    <!-- 功能开发中弹窗 -->
+    <div v-if="showDevModal" class="dev-modal-overlay" @click="closeDevModal">
+      <div class="dev-modal" @click.stop>
+        <div class="dev-modal-icon">
+          <span class="emoji">😔</span>
+        </div>
+        <h3 class="dev-modal-title">功能开发中</h3>
+        <p class="dev-modal-text">
+          非常抱歉，您尝试使用的功能目前还在开发中。<br>
+          我们正在努力完善，敬请期待！
+        </p>
+        <div class="dev-modal-decoration">
+          <span>✨</span>
+          <span>💪</span>
+          <span>🚀</span>
+        </div>
+        <button class="dev-modal-btn" @click="closeDevModal">
+          知道了
+        </button>
+      </div>
+    </div>
+
     <!-- 主内容区域 -->
     <div class="content-wrapper">
       <!-- 侧边导航栏 -->
@@ -65,16 +87,34 @@
 
         <!-- 字体设置内容 -->
         <div v-else-if="active === 1" class="setting-content">
-          <h3>字体设置</h3>
-          <!-- 字体设置相关内容将在此处添加 -->
-          <div class="placeholder">字体设置内容区域</div>
+          <div class="under-development">
+            <div class="development-icon">🛠️</div>
+            <h3>字体设置</h3>
+            <p class="development-text">功能开发中</p>
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress-fill"></div>
+              </div>
+              <span class="progress-text">开发进度</span>
+            </div>
+            <p class="development-hint">敬请期待...</p>
+          </div>
         </div>
 
         <!-- 颜色设置内容 -->
         <div v-else-if="active === 2" class="setting-content">
-          <h3>颜色设置</h3>
-          <!-- 颜色设置相关内容将在此处添加 -->
-          <div class="placeholder">颜色设置内容区域</div>
+          <div class="under-development">
+            <div class="development-icon">🎨</div>
+            <h3>颜色设置</h3>
+            <p class="development-text">功能开发中</p>
+            <div class="progress-container">
+              <div class="progress-bar">
+                <div class="progress-fill"></div>
+              </div>
+              <span class="progress-text">开发进度</span>
+            </div>
+            <p class="development-hint">敬请期待...</p>
+          </div>
         </div>
       </div>
     </div>
@@ -83,7 +123,6 @@
 
 <script>
 import { ref } from 'vue'
-import { showToast, showSuccessToast } from 'vant'
 export default {
   name: 'homeMark',
   setup () {
@@ -96,136 +135,61 @@ export default {
     // 背景选择状态
     const selectedBg = ref(localStorage.getItem('appBackground') || 'default')
 
-    // 搜索处理函数
-    const onSearch = (val) => showToast(`搜索:${val || '无'}`)
+    // 开发中弹窗状态
+    const showDevModal = ref(false)
 
-    // 取消搜索处理函数
-    const onCancel = () => showToast('取消')
+    // 打开开发中弹窗
+    const openDevModal = () => {
+      showDevModal.value = true
+    }
+
+    // 关闭开发中弹窗
+    const closeDevModal = () => {
+      showDevModal.value = false
+    }
 
     // 选择背景
     const selectBg = (bg) => {
-      selectedBg.value = bg
+      openDevModal()
     }
 
     // 处理自定义背景上传
     const handleCustomBgUpload = (event) => {
-      const file = event.target.files[0]
-      if (file) {
-        const reader = new FileReader()
-        reader.onload = (e) => {
-          selectedBg.value = e.target.result
-          showSuccessToast('图片上传成功')
-        }
-        reader.readAsDataURL(file)
-      }
+      openDevModal()
     }
 
     // 确认修改背景
     const confirmBgChange = () => {
-      try {
-        console.log('confirmBgChange called')
-        if (!selectedBg.value) {
-          console.log('no background selected')
-          showToast('请选择背景')
-          return
-        }
-
-        console.log('saving background')
-        // 保存背景设置到本地存储
-        console.log('selectedBg.value:', selectedBg.value)
-        localStorage.setItem('appBackground', selectedBg.value)
-        console.log('background saved to localStorage:', localStorage.getItem('appBackground'))
-
-        // 直接修改 body 和 #app 元素的背景样式
-        const appElement = document.getElementById('app')
-        if (selectedBg.value === 'default') {
-          const defaultBg = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-          document.body.style.background = defaultBg
-          if (appElement) appElement.style.background = defaultBg
-        } else if (selectedBg.value === 'gradient1') {
-          const bg = 'linear-gradient(135deg, #182848 0%, #4b6cb7 100%)'
-          document.body.style.background = bg
-          if (appElement) appElement.style.background = bg
-        } else if (selectedBg.value === 'gradient2') {
-          const bg = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
-          document.body.style.background = bg
-          if (appElement) appElement.style.background = bg
-        } else if (selectedBg.value === 'gradient3') {
-          const bg = 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
-          document.body.style.background = bg
-          if (appElement) appElement.style.background = bg
-        } else if (selectedBg.value === 'gradient4') {
-          const bg = 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)'
-          document.body.style.background = bg
-          if (appElement) appElement.style.background = bg
-        } else if (selectedBg.value.startsWith('#')) {
-          document.body.style.background = selectedBg.value
-          if (appElement) appElement.style.background = selectedBg.value
-        } else {
-          document.body.style.background = `url(${selectedBg.value})`
-          document.body.style.backgroundSize = 'cover'
-          document.body.style.backgroundPosition = 'center'
-          document.body.style.backgroundRepeat = 'no-repeat'
-          if (appElement) {
-            appElement.style.background = `url(${selectedBg.value})`
-            appElement.style.backgroundSize = 'cover'
-            appElement.style.backgroundPosition = 'center'
-            appElement.style.backgroundRepeat = 'no-repeat'
-          }
-        }
-
-        // 显示修改成功提示
-        showSuccessToast('背景修改成功')
-      } catch (error) {
-        console.error('Error in confirmBgChange:', error)
-        showToast('修改背景失败')
-      }
+      openDevModal()
     }
 
     // 恢复默认背景
     const resetToDefault = () => {
-      try {
-        // 保存默认背景设置到本地存储
-        localStorage.setItem('appBackground', 'default')
-        selectedBg.value = 'default'
-
-        // 直接修改 body 和 #app 元素的背景样式为默认背景
-        const defaultBg = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-        document.body.style.background = defaultBg
-        const appElement = document.getElementById('app')
-        if (appElement) appElement.style.background = defaultBg
-
-        // 显示恢复成功提示
-        showSuccessToast('已恢复默认背景')
-      } catch (error) {
-        console.error('Error in resetToDefault:', error)
-        showToast('恢复默认背景失败')
-      }
+      openDevModal()
     }
 
     // 删除自定义背景
     const deleteCustomBg = () => {
-      selectedBg.value = ''
-      showToast('已删除自定义背景')
+      openDevModal()
     }
 
     // 触发文件选择对话框
     const triggerFileInput = () => {
-      document.querySelector('input[type="file"]').click()
+      openDevModal()
     }
 
     return {
       value,
       active,
       selectedBg,
-      onSearch,
-      onCancel,
       selectBg,
       handleCustomBgUpload,
       confirmBgChange,
       deleteCustomBg,
       triggerFileInput,
-      resetToDefault
+      resetToDefault,
+      showDevModal,
+      closeDevModal
     }
   }
 }

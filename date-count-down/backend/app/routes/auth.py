@@ -511,6 +511,21 @@ def change_phone():
     logger.info(f'用户{user.username}修改手机号成功')
     return jsonify({'message': '手机号修改成功', 'user': {'phone': cleaned_phone}}), 200
 
+# 检查管理员状态接口
+@auth_bp.route('/user/check-admin', methods=['GET'])
+@jwt_required()
+def check_admin():
+    logger.info('接收到检查管理员状态请求')
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if not user:
+        logger.warning(f'用户ID {user_id} 不存在')
+        return jsonify({'message': '用户不存在'}), 404
+    
+    return jsonify({
+        'is_admin': user.is_admin or False
+    }), 200
+
 # 头像上传接口
 @auth_bp.route('/avatar', methods=['POST'])
 @jwt_required()

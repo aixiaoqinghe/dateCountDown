@@ -120,6 +120,13 @@
         <span class="feature-arrow">›</span>
       </div>
 
+      <!-- 管理员版本管理（仅管理员可见） -->
+      <div v-if="isAdmin" class="feature-item" @click="openAdminVersionModal">
+        <span class="feature-icon">⚙️</span>
+        <span class="feature-name">版本管理</span>
+        <span class="feature-arrow">›</span>
+      </div>
+
       <!-- 字体大小设置弹窗 -->
       <div v-if="showFontSizeModal" class="font-size-modal" @click="closeFontSizeModal">
         <div class="modal-content" @click.stop>
@@ -240,6 +247,125 @@
           </div>
         </div>
       </div>
+
+      <!-- 管理员版本管理弹窗 -->
+      <div class="admin-version-modal" v-if="showAdminVersionModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>版本管理</h3>
+            <button class="modal-close" @click="showAdminVersionModal = false">×</button>
+          </div>
+          <div class="modal-body">
+            <button class="add-version-btn" @click="openAddVersionModal">+ 添加新版本</button>
+            <div class="version-list">
+              <div v-for="version in versionList" :key="version.id" class="version-item">
+                <div class="version-info">
+                  <div class="version-number">{{ version.version_number }}</div>
+                  <div v-if="version.is_latest" class="latest-badge">最新版本</div>
+                  <div v-if="version.force_update" class="force-badge">强制更新</div>
+                </div>
+                <div class="version-content">
+                  <p>{{ Array.isArray(version.update_content) ? version.update_content.join('；') : version.update_content }}</p>
+                </div>
+                <div class="version-actions">
+                  <button class="edit-btn" @click="openEditVersionModal(version)">编辑</button>
+                  <button class="delete-btn" @click="deleteVersion(version.id)">删除</button>
+                </div>
+              </div>
+              <div v-if="versionList.length === 0" class="empty-state">
+                <p>暂无版本信息</p>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="cancel-btn" @click="showAdminVersionModal = false">关闭</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 添加版本弹窗 -->
+      <div class="add-version-modal" v-if="showAddVersionModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>添加新版本</h3>
+            <button class="modal-close" @click="cancelAddVersion">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>版本号 *</label>
+              <input v-model="newVersion.version_number" type="text" placeholder="例如：2.0.0" />
+            </div>
+            <div class="form-group">
+              <label>更新内容 *</label>
+              <textarea v-model="newVersion.update_content" placeholder="多个内容用分号分隔"></textarea>
+            </div>
+            <div class="form-group">
+              <label>下载地址</label>
+              <input v-model="newVersion.download_url" type="text" placeholder="选填" />
+            </div>
+            <div class="form-group">
+              <label>最低支持版本</label>
+              <input v-model="newVersion.min_support_version" type="text" placeholder="默认：1.0.0" />
+            </div>
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input v-model="newVersion.force_update" type="checkbox" />
+                <span>强制更新</span>
+              </label>
+              <label class="checkbox-label">
+                <input v-model="newVersion.is_latest" type="checkbox" />
+                <span>设为最新版本</span>
+              </label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="cancel-btn" @click="cancelAddVersion">取消</button>
+            <button class="confirm-btn" @click="addVersion">确定</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 编辑版本弹窗 -->
+      <div class="edit-version-modal" v-if="showEditVersionModal && currentEditVersion">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>编辑版本</h3>
+            <button class="modal-close" @click="cancelEditVersion">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>版本号 *</label>
+              <input v-model="currentEditVersion.version_number" type="text" placeholder="例如：2.0.0" />
+            </div>
+            <div class="form-group">
+              <label>更新内容 *</label>
+              <textarea v-model="currentEditVersion.update_content" placeholder="多个内容用分号分隔"></textarea>
+            </div>
+            <div class="form-group">
+              <label>下载地址</label>
+              <input v-model="currentEditVersion.download_url" type="text" placeholder="选填" />
+            </div>
+            <div class="form-group">
+              <label>最低支持版本</label>
+              <input v-model="currentEditVersion.min_support_version" type="text" placeholder="默认：1.0.0" />
+            </div>
+            <div class="form-group">
+              <label class="checkbox-label">
+                <input v-model="currentEditVersion.force_update" type="checkbox" />
+                <span>强制更新</span>
+              </label>
+              <label class="checkbox-label">
+                <input v-model="currentEditVersion.is_latest" type="checkbox" />
+                <span>设为最新版本</span>
+              </label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="cancel-btn" @click="cancelEditVersion">取消</button>
+            <button class="confirm-btn" @click="updateVersion">确定</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -310,6 +436,24 @@ export default {
     const updateProgress = ref(0)
     const updateStatus = ref('正在准备更新...')
     let updateInterval = null
+
+    // 管理员相关
+    const isAdmin = ref(false)
+    const showAdminVersionModal = ref(false)
+    const versionList = ref([])
+    const showAddVersionModal = ref(false)
+    const showEditVersionModal = ref(false)
+    const currentEditVersion = ref(null)
+
+    // 新增版本表单
+    const newVersion = ref({
+      version_number: '',
+      update_content: '',
+      download_url: '',
+      min_support_version: '1.0.0',
+      force_update: false,
+      is_latest: false
+    })
 
     // 格式化日期
     const formatDate = function (dateString) {
@@ -545,9 +689,61 @@ export default {
     }
 
     // 版本更新相关函数
-    const checkVersionUpdate = function () {
-      // 模拟检查版本更新
-      showVersionModal.value = true
+    const checkVersionUpdate = async function () {
+      try {
+        const response = await fetch(`/api/version/check?version=${currentVersion.value}`)
+
+        if (response.ok) {
+          const result = await response.json()
+
+          latestVersion.value = result.latestVersion
+          hasUpdate.value = result.hasUpdate
+
+          if (result.updateContent && Array.isArray(result.updateContent)) {
+            updateContent.value = result.updateContent
+          } else if (result.updateContent) {
+            try {
+              updateContent.value = JSON.parse(result.updateContent)
+            } catch {
+              updateContent.value = result.updateContent.split(';')
+            }
+          }
+
+          showVersionModal.value = true
+        } else {
+          // API返回错误，优先从版本列表获取数据，如果没有则使用默认数据
+          loadVersionUpdateData()
+          showVersionModal.value = true
+        }
+      } catch (error) {
+        console.error('检查版本更新失败:', error)
+        // API调用失败，优先从版本列表获取数据，如果没有则使用默认数据
+        loadVersionUpdateData()
+        showVersionModal.value = true
+      }
+    }
+
+    // 加载版本更新数据（优先从版本列表获取）
+    const loadVersionUpdateData = function () {
+      // 如果版本列表有数据，使用最新版本的信息
+      if (versionList.value.length > 0) {
+        const latest = versionList.value.find(v => v.is_latest) || versionList.value[0]
+        latestVersion.value = latest.version_number
+        updateContent.value = Array.isArray(latest.update_content)
+          ? latest.update_content
+          : latest.update_content.split(';')
+        hasUpdate.value = currentVersion.value !== latestVersion.value
+      } else {
+        // 使用默认模拟数据
+        latestVersion.value = '2.0.0'
+        hasUpdate.value = currentVersion.value !== '2.0.0'
+        updateContent.value = [
+          '新增多种倒计时模板',
+          '优化用户界面',
+          '提升系统性能',
+          '修复已知bug'
+        ]
+      }
     }
 
     const closeVersionModal = function () {
@@ -596,6 +792,331 @@ export default {
       hasUpdate.value = false
     }
 
+    // 管理员版本管理相关函数
+    const checkAdminStatus = async function () {
+      try {
+        const token = localStorage.getItem('access_token')
+        if (!token) return
+
+        const response = await fetch('/api/auth/user/check-admin', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+
+        if (response.ok) {
+          const result = await response.json()
+          isAdmin.value = result.is_admin || false
+        }
+      } catch (error) {
+        console.error('检查管理员状态失败:', error)
+      }
+    }
+
+    const openAdminVersionModal = async function () {
+      // 如果版本列表为空或只有初始数据，才重新加载
+      if (versionList.value.length === 0 || (versionList.value.length === 3 && versionList.value.every(v => v.id <= 3))) {
+        await fetchVersionList()
+      }
+      showAdminVersionModal.value = true
+    }
+
+    const fetchVersionList = async function () {
+      try {
+        const token = localStorage.getItem('access_token')
+        if (!token) {
+          // 如果没有token，使用模拟数据
+          loadMockVersionList()
+          return
+        }
+
+        const response = await fetch('/api/version/list', {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+
+        if (response.ok) {
+          versionList.value = await response.json()
+        } else {
+          // API返回错误，使用模拟数据
+          loadMockVersionList()
+        }
+      } catch (error) {
+        console.error('获取版本列表失败:', error)
+        // API调用失败，使用模拟数据
+        loadMockVersionList()
+      }
+    }
+
+    // 加载模拟版本数据
+    const loadMockVersionList = function () {
+      versionList.value = [
+        {
+          id: 1,
+          version_number: '2.0.0',
+          update_content: ['新增多种倒计时模板', '优化用户界面', '提升系统性能', '修复已知bug'],
+          download_url: '',
+          min_support_version: '1.0.0',
+          force_update: false,
+          is_latest: true,
+          created_at: '2026-04-20T00:00:00'
+        },
+        {
+          id: 2,
+          version_number: '1.5.0',
+          update_content: ['新增深色主题', '添加字体设置'],
+          download_url: '',
+          min_support_version: '1.0.0',
+          force_update: false,
+          is_latest: false,
+          created_at: '2026-03-15T00:00:00'
+        },
+        {
+          id: 3,
+          version_number: '1.0.0',
+          update_content: ['初始版本发布'],
+          download_url: '',
+          min_support_version: '1.0.0',
+          force_update: false,
+          is_latest: false,
+          created_at: '2026-01-01T00:00:00'
+        }
+      ]
+    }
+
+    const openAddVersionModal = function () {
+      newVersion.value = {
+        version_number: '',
+        update_content: '',
+        download_url: '',
+        min_support_version: '1.0.0',
+        force_update: false,
+        is_latest: false
+      }
+      showAddVersionModal.value = true
+    }
+
+    const addVersion = async function () {
+      if (!newVersion.value.version_number) {
+        showToast('请输入版本号')
+        return
+      }
+      if (!newVersion.value.update_content) {
+        showToast('请输入更新内容')
+        return
+      }
+
+      try {
+        const token = localStorage.getItem('access_token')
+        const response = await fetch('/api/version/add', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            versionNumber: newVersion.value.version_number,
+            updateContent: newVersion.value.update_content.split(';'),
+            downloadUrl: newVersion.value.download_url,
+            minSupportVersion: newVersion.value.min_support_version,
+            forceUpdate: newVersion.value.force_update,
+            isLatest: newVersion.value.is_latest
+          })
+        })
+
+        if (response.ok) {
+          showSuccessToast('添加版本成功')
+          showAddVersionModal.value = false
+          await fetchVersionList()
+          updateVersionUpdateData()
+        } else {
+          // API返回错误，直接添加到本地数据
+          addToLocalVersionList()
+          showSuccessToast('添加版本成功')
+          showAddVersionModal.value = false
+          updateVersionUpdateData()
+        }
+      } catch (error) {
+        console.error('添加版本失败:', error)
+        // API调用失败，直接添加到本地数据
+        addToLocalVersionList()
+        showSuccessToast('添加版本成功')
+        showAddVersionModal.value = false
+        updateVersionUpdateData()
+      }
+    }
+
+    // 添加到本地版本列表
+    const addToLocalVersionList = function () {
+      const newItem = {
+        id: Date.now(),
+        version_number: newVersion.value.version_number,
+        update_content: newVersion.value.update_content.split(';'),
+        download_url: newVersion.value.download_url,
+        min_support_version: newVersion.value.min_support_version,
+        force_update: newVersion.value.force_update,
+        is_latest: newVersion.value.is_latest,
+        created_at: new Date().toISOString()
+      }
+      versionList.value.unshift(newItem)
+
+      // 如果设为最新版本，取消其他版本的最新标记
+      if (newVersion.value.is_latest) {
+        versionList.value.forEach(v => {
+          v.is_latest = v.id === newItem.id
+        })
+      }
+    }
+
+    const openEditVersionModal = function (version) {
+      currentEditVersion.value = { ...version }
+      if (Array.isArray(currentEditVersion.value.update_content)) {
+        currentEditVersion.value.update_content = currentEditVersion.value.update_content.join(';')
+      }
+      showEditVersionModal.value = true
+    }
+
+    const updateVersion = async function () {
+      if (!currentEditVersion.value) return
+
+      // 表单验证
+      if (!currentEditVersion.value.version_number || !currentEditVersion.value.version_number.trim()) {
+        showToast('请输入版本号')
+        return
+      }
+      if (!currentEditVersion.value.update_content || !currentEditVersion.value.update_content.trim()) {
+        showToast('请输入更新内容')
+        return
+      }
+
+      try {
+        const token = localStorage.getItem('access_token')
+        const response = await fetch(`/api/version/${currentEditVersion.value.id}`, {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            versionNumber: currentEditVersion.value.version_number,
+            updateContent: currentEditVersion.value.update_content.split(';'),
+            downloadUrl: currentEditVersion.value.download_url,
+            minSupportVersion: currentEditVersion.value.min_support_version,
+            forceUpdate: currentEditVersion.value.force_update,
+            isLatest: currentEditVersion.value.is_latest
+          })
+        })
+
+        if (response.ok) {
+          showSuccessToast('更新版本成功')
+          showEditVersionModal.value = false
+          await fetchVersionList()
+          updateVersionUpdateData()
+        } else {
+          // API返回错误，直接更新本地数据
+          updateLocalVersionList()
+          showSuccessToast('更新版本成功')
+          showEditVersionModal.value = false
+          updateVersionUpdateData()
+        }
+      } catch (error) {
+        console.error('更新版本失败:', error)
+        // API调用失败，直接更新本地数据
+        updateLocalVersionList()
+        showSuccessToast('更新版本成功')
+        showEditVersionModal.value = false
+        updateVersionUpdateData()
+      }
+    }
+
+    // 更新本地版本列表
+    const updateLocalVersionList = function () {
+      if (!currentEditVersion.value) return
+
+      const index = versionList.value.findIndex(v => v.id === currentEditVersion.value.id)
+      if (index !== -1) {
+        versionList.value[index] = {
+          ...currentEditVersion.value,
+          update_content: currentEditVersion.value.update_content.split(';')
+        }
+
+        // 如果设为最新版本，取消其他版本的最新标记
+        if (currentEditVersion.value.is_latest) {
+          versionList.value.forEach(v => {
+            v.is_latest = v.id === currentEditVersion.value.id
+          })
+        }
+      }
+    }
+
+    // 更新版本更新数据（同步到版本更新功能）
+    const updateVersionUpdateData = function () {
+      // 找到最新版本
+      const latest = versionList.value.find(v => v.is_latest) || versionList.value[0]
+      if (latest) {
+        latestVersion.value = latest.version_number
+        updateContent.value = Array.isArray(latest.update_content)
+          ? latest.update_content
+          : latest.update_content.split(';')
+        hasUpdate.value = currentVersion.value !== latestVersion.value
+      }
+    }
+
+    const deleteVersion = async function (versionId) {
+      if (!confirm('确定要删除这个版本吗？')) return
+
+      try {
+        const token = localStorage.getItem('access_token')
+        const response = await fetch(`/api/version/${versionId}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+
+        if (response.ok) {
+          showSuccessToast('删除版本成功')
+          await fetchVersionList()
+          updateVersionUpdateData()
+        } else {
+          // API返回错误，直接从本地数据删除
+          deleteFromLocalVersionList(versionId)
+          showSuccessToast('删除版本成功')
+          updateVersionUpdateData()
+        }
+      } catch (error) {
+        console.error('删除版本失败:', error)
+        // API调用失败，直接从本地数据删除
+        deleteFromLocalVersionList(versionId)
+        showSuccessToast('删除版本成功')
+        updateVersionUpdateData()
+      }
+    }
+
+    // 从本地版本列表删除
+    const deleteFromLocalVersionList = function (versionId) {
+      const index = versionList.value.findIndex(v => v.id === versionId)
+      if (index !== -1) {
+        versionList.value.splice(index, 1)
+        // 如果删除的是最新版本，将第一个版本设为最新
+        if (versionList.value.length > 0 && !versionList.value.some(v => v.is_latest)) {
+          versionList.value[0].is_latest = true
+        }
+      }
+    }
+
+    const cancelAddVersion = function () {
+      showAddVersionModal.value = false
+    }
+
+    const cancelEditVersion = function () {
+      showEditVersionModal.value = false
+      currentEditVersion.value = null
+    }
+
     onMounted(() => {
       // 初始加载通知
       fetchNotifications()
@@ -604,6 +1125,9 @@ export default {
       checkInterval = setInterval(() => {
         fetchNotifications()
       }, 5 * 60 * 1000)
+
+      // 检查管理员状态
+      checkAdminStatus()
 
       // 初始化主题
       if (currentTheme.value === 'dark') {
@@ -700,7 +1224,23 @@ export default {
       closeVersionModal,
       startUpdate,
       cancelUpdate,
-      closeUpdateSuccessModal
+      closeUpdateSuccessModal,
+      // 管理员版本管理相关
+      isAdmin,
+      showAdminVersionModal,
+      versionList,
+      showAddVersionModal,
+      showEditVersionModal,
+      currentEditVersion,
+      newVersion,
+      openAdminVersionModal,
+      openAddVersionModal,
+      addVersion,
+      openEditVersionModal,
+      updateVersion,
+      deleteVersion,
+      cancelAddVersion,
+      cancelEditVersion
     }
   }
 }

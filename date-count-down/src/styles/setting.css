@@ -3,7 +3,8 @@
   min-height: 70vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .setting-container h2 {
@@ -1202,6 +1203,351 @@
   background: linear-gradient(135deg, #2980b9, #1f618d);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+/* 管理员版本管理弹窗样式 */
+.admin-version-modal,
+.add-version-modal,
+.edit-version-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease;
+}
+
+.admin-version-modal .modal-content,
+.add-version-modal .modal-content,
+.edit-version-modal .modal-content {
+  background: white;
+  border-radius: 12px;
+  padding: 0;
+  width: 90%;
+  max-width: 550px;
+  max-height: 90vh;
+  min-height: 400px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  animation: modalFadeIn 0.3s ease;
+  position: relative;
+  display: block;
+}
+
+/* 弹窗头部 */
+.admin-version-modal .modal-header,
+.add-version-modal .modal-header,
+.edit-version-modal .modal-header {
+  padding: 20px;
+  border-bottom: 1px solid #e0e0e0;
+  background: white;
+}
+
+/* 弹窗内容 */
+.admin-version-modal .modal-body,
+.add-version-modal .modal-body,
+.edit-version-modal .modal-body {
+  padding: 20px;
+  max-height: calc(90vh - 140px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* 弹窗底部 */
+.admin-version-modal .modal-footer,
+.add-version-modal .modal-footer,
+.edit-version-modal .modal-footer {
+  padding: 15px 20px;
+  border-top: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  box-sizing: border-box;
+  background: white;
+}
+
+/* 添加版本按钮 */
+.add-version-btn {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.add-version-btn:hover {
+  background: linear-gradient(135deg, #2980b9, #1f618d);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+/* 版本列表 */
+.version-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* 版本项 */
+.version-item {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 10px;
+  border: 1px solid #e0e0e0;
+  transition: all 0.3s ease;
+}
+
+.version-item:hover {
+  background: #e9ecef;
+  border-color: #3498db;
+}
+
+/* 版本信息 */
+.version-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.version-number {
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.latest-badge {
+  background: #27ae60;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.force-badge {
+  background: #e74c3c;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* 版本内容 */
+.version-content p {
+  margin: 0;
+  font-size: 14px;
+  color: #7f8c8d;
+  line-height: 1.5;
+}
+
+/* 版本操作按钮 */
+.version-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.edit-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-btn:hover {
+  background: #2980b9;
+}
+
+.delete-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+  background: #c0392b;
+}
+
+/* 表单样式 */
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.form-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+/* 复选框标签 */
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-right: 20px;
+  font-size: 14px;
+  color: #2c3e50;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #95a5a6;
+}
+
+/* 编辑弹窗按钮样式 */
+.edit-version-modal .cancel-btn,
+.edit-version-modal .confirm-btn,
+.add-version-modal .cancel-btn,
+.add-version-modal .confirm-btn {
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 80px;
+  text-align: center;
+}
+
+.edit-version-modal .cancel-btn,
+.add-version-modal .cancel-btn {
+  background: #f5f7fa;
+  color: #2c3e50;
+  border: 1px solid #bdc3c7;
+}
+
+.edit-version-modal .cancel-btn:hover,
+.add-version-modal .cancel-btn:hover {
+  background: #e3f2fd;
+  border-color: #3498db;
+  color: #3498db;
+}
+
+.edit-version-modal .confirm-btn,
+.add-version-modal .confirm-btn {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  border: none;
+}
+
+.edit-version-modal .confirm-btn:hover,
+.add-version-modal .confirm-btn:hover {
+  background: linear-gradient(135deg, #2980b9, #1f618d);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+}
+
+/* 深色主题下的管理员版本管理样式 */
+.dark-theme .admin-version-modal .modal-content,
+.dark-theme .add-version-modal .modal-content,
+.dark-theme .edit-version-modal .modal-content {
+  background: #2c2c2c;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+.dark-theme .version-item {
+  background: #3a3a3a;
+  border-color: #444;
+}
+
+.dark-theme .version-item:hover {
+  background: #444;
+  border-color: #3498db;
+}
+
+.dark-theme .version-number {
+  color: #e0e0e0;
+}
+
+.dark-theme .version-content p {
+  color: #999;
+}
+
+.dark-theme .form-group label {
+  color: #e0e0e0;
+}
+
+.dark-theme .form-group input,
+.dark-theme .form-group textarea {
+  background: #3a3a3a;
+  border-color: #444;
+  color: #e0e0e0;
+}
+
+.dark-theme .form-group input:focus,
+.dark-theme .form-group textarea:focus {
+  border-color: #3498db;
+}
+
+.dark-theme .checkbox-label {
+  color: #e0e0e0;
+}
+
+.dark-theme .empty-state {
+  color: #666;
 }
 
 /* 深色主题下的版本更新样式 */
