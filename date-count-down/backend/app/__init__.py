@@ -93,6 +93,7 @@ def create_app():
     from app.routes.notification import notification_bp
     from app.routes.device import device_bp
     from app.routes.privacy import privacy_bp
+    from app.routes.user_notification_setting import notification_setting_bp
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(feedback_bp, url_prefix='/api/feedback')
     app.register_blueprint(version_bp, url_prefix='/api/version')
@@ -102,9 +103,11 @@ def create_app():
     app.register_blueprint(notification_bp, url_prefix='/api/notification')
     app.register_blueprint(device_bp, url_prefix='/api/devices')
     app.register_blueprint(privacy_bp, url_prefix='/api/privacy')
+    app.register_blueprint(notification_setting_bp, url_prefix='/api/notification/settings')
 
     # 创建数据库表（在MySQL中生成表结构）
     with app.app_context():       # 进入Flask应用的上下文环境。Flask的很多操作（如数据库操作）需要在应用上下文中执行
+        from app.models.user_notification_setting import UserNotificationSetting
         db.create_all()    # 根据models中定义的模型，在MySQL中生成对应的表结构（如user表和feedback表）
         logger.info('数据库表创建成功')
 
