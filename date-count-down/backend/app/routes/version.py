@@ -4,6 +4,7 @@ from app.models.version import AppVersion
 from app import db
 from app.decorators import admin_required
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -70,10 +71,15 @@ def add_version():
     if not data.get('versionNumber'):
         return jsonify({'message': '版本号不能为空'}), 400
     
+    # 处理 update_content，如果是数组则转换为JSON字符串
+    update_content = data.get('updateContent', '')
+    if isinstance(update_content, list):
+        update_content = json.dumps(update_content)
+    
     # 创建新版本
     new_version = AppVersion(
         version_number=data['versionNumber'],
-        update_content=data.get('updateContent', ''),
+        update_content=update_content,
         download_url=data.get('downloadUrl', ''),
         min_support_version=data.get('minSupportVersion', '1.0.0'),
         force_update=data.get('forceUpdate', False),
@@ -105,7 +111,11 @@ def update_version(version_id):
     if 'versionNumber' in data:
         version.version_number = data['versionNumber']
     if 'updateContent' in data:
-        version.update_content = data['updateContent']
+        update_content = data['updateContent']
+        # 如果是数组，转换为JSON字符串存储
+        if isinstance(update_content, list):
+            update_content = json.dumps(update_content)
+        version.update_content = update_content
     if 'downloadUrl' in data:
         version.download_url = data['downloadUrl']
     if 'minSupportVersion' in data:

@@ -280,32 +280,32 @@
   justify-content: center;
 }
 
-/* 倒计时卡片样式 - 所有尺寸都使用垂直布局 */
+/* 倒计时卡片样式 - 水平布局：天数在左，信息在右，圆润设计 */
 .countdown-card {
   background: rgba(255, 255, 255, 0.95);
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  border-radius: 24px;
+  padding: 20px 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
+  backdrop-filter: blur(12px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 12px;
+  gap: 20px;
   position: relative;
   overflow: hidden;
-  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.6);
 }
 
 .countdown-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.12);
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.1), 0 4px 16px rgba(0, 0, 0, 0.06);
 }
 
 /* 卡片内容区域 */
 .countdown-info {
   flex: 1;
-  text-align: center;
+  text-align: left;
   position: relative;
   z-index: 1;
   background: transparent;
@@ -313,19 +313,21 @@
   border-radius: 0;
 }
 
-/* 天数显示样式 */
+/* 天数显示样式 - 超大字体，透明背景 */
 .countdown-days {
-  font-size: 44px;
-  font-weight: 700;
-  color: #2c3e50;
+  font-size: 76px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-family: 'Courier New', monospace;
-  min-width: 80px;
+  min-width: 130px;
   text-align: center;
   position: relative;
   z-index: 1;
-  background: rgba(255, 255, 255, 0.7);
-  padding: 10px;
-  border-radius: 8px;
+  padding: 4px;
+  letter-spacing: -3px;
 }
 
 /* 不同分类的颜色 */
@@ -549,8 +551,10 @@
 }
 
 .dark-theme .countdown-days {
-  color: #e0e0e0;
-  background: rgba(52, 52, 52, 0.7);
+  background: linear-gradient(135deg, #a855f7 0%, #60a5fa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .dark-theme .card-title {
@@ -619,13 +623,13 @@
   background: rgba(52, 52, 52, 0.9);
 }
 
-/* 响应式设计 - 所有尺寸都保持紧凑圆润的卡片布局 */
+/* 响应式设计 - 所有尺寸都使用水平布局：天数在左，信息在右，圆润设计 */
 
 /* 4K超高清屏幕（>2000px）- 四列布局，超大卡片 */
 @media (min-width: 2000px) {
   .countdown-list {
-    grid-template-columns: repeat(4, minmax(400px, 460px));
-    gap: 42px;
+    grid-template-columns: repeat(4, minmax(440px, 500px));
+    gap: 40px;
   }
 
   .home-title {
@@ -633,36 +637,38 @@
   }
 
   .countdown-card {
-    padding: 50px;
-    gap: 30px;
+    padding: 36px 40px;
+    gap: 32px;
     border-radius: 32px;
   }
 
   .countdown-days {
-    font-size: 88px;
-    min-width: 150px;
+    font-size: 110px;
+    min-width: 160px;
+    letter-spacing: -4px;
   }
 
   .card-title {
-    font-size: 30px;
+    font-size: 28px;
   }
 
   .card-date,
   .card-days {
-    font-size: 22px;
+    font-size: 20px;
   }
 
   .card-category {
-    font-size: 18px;
-    padding: 8px 20px;
+    font-size: 16px;
+    padding: 6px 16px;
+    border-radius: 20px;
   }
 }
 
 /* 大屏幕（>1200px）- 三列布局，卡片更大 */
 @media (min-width: 1200px) and (max-width: 2000px) {
   .countdown-list {
-    grid-template-columns: repeat(3, minmax(280px, 340px));
-    gap: 24px;
+    grid-template-columns: repeat(3, minmax(320px, 380px));
+    gap: 26px;
   }
 
   .home-title {
@@ -670,14 +676,15 @@
   }
 
   .countdown-card {
-    padding: 28px;
-    gap: 18px;
-    border-radius: 20px;
+    padding: 26px 30px;
+    gap: 22px;
+    border-radius: 28px;
   }
 
   .countdown-days {
-    font-size: 56px;
-    min-width: 95px;
+    font-size: 80px;
+    min-width: 110px;
+    letter-spacing: -3px;
   }
 
   .card-title {
@@ -692,14 +699,15 @@
   .card-category {
     font-size: 13px;
     padding: 4px 12px;
+    border-radius: 16px;
   }
 }
 
 /* 中屏幕（900px - 1200px）- 三列布局 */
 @media (min-width: 900px) and (max-width: 1200px) {
   .countdown-list {
-    grid-template-columns: repeat(3, minmax(240px, 280px));
-    gap: 16px;
+    grid-template-columns: repeat(3, minmax(260px, 310px));
+    gap: 18px;
   }
 
   .home-title {
@@ -707,26 +715,31 @@
   }
 
   .countdown-card {
-    padding: 22px;
-    gap: 14px;
-    border-radius: 18px;
+    padding: 22px 26px;
+    gap: 18px;
+    border-radius: 24px;
   }
 
   .countdown-days {
-    font-size: 46px;
-    min-width: 80px;
+    font-size: 68px;
+    min-width: 100px;
+    letter-spacing: -3px;
   }
 
   .card-title {
     font-size: 18px;
+  }
+
+  .card-category {
+    border-radius: 14px;
   }
 }
 
 /* 平板屏幕（700px - 900px）- 双列布局 */
 @media (min-width: 700px) and (max-width: 900px) {
   .countdown-list {
-    grid-template-columns: repeat(2, minmax(240px, 280px));
-    gap: 14px;
+    grid-template-columns: repeat(2, minmax(280px, 340px));
+    gap: 16px;
   }
 
   .home-title {
@@ -734,26 +747,31 @@
   }
 
   .countdown-card {
-    padding: 20px;
-    gap: 12px;
-    border-radius: 16px;
+    padding: 20px 24px;
+    gap: 16px;
+    border-radius: 22px;
   }
 
   .countdown-days {
-    font-size: 42px;
-    min-width: 75px;
+    font-size: 60px;
+    min-width: 95px;
+    letter-spacing: -2px;
   }
 
   .card-title {
     font-size: 17px;
   }
+
+  .card-category {
+    border-radius: 12px;
+  }
 }
 
-/* 手机屏幕（<600px）- 单列紧凑布局 */
-@media (max-width: 600px) {
+/* 手机屏幕（<700px）- 单列布局 */
+@media (max-width: 700px) {
   .countdown-list {
-    grid-template-columns: minmax(220px, 280px);
-    gap: 12px;
+    grid-template-columns: minmax(260px, 320px);
+    gap: 14px;
   }
 
   .home-title {
@@ -761,14 +779,15 @@
   }
 
   .countdown-card {
-    padding: 15px;
-    gap: 10px;
-    border-radius: 14px;
+    padding: 18px 22px;
+    gap: 14px;
+    border-radius: 20px;
   }
 
   .countdown-days {
-    font-size: 36px;
-    min-width: 70px;
+    font-size: 54px;
+    min-width: 90px;
+    letter-spacing: -2px;
   }
 
   .card-title {
@@ -783,6 +802,7 @@
   .card-category {
     font-size: 12px;
     padding: 3px 8px;
+    border-radius: 10px;
   }
 
   .home-header {
@@ -804,11 +824,11 @@
   }
 }
 
-/* 小手机屏幕（<400px）- 更紧凑 */
-@media (max-width: 400px) {
+/* 小手机屏幕（<450px）- 更紧凑 */
+@media (max-width: 450px) {
   .countdown-list {
-    grid-template-columns: minmax(200px, 260px);
-    gap: 10px;
+    grid-template-columns: minmax(240px, 280px);
+    gap: 12px;
   }
 
   .home-title {
@@ -816,14 +836,15 @@
   }
 
   .countdown-card {
-    padding: 12px;
-    gap: 8px;
-    border-radius: 12px;
+    padding: 16px 20px;
+    gap: 12px;
+    border-radius: 18px;
   }
 
   .countdown-days {
-    font-size: 30px;
-    min-width: 60px;
+    font-size: 48px;
+    min-width: 80px;
+    letter-spacing: -2px;
   }
 
   .card-title {
@@ -838,6 +859,7 @@
   .card-category {
     font-size: 11px;
     padding: 2px 6px;
+    border-radius: 8px;
   }
 }
 

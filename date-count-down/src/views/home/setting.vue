@@ -419,7 +419,9 @@ export default {
     }
 
     // 版本更新相关
-    const currentVersion = ref('1.0.0')
+    // 从本地存储读取当前版本号，如果没有则使用默认值
+    const savedVersion = localStorage.getItem('appCurrentVersion')
+    const currentVersion = ref(savedVersion || '1.0.0')
     const latestVersion = ref('2.0.0')
     const hasUpdate = ref(true)
     const updateContent = ref([
@@ -797,6 +799,8 @@ export default {
       // 模拟更新后的操作，例如刷新页面或跳转到首页
       currentVersion.value = latestVersion.value
       hasUpdate.value = false
+      // 将更新后的版本号保存到本地存储，持久化状态
+      localStorage.setItem('appCurrentVersion', currentVersion.value)
     }
 
     // 管理员版本管理相关函数
@@ -822,18 +826,19 @@ export default {
     }
 
     const openAdminVersionModal = async function () {
-      // 如果版本列表为空或只有初始数据，才重新加载
-      if (versionList.value.length === 0 || (versionList.value.length === 3 && versionList.value.every(v => v.id <= 3))) {
-        await fetchVersionList()
-      }
+      // 每次打开都从后端获取最新数据，确保数据持久化
+      await fetchVersionList()
       showAdminVersionModal.value = true
     }
 
     const fetchVersionList = async function () {
       try {
         const token = localStorage.getItem('access_token')
+        console.log('[DEBUG] fetchVersionList - token:', token ? '存在' : '不存在')
+
         if (!token) {
           // 如果没有token，使用模拟数据
+          console.log('[DEBUG] fetchVersionList - 无token，使用模拟数据')
           loadMockVersionList()
           return
         }
@@ -845,14 +850,32 @@ export default {
           }
         })
 
+        console.log('[DEBUG] fetchVersionList - 响应状态:', response.status)
+
         if (response.ok) {
-          versionList.value = await response.json()
+          const data = await response.json()
+          console.log('[DEBUG] fetchVersionList - 后端返回数据:', data)
+
+          // 将后端返回的驼峰格式转换为前端使用的下划线格式
+          versionList.value = data.map(item => ({
+            id: item.id,
+            version_number: item.versionNumber,
+            is_latest: item.isLatest,
+            update_content: item.updateContent,
+            download_url: item.downloadUrl,
+            min_support_version: item.minSupportVersion,
+            force_update: item.forceUpdate,
+            created_at: item.createdAt
+          }))
+
+          console.log('[DEBUG] fetchVersionList - 转换后的versionList:', versionList.value)
         } else {
           // API返回错误，使用模拟数据
+          console.log('[DEBUG] fetchVersionList - API返回错误，使用模拟数据')
           loadMockVersionList()
         }
       } catch (error) {
-        console.error('获取版本列表失败:', error)
+        console.error('[DEBUG] fetchVersionList - 获取版本列表失败:', error)
         // API调用失败，使用模拟数据
         loadMockVersionList()
       }
@@ -1061,14 +1084,44 @@ export default {
 
     // 更新版本更新数据（同步到版本更新功能）
     const updateVersionUpdateData = function () {
+      console.log('[DEBUG] updateVersionUpdateData - versionList:', versionList.value)
+
       // 找到最新版本
       const latest = versionList.value.find(v => v.is_latest) || versionList.value[0]
+      console.log('[DEBUG] updateVersionUpdateData - latest:', latest)
+
       if (latest) {
-        latestVersion.value = latest.version_number
-        updateContent.value = Array.isArray(latest.update_content)
-          ? latest.update_content
-          : latest.update_content.split(';')
+        latestVersion.value = latest.version_number || '1.0.0'
+        console.log('[DEBUG] updateVersionUpdateData - latestVersion:', latestVersion.value)
+
+        // 处理 update_content，支持多种格式
+        const content = latest.update_content
+        console.log('[DEBUG] updateVersionUpdateData - update_content:', content, '类型:', typeof content)
+
+        // 情况1：已经是数组
+        if (Array.isArray(content)) {
+          updateContent.value = content
+        } else if (typeof content === 'string' && (content.startsWith('[') || content.includes('['))) {
+          // 情况2：字符串形式的数组（如 "['内容1', '内容2']"）
+          try {
+            const parsed = JSON.parse(content.replace(/'/g, '"'))
+            updateContent.value = Array.isArray(parsed) ? parsed : [content]
+          } catch (e) {
+            console.error('[DEBUG] updateVersionUpdateData - JSON解析失败:', e)
+            updateContent.value = content.split(';')
+          }
+        } else if (typeof content === 'string' && content.trim()) {
+          // 情况3：普通字符串，用分号分隔
+          updateContent.value = content.split(';').map(item => item.trim()).filter(item => item)
+        } else {
+          // 情况4：空或undefined
+          updateContent.value = ['暂无更新内容']
+        }
+
+        console.log('[DEBUG] updateVersionUpdateData - updateContent:', updateContent.value)
         hasUpdate.value = currentVersion.value !== latestVersion.value
+      } else {
+        console.log('[DEBUG] updateVersionUpdateData - 未找到版本数据')
       }
     }
 
@@ -1135,6 +1188,11 @@ export default {
 
       // 检查管理员状态
       checkAdminStatus()
+
+      // 加载版本数据（确保切换导航栏后数据不丢失）
+      fetchVersionList().then(() => {
+        updateVersionUpdateData()
+      })
 
       // 初始化主题
       if (currentTheme.value === 'dark') {
