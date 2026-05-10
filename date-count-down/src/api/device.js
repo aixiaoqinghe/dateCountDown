@@ -13,13 +13,6 @@ export const saveCurrentDevice = (data) => {
 }
 
 // 删除设备
-export const deleteDevice = (id, data) => {
-  return fetch(`/api/devices/${id}`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${localStorage.getItem('access_token')}`
-    },
-    body: JSON.stringify(data)
-  })
+export const deleteDevice = (id) => {
+  return del(`/api/devices/${id}`)
 }

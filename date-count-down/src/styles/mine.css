@@ -1,11 +1,32 @@
+/* 确保父容器正确 */
+#app, body, html {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* 页面背景（全屏） */
+.mine-page-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  z-index: 0;
+}
+
 /* 个人中心页面特有样式 */
 .mine-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
   padding: 20px;
   min-height: 70vh;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   position: relative;
-  overflow: hidden;
   z-index: 1;
+  box-sizing: border-box;
 }
 
 .mine-container::before {
@@ -46,6 +67,7 @@
   backdrop-filter: blur(10px);
   margin: 0 auto;
   max-width: 500px;
+  width: calc(100% - 40px);  /* ✅ 响应式宽度 */
   position: relative;
   z-index: 1;
 }
@@ -74,6 +96,9 @@
 .user-basic-info {
   flex: 1;
   text-align: left;
+  min-width: 0;               /* ✅ 允许收缩 */
+  word-break: break-all;      /* ✅ 允许换行 */
+  word-wrap: break-word;      /* ✅ 允许断词 */
 }
 
 .name-signature {
@@ -144,6 +169,8 @@
   color: #7f8c8d;
   margin-bottom: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  word-break: break-all;      /* ✅ 邮箱允许换行 */
+  word-wrap: break-word;      /* ✅ 允许断词 */
 }
 
 /* 用户邮箱容器 */
@@ -181,6 +208,9 @@
 
 .id-email {
   flex: 1;
+  min-width: 0;               /* ✅ 允许收缩 */
+  word-break: break-all;      /* ✅ 允许换行 */
+  word-wrap: break-word;      /* ✅ 允许断词 */
 }
 
 /* 二维码样式 */
@@ -227,12 +257,14 @@
 
 .modal-content {
   background: white;
-  border-radius: 20px;
-  padding: 22px;
-  width: 80%;
-  max-width: 320px;
+  border-radius: 12px;  /* ✅ 减小圆角 */
+  padding: 20px;        /* ✅ 减小内边距 */
+  width: 100%;          /* ✅ 占满宽度 */
+  max-width: 350px;     /* ✅ 最大宽度 */
+  min-width: 280px;     /* ✅ 最小宽度 */
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   animation: modalFadeIn 0.3s ease;
+  box-sizing: border-box;  /* ✅ 确保padding不影响宽度 */
 }
 
 @keyframes modalFadeIn {
@@ -253,6 +285,22 @@
   margin-bottom: 16px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   text-align: center;
+  white-space: nowrap;        /* ✅ 禁止换行 */
+  word-break: keep-all;       /* ✅ 中文不换行 */
+  overflow: hidden;           /* ✅ 溢出隐藏 */
+  text-overflow: ellipsis;    /* ✅ 溢出显示省略号 */
+}
+
+/* ✅ 弹窗内容禁止中文换行 */
+.modal-content {
+  word-break: keep-all;       /* ✅ 中文不换行 */
+  white-space: normal;        /* ✅ 正常换行 */
+}
+
+/* ✅ 弹窗中的邮箱显示 */
+.modal-content .email-text {
+  word-break: break-all;      /* ✅ 邮箱允许换行 */
+  word-wrap: break-word;      /* ✅ 允许断词 */
 }
 
 .edit-actions {
@@ -307,10 +355,11 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: flex-start;
+  align-items: center;  /* ✅ 垂直居中 */
   justify-content: center;
   z-index: 1000;
-  padding-top: 15vh;
+  padding: 15px;  /* ✅ 添加内边距 */
+  overflow-y: auto;  /* ✅ 支持滚动 */
 }
 
 /* 二维码弹窗 */
@@ -627,8 +676,72 @@
   box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
 }
 
+/* 平板尺寸优化（768px - 1024px） */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .mine-container {
+    max-width: 700px;  /* ✅ 固定最大宽度 */
+    margin: 0 auto !important;    /* ✅ 强制居中 */
+    padding: 15px;
+    float: none !important;  /* ✅ 确保没有浮动影响 */
+    clear: both;  /* ✅ 清除浮动 */
+  }
+
+  .user-info {
+    max-width: 450px;
+    margin: 0 auto !important;  /* ✅ 强制居中 */
+    padding: 25px;
+  }
+
+  /* ✅ 平板端保持水平排列 */
+  .user-header {
+    flex-direction: row !important;  /* ✅ 水平排列 */
+    align-items: center !important;
+    text-align: left !important;
+  }
+
+  .avatar-container {
+    margin-right: 15px !important;  /* ✅ 右边距 */
+    margin-bottom: 0 !important;    /* ✅ 无底部间距 */
+  }
+
+  .user-basic-info {
+    text-align: left !important;  /* ✅ 左对齐 */
+  }
+
+  .signature-container {
+    justify-content: flex-start !important;  /* ✅ 左对齐 */
+  }
+
+  .user-signature {
+    text-align: left !important;  /* ✅ 左对齐 */
+  }
+
+  .user-id,
+  .user-email {
+    text-align: left !important;  /* ✅ 左对齐 */
+  }
+
+  /* ✅ 平板端二维码水平排列 */
+  .id-email-qrcode {
+    flex-direction: row !important;  /* ✅ 水平排列 */
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+
+  .id-email {
+    text-align: left !important;  /* ✅ 左对齐 */
+    word-break: normal !important;
+  }
+}
+
 /* 响应式设计 */
 @media (max-width: 768px) {
+  .mine-container {
+    width: 100%;       /* ✅ 占满宽度 */
+    max-width: 100%;   /* ✅ 无最大宽度限制 */
+    padding: 10px 5px; /* ✅ 最小留白 */
+  }
+
   .mine-container h2 {
     font-size: 24px;
   }
@@ -660,6 +773,182 @@
   .feature-name {
     font-size: 13px;
   }
+
+  /* ✅ 用户头部信息响应式 */
+  .user-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    flex-direction: column;  /* ✅ 垂直排列 */
+    align-items: center;     /* ✅ 居中对齐 */
+    text-align: center;      /* ✅ 文字居中 */
+  }
+
+  .avatar-container {
+    margin-right: 0;         /* ✅ 移除右边距 */
+    margin-bottom: 12px;     /* ✅ 添加底部间距 */
+  }
+
+  .user-avatar {
+    height: 60px;  /* ✅ 减小头像尺寸 */
+    border-width: 2px;
+  }
+
+  .user-basic-info {
+    text-align: center;  /* ✅ 文字居中 */
+  }
+
+  .user-basic-info h3 {
+    font-size: 18px;
+  }
+
+  .signature-container {
+    justify-content: center;  /* ✅ 签名容器居中 */
+  }
+
+  .user-signature {
+    font-size: 13px;
+    max-width: 100%;  /* ✅ 占满宽度 */
+    text-align: center;
+  }
+
+  .user-id,
+  .user-email {
+    font-size: 13px;
+    text-align: center;  /* ✅ 文字居中 */
+  }
+
+  /* ✅ 手机端二维码垂直排列 */
+  .id-email-qrcode {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .id-email {
+    text-align: center;
+    word-break: break-all;
+  }
+
+  /* ✅ 手机端验证方式垂直排列 */
+  .method-item {
+    flex-direction: column;  /* ✅ 垂直排列 */
+    align-items: flex-start;
+  }
+
+  .method-icon {
+    margin-right: 0;
+    margin-bottom: 8px;  /* ✅ 底部间距 */
+  }
+
+  .method-text {
+    margin-bottom: 4px;  /* ✅ 底部间距 */
+  }
+}
+
+/* ✅ 平板端强制水平排列（确保768px保持一行） */
+@media (min-width: 768px) {
+  .method-item {
+    flex-direction: row !important;  /* ✅ 强制水平排列 */
+    align-items: center !important;
+  }
+
+  .method-icon {
+    margin-right: 12px !important;  /* ✅ 强制右边距 */
+    margin-bottom: 0 !important;
+  }
+
+  .method-text {
+    margin-bottom: 0 !important;
+  }
+}
+
+/* 小屏手机优化（< 375px） */
+@media (max-width: 375px) {
+  .mine-container {
+    padding: 3px 2px;  /* ✅ 最小留白 */
+  }
+
+  .user-info {
+    padding: 10px;     /* ✅ 最小卡片内边距 */
+    width: calc(100% - 6px);  /* ✅ 精确宽度 */
+    box-sizing: border-box;  /* ✅ 确保padding不影响宽度 */
+  }
+
+  .user-header {
+    flex-direction: column;  /* ✅ 头像和信息垂直排列 */
+    text-align: center;
+    margin-bottom: 15px;
+  }
+
+  .avatar-container {
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .user-avatar {
+    height: 55px;  /* ✅ 进一步减小头像 */
+  }
+
+  .user-basic-info {
+    text-align: center;
+  }
+
+  .user-basic-info h3 {
+    font-size: 17px;
+  }
+
+  .user-signature {
+    max-width: 100%;
+    font-size: 12px;
+  }
+
+  .user-id,
+  .user-email {
+    font-size: 12px;
+  }
+
+  .user-email-container {
+    justify-content: center;
+  }
+
+  /* ✅ 修复二维码出界问题 */
+  .id-email-qrcode {
+    flex-direction: column;  /* ✅ 垂直排列 */
+    align-items: center;
+    gap: 8px;  /* ✅ 添加间距 */
+    width: 100%;  /* ✅ 占满宽度 */
+    padding: 0;
+    margin: 0;
+  }
+
+  .id-email {
+    text-align: center;
+    width: 100%;  /* ✅ 占满宽度 */
+    word-break: break-all;  /* ✅ 邮箱太长时换行 */
+  }
+
+  .qrcode-small {
+    padding: 2px;  /* ✅ 最小内边距 */
+    max-width: 30px;  /* ✅ 最大宽度 */
+    max-height: 30px;  /* ✅ 最大高度 */
+    box-sizing: border-box;
+  }
+
+  .qrcode-mini {
+    width: 20px;   /* ✅ 最小二维码尺寸 */
+    height: 20px;
+    max-width: 100%;  /* ✅ 不超过容器 */
+    object-fit: contain;  /* ✅ 保持比例 */
+  }
+
+  /* ✅ 确保图片不超过容器 */
+  .qrcode-small img,
+  .qrcode-mini img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
 }
 
 /* 验证方式选择样式 */
@@ -669,7 +958,7 @@
 
 .method-item {
   display: flex;
-  align-items: center;
+  align-items: center;  /* ✅ 默认水平排列 */
   padding: 12px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
@@ -685,7 +974,7 @@
 
 .method-icon {
   font-size: 20px;
-  margin-right: 12px;
+  margin-right: 12px;  /* ✅ 右边距 */
 }
 
 .method-text {
@@ -1528,6 +1817,43 @@
   color: #e0e0e0;
 }
 
+/* ✅ 邮箱验证弹窗专属样式 */
+.edit-email-modal .modal-content {
+  max-width: 380px;        /* ✅ 稍宽一点 */
+  padding: 20px;           /* ✅ 足够内边距 */
+}
+
+.edit-email-modal h4 {
+  white-space: nowrap;     /* ✅ 标题不换行 */
+  word-break: keep-all;    /* ✅ 中文不换行 */
+  margin-bottom: 16px;     /* ✅ 标题间距 */
+}
+
+/* ✅ 邮箱显示区域 */
+.edit-email-modal .email-display {
+  display: flex;
+  flex-direction: column;   /* ✅ 垂直排列 */
+  gap: 8px;                 /* ✅ 间距 */
+  margin-bottom: 20px;      /* ✅ 底部间距 */
+}
+
+.edit-email-modal .email-label {
+  font-size: 14px;
+  color: #7f8c8d;
+  text-align: center;       /* ✅ 居中 */
+}
+
+.edit-email-modal .email-value {
+  font-size: 14px;
+  color: #2c3e50;
+  word-break: break-all;    /* ✅ 邮箱允许换行 */
+  word-wrap: break-word;    /* ✅ 允许断词 */
+  text-align: center;       /* ✅ 居中 */
+  padding: 8px 12px;       /* ✅ 内边距 */
+  background: #f8f9fa;     /* ✅ 背景色 */
+  border-radius: 6px;       /* ✅ 圆角 */
+}
+
 .dark-theme .about-modal .modal-content {
   background: #2c2c2c;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
@@ -1667,4 +1993,40 @@
 
 .dark-theme .logout-confirm-modal .confirm-btn:hover {
   background: #c0392b;
+}
+
+/* ✅ 小屏幕弹窗响应式优化 */
+@media (max-width: 420px) {
+  .modal-content {
+    padding: 12px !important;        /* ✅ 减小内边距 */
+    max-width: 100% !important;      /* ✅ 占满宽度 */
+    min-width: 260px !important;     /* ✅ 确保最小宽度显示标题 */
+    border-radius: 10px !important;  /* ✅ 减小圆角 */
+    width: calc(100% - 30px) !important;  /* ✅ 减去padding */
+  }
+
+  .modal-content h4 {
+    font-size: 16px !important;      /* ✅ 减小标题字号 */
+    margin-bottom: 12px !important;  /* ✅ 减小标题间距 */
+  }
+
+  .form-group {
+    margin-bottom: 12px !important;  /* ✅ 减小表单间距 */
+  }
+
+  .form-input {
+    padding: 10px 12px !important;  /* ✅ 减小输入框内边距 */
+    font-size: 14px !important;      /* ✅ 减小输入框字号 */
+  }
+
+  .edit-actions {
+    flex-direction: column !important;  /* ✅ 按钮垂直排列 */
+    gap: 8px !important;               /* ✅ 按钮间距 */
+  }
+
+  .save-btn, .cancel-btn {
+    width: 100% !important;          /* ✅ 按钮占满宽度 */
+    padding: 10px !important;        /* ✅ 按钮内边距 */
+    font-size: 14px !important;      /* ✅ 按钮字号 */
+  }
 }

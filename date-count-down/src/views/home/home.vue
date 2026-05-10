@@ -230,17 +230,19 @@ export default {
     async performDelete () {
       const token = localStorage.getItem('access_token')
 
-      // 如果有token，先调用后端删除API
+      // 如果有token，并行调用后端删除API（优化性能）
       if (token) {
         try {
-          for (const id of this.selectedItems) {
-            await fetch(`/api/countdown/${id}`, {
+          // 使用Promise.all并行删除，大幅提升速度
+          const deletePromises = this.selectedItems.map(id =>
+            fetch(`/api/countdown/${id}`, {
               method: 'DELETE',
               headers: {
                 Authorization: `Bearer ${token}`
               }
             })
-          }
+          )
+          await Promise.all(deletePromises)
         } catch (error) {
           console.error('从后端删除失败:', error)
         }

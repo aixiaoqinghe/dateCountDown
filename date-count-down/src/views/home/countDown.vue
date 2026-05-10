@@ -213,8 +213,9 @@ export default {
             console.log('后端返回的数据:', result)
             console.log('后端返回的background_image:', result.background_image)
             console.log('后端返回的background_image长度:', result.background_image ? result.background_image.length : 0)
-            // 更新本地存储
-            const history = JSON.parse(localStorage.getItem('countdownHistory') || '[]')
+            // 更新本地存储（按用户区分）
+            const userStorageKey = this.getUserStorageKey('countdownHistory')
+            const history = JSON.parse(localStorage.getItem(userStorageKey) || '[]')
             const newItem = {
               id: result.id,
               taskName: result.task_name,
@@ -224,7 +225,7 @@ export default {
               createdAt: result.created_at
             }
             history.push(newItem)
-            localStorage.setItem('countdownHistory', JSON.stringify(history))
+            localStorage.setItem(userStorageKey, JSON.stringify(history))
             showSuccessToast('已添加到历史记录！')
           } else {
             // 如果后端失败，降级到本地存储
@@ -244,9 +245,30 @@ export default {
       this.showCategoryModal = false
     },
 
+    // 获取用户ID
+    getUserId () {
+      const userInfo = localStorage.getItem('userInfo')
+      if (userInfo) {
+        try {
+          const parsed = JSON.parse(userInfo)
+          return parsed.id || parsed.user_id || 'anonymous'
+        } catch (e) {
+          return 'anonymous'
+        }
+      }
+      return 'anonymous'
+    },
+
+    // 获取用户特定的存储键
+    getUserStorageKey (key) {
+      const userId = this.getUserId()
+      return `${key}_${userId}`
+    },
+
     // 保存到本地存储（降级方案）
     saveToLocalHistory (category) {
-      const history = JSON.parse(localStorage.getItem('countdownHistory') || '[]')
+      const userStorageKey = this.getUserStorageKey('countdownHistory')
+      const history = JSON.parse(localStorage.getItem(userStorageKey) || '[]')
       console.log('保存前的历史记录:', history)
 
       const newItem = {
@@ -259,7 +281,7 @@ export default {
       }
 
       history.push(newItem)
-      localStorage.setItem('countdownHistory', JSON.stringify(history))
+      localStorage.setItem(userStorageKey, JSON.stringify(history))
       console.log('保存后的历史记录:', history)
       showSuccessToast('已添加到历史记录！')
     },
@@ -298,8 +320,9 @@ export default {
           })
 
           if (response.ok) {
-            // 更新本地存储
-            const history = JSON.parse(localStorage.getItem('countdownHistory') || '[]')
+            // 更新本地存储（按用户区分）
+            const userStorageKey = this.getUserStorageKey('countdownHistory')
+            const history = JSON.parse(localStorage.getItem(userStorageKey) || '[]')
             const updatedHistory = history.map(item => {
               if (item.id === this.originalItem.id) {
                 return {
@@ -311,7 +334,7 @@ export default {
               }
               return item
             })
-            localStorage.setItem('countdownHistory', JSON.stringify(updatedHistory))
+            localStorage.setItem(userStorageKey, JSON.stringify(updatedHistory))
             showSuccessToast('修改成功！')
           } else {
             // 如果后端失败，降级到本地存储
@@ -336,12 +359,13 @@ export default {
 
     // 更新本地存储（降级方案）
     updateLocalHistory () {
-      const history = JSON.parse(localStorage.getItem('countdownHistory') || '[]')
+      const userStorageKey = this.getUserStorageKey('countdownHistory')
+      const history = JSON.parse(localStorage.getItem(userStorageKey) || '[]')
       console.log('修改前的历史记录:', history)
       console.log('原始项:', this.originalItem)
 
       const updatedHistory = history.map(item => {
-        if (item.taskName === this.originalItem.taskName && item.targetDate === this.originalItem.targetDate) {
+        if (item.id === this.originalItem.id) {
           return {
             ...item,
             taskName: this.taskName,
@@ -352,7 +376,7 @@ export default {
         return item
       })
 
-      localStorage.setItem('countdownHistory', JSON.stringify(updatedHistory))
+      localStorage.setItem(userStorageKey, JSON.stringify(updatedHistory))
       console.log('修改后的历史记录:', updatedHistory)
       showSuccessToast('修改成功！')
     },

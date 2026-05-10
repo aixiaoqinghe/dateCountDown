@@ -60,8 +60,8 @@
     </div>
 
     <!-- 字体设置弹窗 -->
-    <div class="font-modal" v-if="showFontModal">
-      <div class="modal-content">
+    <div class="font-modal" v-if="showFontModal" @click="closeFontModal">
+      <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h3>字体设置</h3>
           <button class="modal-close" @click="closeFontModal">×</button>

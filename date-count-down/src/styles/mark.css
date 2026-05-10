@@ -519,6 +519,47 @@
 
 /* 响应式调整 */
 @media (max-width: 768px) {
+  /* 容器 */
+  .mark-container {
+    padding: 10px;
+  }
+
+  /* 布局改为单列 */
+  .content-wrapper {
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  /* 侧边栏改为顶部导航 */
+  .sidebar-container {
+    width: 100%;
+    display: block !important;  /* ✅ 强制显示 */
+    visibility: visible !important;  /* ✅ 确保可见 */
+  }
+
+  .sidebar-container .van-sidebar {
+    display: flex !important;  /* ✅ 强制flex显示 */
+    overflow-x: auto;
+    border-radius: 8px;
+    width: 100%;
+    min-height: 44px;  /* ✅ 最小高度 */
+  }
+
+  .van-sidebar-item {
+    flex-shrink: 0;
+    padding: 12px 24px;  /* ✅ 增加内边距 */
+    font-size: 15px;  /* ✅ 增大字号 */
+    min-width: 80px;  /* ✅ 最小宽度 */
+    text-align: center;  /* ✅ 居中对齐 */
+  }
+
+  /* 内容区域 */
+  .content-area {
+    padding: 15px;
+    min-height: auto;
+  }
+
+  /* 背景选项 */
   .bg-options {
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
     gap: 10px;

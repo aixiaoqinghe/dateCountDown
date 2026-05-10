@@ -6,15 +6,15 @@ const requestInterceptor = (config) => {
   const token = localStorage.getItem('access_token')
   if (token) {
     config.headers = config.headers || {}
-    config.headers.Authorization = `Bearer ${token}`
+    config.headers.Authorization = `Bearer ${token}` // 自动加 Token
   }
-  
+
   // 设置默认 Content-Type
   if (!config.headers?.['Content-Type']) {
     config.headers = config.headers || {}
     config.headers['Content-Type'] = 'application/json'
   }
-  
+
   console.log('请求配置:', config)
   return config
 }
@@ -22,7 +22,7 @@ const requestInterceptor = (config) => {
 // 响应拦截器：统一处理响应
 const responseInterceptor = async (response) => {
   const result = await response.json()
-  
+
   // 统一错误处理
   if (!response.ok) {
     // 根据不同状态码处理
@@ -33,24 +33,24 @@ const responseInterceptor = async (response) => {
         localStorage.removeItem('userInfo')
         // 跳转到登录页
         if (window.location.pathname !== '/login') {
-          window.location.href = '/login'
+          window.location.href = '/login' // 自动跳登录
         }
         throw new Error(result.message || '登录已过期，请重新登录')
-        
+
       case 403:
         throw new Error(result.message || '无权访问')
-        
+
       case 404:
         throw new Error(result.message || '资源不存在')
-        
+
       case 500:
         throw new Error(result.message || '服务器内部错误')
-        
+
       default:
         throw new Error(result.message || '请求失败')
     }
   }
-  
+
   return result
 }
 
@@ -72,13 +72,12 @@ export const request = async (url, options = {}) => {
   try {
     // 应用请求拦截器
     const config = requestInterceptor({ url, ...options })
-    
+
     // 发送请求
     const response = await fetch(config.url, config)
-    
+
     // 应用响应拦截器
     return await responseInterceptor(response)
-    
   } catch (error) {
     // 统一错误处理
     errorHandler(error)
@@ -91,7 +90,7 @@ export const get = (url, params = {}) => {
   // 构建查询参数
   const queryString = new URLSearchParams(params).toString()
   const fullUrl = queryString ? `${url}?${queryString}` : url
-  
+
   return request(fullUrl, { method: 'GET' })
 }
 
@@ -115,7 +114,7 @@ export const put = (url, data = {}) => {
 export const del = (url, params = {}) => {
   const queryString = new URLSearchParams(params).toString()
   const fullUrl = queryString ? `${url}?${queryString}` : url
-  
+
   return request(fullUrl, { method: 'DELETE' })
 }
 

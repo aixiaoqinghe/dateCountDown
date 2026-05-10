@@ -410,17 +410,43 @@
   bottom: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
+  align-items: flex-start;  /* ✅ 顶部对齐 */
   justify-content: center;
   z-index: 2000;
   animation: fadeIn 0.3s ease;
+  padding: 20px;  /* ✅ 添加内边距 */
+  overflow-y: auto;  /* ✅ 支持滚动 */
+}
+
+.font-modal .modal-content {
+  width: 100%;           /* ✅ 占满宽度 */
+  max-width: 360px;      /* ✅ 最大宽度 */
+  max-height: 80vh;      /* ✅ 最大高度 */
+  display: flex;
+  flex-direction: column;  /* ✅ 垂直排列 */
+  overflow: hidden;       /* ✅ 隐藏溢出 */
+}
+
+.font-modal .modal-body {
+  flex: 1;                /* ✅ 占满剩余空间 */
+  overflow-y: auto;       /* ✅ 内容可滚动 */
+  padding: 15px;         /* ✅ 内边距 */
 }
 
 .font-options {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin-top: 20px;
+  gap: 12px;  /* ✅ 减小间距 */
+  margin-top: 0;  /* ✅ 移除顶部间距 */
+}
+
+.font-modal .modal-footer {
+  padding: 15px;        /* ✅ 内边距 */
+  border-top: 1px solid #e0e0e0;  /* ✅ 分隔线 */
+  display: flex;
+  justify-content: flex-end;  /* ✅ 右对齐 */
+  gap: 10px;  /* ✅ 按钮间距 */
+  background: white;  /* ✅ 白色背景 */
 }
 
 .font-option {
@@ -950,8 +976,11 @@
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: flex-start;  /* ✅ 顶部对齐 */
   z-index: 1000;
+  padding: 20px;  /* ✅ 添加内边距 */
+  overflow-y: auto;  /* ✅ 支持滚动 */
+  box-sizing: border-box;
 }
 
 .version-modal .modal-content,
@@ -960,11 +989,15 @@
 .update-success-modal .modal-content {
   background: white;
   border-radius: 12px;
-  padding: 30px;
-  width: 90%;
+  padding: 0;  /* ✅ 移除外层padding，由内部元素控制 */
+  width: 100%;
   max-width: 400px;
+  max-height: 85vh;  /* ✅ 最大高度 */
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   animation: modalFadeIn 0.3s ease;
+  display: flex;
+  flex-direction: column;  /* ✅ 垂直排列 */
+  overflow: hidden;  /* ✅ 隐藏溢出 */
 }
 
 @keyframes modalFadeIn {
@@ -985,7 +1018,9 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
+  padding: 20px;  /* ✅ 添加内边距 */
+  border-bottom: 1px solid #e0e0e0;  /* ✅ 分隔线 */
+  background: white;  /* ✅ 白色背景 */
 }
 
 .version-modal .modal-header h3,
@@ -1032,7 +1067,9 @@
 .update-confirm-modal .modal-body,
 .update-progress-modal .modal-body,
 .update-success-modal .modal-body {
-  margin-bottom: 20px;
+  flex: 1;  /* ✅ 占满剩余空间 */
+  overflow-y: auto;  /* ✅ 内容可滚动 */
+  padding: 20px;  /* ✅ 内边距 */
 }
 
 /* 版本信息样式 */
@@ -1157,6 +1194,9 @@
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  padding: 15px 20px;  /* ✅ 内边距 */
+  border-top: 1px solid #e0e0e0;  /* ✅ 分隔线 */
+  background: white;  /* ✅ 白色背景 */
 }
 
 .cancel-btn {
@@ -1298,6 +1338,9 @@
   margin-bottom: 10px;
   border: 1px solid #e0e0e0;
   transition: all 0.3s ease;
+  box-sizing: border-box;  /* ✅ 确保padding不影响宽度 */
+  word-break: break-all;   /* ✅ 长文本换行 */
+  overflow: hidden;        /* ✅ 隐藏溢出 */
 }
 
 .version-item:hover {
@@ -1317,6 +1360,7 @@
   font-size: 16px;
   font-weight: 600;
   color: #2c3e50;
+  white-space: nowrap;      /* ✅ 版本号不换行 */
 }
 
 .latest-badge {
@@ -1338,11 +1382,19 @@
 }
 
 /* 版本内容 */
+.version-content {
+  word-break: break-all;    /* ✅ 长文本换行 */
+  word-wrap: break-word;    /* ✅ 允许断词 */
+  overflow-wrap: break-word; /* ✅ 现代浏览器换行 */
+}
+
 .version-content p {
   margin: 0;
   font-size: 14px;
   color: #7f8c8d;
   line-height: 1.5;
+  word-break: break-all;    /* ✅ 长文本换行 */
+  word-wrap: break-word;    /* ✅ 允许断词 */
 }
 
 /* 版本操作按钮 */
@@ -1605,4 +1657,105 @@
   background: #444;
   border-color: #3498db;
   color: #3498db;
+}
+
+/* ========== 响应式样式 ========== */
+
+/* 📱 手机端（< 768px） */
+@media (max-width: 768px) {
+  .setting-container {
+    padding: 10px;
+    min-height: 60vh;
+  }
+
+  .setting-container h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    margin-top: 50px;
+  }
+
+  /* 顶部通知栏 */
+  .top-notification {
+    padding: 8px 15px;
+    height: 35px;
+  }
+
+  .notification-icon {
+    font-size: 16px;
+  }
+
+  .notification-text {
+    font-size: 14px;
+  }
+
+  /* 设置卡片 */
+  .setting-section {
+    padding: 15px;
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+
+  /* 版本更新进度条 */
+  .update-progress-bar {
+    height: 16px;
+  }
+
+  .update-progress-icon {
+    font-size: 12px;
+  }
+
+  /* 按钮 */
+  .cancel-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+
+  /* 版本列表 */
+  .version-item {
+    padding: 12px;
+  }
+
+  .version-info h4 {
+    font-size: 15px;
+  }
+
+  .version-info p {
+    font-size: 13px;
+  }
+}
+
+/* 📲 平板端（768px - 1024px） */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .setting-container {
+    padding: 15px;
+  }
+
+  .setting-container h2 {
+    font-size: 26px;
+  }
+
+  .setting-section {
+    padding: 18px;
+  }
+
+  .update-progress-bar {
+    height: 18px;
+  }
+}
+
+/* 💻 大屏电脑（> 1200px） */
+@media (min-width: 1200px) {
+  .setting-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 30px;
+  }
+
+  .setting-container h2 {
+    font-size: 32px;
+  }
 }
