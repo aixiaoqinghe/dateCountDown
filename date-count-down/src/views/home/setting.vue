@@ -218,13 +218,13 @@
             <button class="modal-close" @click="cancelUpdate" :disabled="true">×</button>
           </div>
           <div class="modal-body">
-            <div class="progress-container">
-              <div class="progress-bar">
-                <div class="progress-fill" :style="{ width: updateProgress + '%' }">
-                  <div class="progress-icon">🚀</div>
+            <div class="update-progress-container">
+              <div class="update-progress-bar">
+                <div class="update-progress-fill" :style="{ width: updateProgress + '%' }">
+                  <div class="update-progress-icon">🚀</div>
                 </div>
               </div>
-              <div class="progress-text">{{ updateProgress }}%</div>
+              <div class="update-progress-text">{{ updateProgress }}%</div>
             </div>
             <p class="update-status">{{ updateStatus }}</p>
           </div>
@@ -728,10 +728,17 @@ export default {
       // 如果版本列表有数据，使用最新版本的信息
       if (versionList.value.length > 0) {
         const latest = versionList.value.find(v => v.is_latest) || versionList.value[0]
-        latestVersion.value = latest.version_number
-        updateContent.value = Array.isArray(latest.update_content)
-          ? latest.update_content
-          : latest.update_content.split(';')
+        latestVersion.value = latest.version_number || '1.0.0'
+
+        // 处理 update_content，防止 undefined
+        if (Array.isArray(latest.update_content)) {
+          updateContent.value = latest.update_content
+        } else if (latest.update_content && typeof latest.update_content === 'string') {
+          updateContent.value = latest.update_content.split(';')
+        } else {
+          updateContent.value = ['暂无更新内容']
+        }
+
         hasUpdate.value = currentVersion.value !== latestVersion.value
       } else {
         // 使用默认模拟数据
@@ -756,9 +763,9 @@ export default {
       updateProgress.value = 0
       updateStatus.value = '正在准备更新...'
 
-      // 模拟更新进度
+      // 模拟更新进度 - 更慢更平滑
       updateInterval = setInterval(() => {
-        updateProgress.value += 5
+        updateProgress.value += 1
 
         if (updateProgress.value < 20) {
           updateStatus.value = '正在下载更新包...'
@@ -775,7 +782,7 @@ export default {
           showUpdateProgressModal.value = false
           showUpdateSuccessModal.value = true
         }
-      }, 300)
+      }, 100)
     }
 
     const cancelUpdate = function () {

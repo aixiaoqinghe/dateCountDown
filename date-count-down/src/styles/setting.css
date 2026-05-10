@@ -1090,51 +1090,39 @@
 }
 
 /* 更新进度样式 */
-.progress-container {
+.update-progress-container {
   margin-bottom: 20px;
 }
 
-.progress-bar {
+.update-progress-bar {
   width: 100%;
   height: 20px;
-  background: #f5f7fa;
+  background: #e0e0e0;
   border-radius: 10px;
   overflow: hidden;
   position: relative;
   margin-bottom: 10px;
 }
 
-.progress-fill {
+.update-progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #3498db, #2980b9);
   border-radius: 10px;
-  position: relative;
-  transition: width 0.3s ease;
+  transition: width 0.3s linear;
   display: flex;
   align-items: center;
-  padding-right: 10px;
+  padding-right: 5px;
   justify-content: flex-end;
+  animation: none !important;
+  background-size: auto !important;
 }
 
-.progress-icon {
-  font-size: 16px;
-  animation: pulse 1.5s ease-in-out infinite;
+.update-progress-icon {
+  font-size: 14px;
 }
 
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.2);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-.progress-text {
-  text-align: right;
+.update-progress-text {
+  text-align: center;
   font-size: 14px;
   color: #2c3e50;
   font-weight: 500;

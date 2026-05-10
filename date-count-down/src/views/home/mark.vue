@@ -93,7 +93,9 @@
             <p class="development-text">功能开发中</p>
             <div class="progress-container">
               <div class="progress-bar">
-                <div class="progress-fill"></div>
+                <div class="progress-fill">
+                  <span class="progress-icon">📝</span>
+                </div>
               </div>
               <span class="progress-text">开发进度</span>
             </div>
@@ -109,7 +111,9 @@
             <p class="development-text">功能开发中</p>
             <div class="progress-container">
               <div class="progress-bar">
-                <div class="progress-fill"></div>
+                <div class="progress-fill">
+                  <span class="progress-icon">🎨</span>
+                </div>
               </div>
               <span class="progress-text">开发进度</span>
             </div>

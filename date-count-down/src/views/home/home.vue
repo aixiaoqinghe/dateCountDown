@@ -138,9 +138,30 @@ export default {
         this.$router.push('/home/countDown')
       }
     },
+    // 获取当前用户唯一标识（用于区分不同用户的数据）
+    getUserId () {
+      const userInfo = localStorage.getItem('userInfo')
+      if (userInfo) {
+        try {
+          const parsed = JSON.parse(userInfo)
+          return parsed.id || parsed.user_id || 'anonymous'
+        } catch {
+          return 'anonymous'
+        }
+      }
+      return 'anonymous'
+    },
+
+    // 获取用户专属的本地存储key
+    getUserStorageKey (key) {
+      const userId = this.getUserId()
+      return `${key}_${userId}`
+    },
+
     // 加载存储的倒计时记录
     async loadCountdowns () {
       const token = localStorage.getItem('access_token')
+      const userStorageKey = this.getUserStorageKey('countdownHistory')
 
       if (token) {
         // 如果有token，尝试从后端获取数据
@@ -163,8 +184,8 @@ export default {
               createdAt: item.created_at
             }))
             this.countdowns = formattedData
-            // 同时保存到本地存储作为缓存
-            localStorage.setItem('countdownHistory', JSON.stringify(formattedData))
+            // 同时保存到本地存储作为缓存（按用户区分）
+            localStorage.setItem(userStorageKey, JSON.stringify(formattedData))
             return
           }
         } catch (error) {
@@ -172,8 +193,8 @@ export default {
         }
       }
 
-      // 如果没有token或后端请求失败，使用本地存储
-      const history = JSON.parse(localStorage.getItem('countdownHistory') || '[]')
+      // 如果没有token或后端请求失败，使用本地存储（按用户区分）
+      const history = JSON.parse(localStorage.getItem(userStorageKey) || '[]')
       this.countdowns = history
     },
 
@@ -225,9 +246,10 @@ export default {
         }
       }
 
-      // 更新本地存储
+      // 更新本地存储（按用户区分）
       const updatedHistory = this.countdowns.filter(item => !this.selectedItems.includes(item.id))
-      localStorage.setItem('countdownHistory', JSON.stringify(updatedHistory))
+      const userStorageKey = this.getUserStorageKey('countdownHistory')
+      localStorage.setItem(userStorageKey, JSON.stringify(updatedHistory))
       // 重新加载数据
       this.loadCountdowns()
       // 关闭弹窗

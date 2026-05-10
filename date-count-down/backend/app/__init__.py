@@ -10,30 +10,37 @@ from flask_mail import Mail
 import os
 from flask import Flask, jsonify, send_from_directory
 
+# 获取项目根目录绝对路径
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
 # 配置日志
 logging.basicConfig(
-    level=logging.INFO,     # 日志级别: DEBUG, INFO, WARNING, ERROR, CRITICAL
-    format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s',   # 日志格式
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.StreamHandler(),    # 输出到控制台
-        logging.FileHandler('app.log')     # 输出到文件
+        logging.StreamHandler(),
+        logging.FileHandler(os.path.join(BASE_DIR, 'app.log'), encoding='utf-8')
     ]
 )
 
 logger = logging.getLogger(__name__)
 
 # 初始化扩展
-db = SQLAlchemy()    # 创建SQLAlchemy实例，后续用于数据库操作（如创建表、查询数据）
-jwt = JWTManager()    # 创建JWTManager实例，后续用于JWT令牌的生成和验证
-mail = Mail()    # 创建Mail实例，后续用于发送邮件
+db = SQLAlchemy()
+jwt = JWTManager()
+mail = Mail()
 
 def create_app():
-    app = Flask(__name__)   # 创建Flask应用实例，__name__用于确定应用的根目录（用于查找静态文件、模板等）
-    app.config.from_object(Config)   # 加载Config类中的配置（如数据库连接字符串、密钥等）到应用实例中
+    app = Flask(__name__)
+    app.config.from_object(Config)
 
     # 配置日志
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
+
+    # 移除重复的处理器
+    for handler in list(logger.handlers):
+        logger.removeHandler(handler)
 
     # 控制台处理器
     console_handler = logging.StreamHandler()
@@ -41,8 +48,8 @@ def create_app():
 
     # 文件处理器（带轮转）
     file_handler = RotatingFileHandler(
-        'app.log',
-        maxBytes=1024 * 1024 * 10,    # 10MB
+        os.path.join(BASE_DIR, 'app.log'),
+        maxBytes=1024 * 1024 * 10,
         backupCount=5,
         encoding='utf-8'
     )
