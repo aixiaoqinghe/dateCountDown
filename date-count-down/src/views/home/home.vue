@@ -80,6 +80,7 @@
 <script>
 import { showToast, showSuccessToast } from 'vant'
 import { debounce } from '@/utils/throttle.js'
+import { requestCache } from '@/utils/requestCache.js'
 import Skeleton from '@/components/Skeleton.vue' // ✅ 导入骨架屏组件
 export default {
   name: 'homeHome',
@@ -326,6 +327,9 @@ export default {
 
       // 更新本地存储
       localStorage.setItem(userStorageKey, JSON.stringify(this.countdowns))
+
+      // ✅ 清除API缓存，确保下次加载获取最新数据
+      requestCache.clear()
 
       // 关闭弹窗并重置状态
       this.showDeleteModal = false

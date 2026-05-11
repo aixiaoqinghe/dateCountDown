@@ -1,4 +1,5 @@
 // src/api/request.js - 统一请求封装
+import { requestCache } from '@/utils/requestCache.js'
 
 // 请求拦截器：在发送请求前做一些处理
 const requestInterceptor = (config) => {
@@ -67,16 +68,58 @@ const errorHandler = (error) => {
   throw error
 }
 
-// 封装 fetch 请求
+// 封装 fetch 请求（带缓存支持）
 export const request = async (url, options = {}) => {
   try {
     // 应用请求拦截器
     const config = requestInterceptor({ url, ...options })
 
-    // 发送请求
-    const response = await fetch(config.url, config)
+    // ✅ GET请求启用缓存
+    const method = (options.method || 'GET').toUpperCase()
+    if (method === 'GET') {
+      const cacheKey = `${config.url}_${JSON.stringify(options.body || {})}`
 
-    // 应用响应拦截器
+      // 检查缓存
+      const cachedData = requestCache.get(cacheKey)
+      if (cachedData) {
+        console.log(`[API缓存命中] ${config.url}`)
+        return cachedData
+      }
+
+      // 检查是否有正在进行的请求（请求合并）
+      if (requestCache.hasPending(cacheKey)) {
+        console.log(`[API请求合并] ${config.url}`)
+        return requestCache.getPending(cacheKey)
+      }
+
+      // 创建请求Promise并添加到pending队列
+      const requestPromise = (async () => {
+        try {
+          // 发送请求
+          const response = await fetch(config.url, config)
+
+          // 应用响应拦截器
+          const result = await responseInterceptor(response)
+
+          // ✅ GET请求成功后缓存结果（5分钟）
+          requestCache.set(cacheKey, result, 5 * 60 * 1000)
+
+          return result
+        } catch (error) {
+          throw error
+        } finally {
+          // 请求完成后移除pending状态
+          requestCache.removePending(cacheKey)
+        }
+      })()
+
+      // 添加到pending队列
+      requestCache.addPending(cacheKey, requestPromise)
+      return requestPromise
+    }
+
+    // 非GET请求直接发送
+    const response = await fetch(config.url, config)
     return await responseInterceptor(response)
   } catch (error) {
     // 统一错误处理

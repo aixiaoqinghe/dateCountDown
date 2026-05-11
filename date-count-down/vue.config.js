@@ -66,10 +66,7 @@ module.exports = defineConfig({
           '^/uploads': '/uploads' // 路径重写
         }
       }
-    },
-    // ✅ 配置静态资源缓存头
-    static: {
-      cacheControl: 'public, max-age=31536000, immutable'
     }
+    // ✅ 静态资源缓存配置已移除，生产环境通过 server.js 配置
   }
 })
