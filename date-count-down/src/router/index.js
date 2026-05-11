@@ -1,21 +1,21 @@
 // 导入路由相关依赖
 import { createRouter, createWebHistory } from 'vue-router'
 
-// 导入页面组件
-// 登录和注册页面
-import login from '@/views/login/index.vue'
-import register from '@/views/register/index.vue'
-import verify from '@/views/verify/index.vue'
-import completeInfo from '@/views/completeInfo/index.vue'
+// 导入页面组件（使用懒加载 + 代码分割）
+// 登录和注册页面（首屏关键，优先加载）
+const login = () => import(/* webpackChunkName: "auth" */ '@/views/login/index.vue')
+const register = () => import(/* webpackChunkName: "auth" */ '@/views/register/index.vue')
+const verify = () => import(/* webpackChunkName: "auth" */ '@/views/verify/index.vue')
+const completeInfo = () => import(/* webpackChunkName: "auth" */ '@/views/completeInfo/index.vue')
 
-// 主页相关组件
-import homeIndex from '@/views/home/index.vue' // 主页容器，包含底部导航栏
-import homeHome from '@/views/home/home.vue' // 首页内容
-import markHome from '@/views/home/mark.vue' // 商城页面
-import countDown from '@/views/home/countDown.vue' // 倒计时页面
-import mine from '@/views/home/mine.vue' // 个人中心页面
-import setting from '@/views/home/setting.vue' // 设置页面
-import feedback from '@/views/feedback/index.vue' // 反馈意见页面
+// 主页相关组件（按需加载）
+const homeIndex = () => import(/* webpackChunkName: "home" */ '@/views/home/index.vue') // 主页容器
+const homeHome = () => import(/* webpackChunkName: "home" */ '@/views/home/home.vue') // 首页内容
+const markHome = () => import(/* webpackChunkName: "home" */ '@/views/home/mark.vue') // 商城页面
+const countDown = () => import(/* webpackChunkName: "home" */ '@/views/home/countDown.vue') // 倒计时页面
+const mine = () => import(/* webpackChunkName: "mine" */ '@/views/home/mine.vue') // 个人中心页面
+const setting = () => import(/* webpackChunkName: "mine" */ '@/views/home/setting.vue') // 设置页面
+const feedback = () => import(/* webpackChunkName: "feedback" */ '@/views/feedback/index.vue') // 反馈意见页面
 
 // 创建路由实例
 const router = createRouter({
@@ -60,12 +60,14 @@ const router = createRouter({
       path: '/home',
       name: 'homeIndex',
       component: homeIndex, // 主页容器，包含底部导航栏
+      meta: { keepAlive: true }, // ✅ 缓存主页容器
       children: [
         // 首页子路由（默认显示）
         {
           path: '',
           name: 'homeHome',
-          component: homeHome
+          component: homeHome,
+          meta: { keepAlive: true } // ✅ 缓存首页组件
         },
         // 商城页面子路由
         {
@@ -77,19 +79,22 @@ const router = createRouter({
         {
           path: 'countDown',
           name: 'countDown',
-          component: countDown
+          component: countDown,
+          meta: { keepAlive: true } // ✅ 添加缓存
         },
         // 个人中心页面子路由
         {
           path: 'mine',
           name: 'mine',
-          component: mine
+          component: mine,
+          meta: { keepAlive: true } // ✅ 添加缓存
         },
         // 设置页面子路由
         {
           path: 'setting',
           name: 'setting',
-          component: setting
+          component: setting,
+          meta: { keepAlive: true } // ✅ 添加缓存
         }
       ]
     },

@@ -1,6 +1,10 @@
 <template>
   <div id="app">
-    <router-view></router-view>
+    <!-- ✅ 添加keep-alive缓存 -->
+    <keep-alive>
+      <router-view v-show="$route.meta.keepAlive" />
+    </keep-alive>
+    <router-view v-show="!$route.meta.keepAlive" />
   </div>
 </template>
 

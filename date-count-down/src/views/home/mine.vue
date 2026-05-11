@@ -6,7 +6,7 @@
       <!-- 用户头像和基本信息 -->
       <div class="user-header">
         <div class="avatar-container">
-          <img :src="userInfo.avatar || defaultAvatar" alt="用户头像" class="user-avatar" />
+          <img v-lazy="userInfo.avatar || defaultAvatar" :data-src="userInfo.avatar || defaultAvatar" :src="defaultAvatar" alt="用户头像" class="user-avatar" />
         </div>
         <div class="user-basic-info">
           <div class="name-signature">
@@ -217,7 +217,25 @@
         <div class="modal-content">
           <h4>登录设备管理</h4>
           <div class="device-list">
-            <div v-for="(device, index) in devices" :key="device.id" class="device-item">
+            <!-- 骨架屏 -->
+            <template v-if="devices.length === 0">
+              <div v-for="i in 3" :key="i" class="device-item skeleton">
+                <div class="device-info">
+                  <div class="device-icon skeleton-icon"></div>
+                  <div class="device-details">
+                    <div class="device-name-row">
+                      <div class="skeleton-text skeleton-title"></div>
+                    </div>
+                    <div class="skeleton-text skeleton-small"></div>
+                    <div class="skeleton-text skeleton-small"></div>
+                    <div class="skeleton-text skeleton-small"></div>
+                    <div class="skeleton-text skeleton-small"></div>
+                  </div>
+                </div>
+              </div>
+            </template>
+            <!-- 实际数据 -->
+            <div v-else v-for="(device, index) in devices" :key="device.id" class="device-item">
               <div class="device-info">
                 <div class="device-icon">
                   {{ device.deviceType === '手机' ? '📱' : device.deviceType === '平板' ? '📟' : '💻' }}
@@ -234,7 +252,6 @@
                 </div>
               </div>
               <div class="device-status">
-                <!-- <button v-if="!device.isCurrent" @click="removeDevice(index)" class="remove-device-btn">移除</button> -->
                 <button v-if="!device.isCurrent" @click="removeDevice(device.id, index)" class="remove-device-btn">移除</button>
               </div>
             </div>
@@ -1365,22 +1382,39 @@ export default {
       return `${browser} - ${os}`
     }
 
-    // 获取IP地理位置信息
+    // 获取IP地理位置信息（带缓存和超时）
     const getLocationByIP = async () => {
+      // 优先从缓存获取
+      const cachedLocation = localStorage.getItem('userLocation')
+      if (cachedLocation) {
+        return cachedLocation
+      }
+
       try {
-        const response = await fetch('https://ipapi.co/json/')
+        // 设置10秒超时
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), 10000)
+
+        const response = await fetch('https://ipapi.co/json/', {
+          signal: controller.signal
+        })
+        clearTimeout(timeout)
+
         if (response.ok) {
           const data = await response.json()
           const city = data.city || ''
           const region = data.region || ''
           const country = data.country_name || ''
+          let location = '未知位置'
           if (city && region && country) {
-            return `${country} ${region} ${city}`
+            location = `${country} ${region} ${city}`
           } else if (region && country) {
-            return `${country} ${region}`
+            location = `${country} ${region}`
           } else if (country) {
-            return country
+            location = country
           }
+          localStorage.setItem('userLocation', location)
+          return location
         }
       } catch (error) {
         console.error('获取地理位置失败：', error)
@@ -1436,8 +1470,9 @@ export default {
       }
     }
 
-    const showDeviceManagement = function () {
+    const showDeviceManagement = async function () {
       showDeviceManagementModal.value = true
+      await fetchDevices()
     }
 
     const closeDeviceManagementModal = function () {

@@ -1,14 +1,15 @@
 import logging
 from logging.handlers import RotatingFileHandler
-from flask import Flask, jsonify    # 用于创建Flask应用实例和返回JSON响应
+from flask import Flask, jsonify, send_from_directory, make_response    # 用于创建Flask应用实例和返回JSON响应
 from flask_sqlalchemy import SQLAlchemy   # 用于ORM(对象关系映射)操作数据库
 from flask_cors import CORS   # 用于处理跨域请求（允许前端访问后端API）
 from flask_jwt_extended import JWTManager   # 用于JWT认证(保护需要登录的接口)
+from flask_compress import Compress   # ✅ 用于gzip压缩
 from config import Config   # 用于加载应用配置（如数据库连接信息）
 from app.utils.error_handlers import APIError
 from flask_mail import Mail
 import os
-from flask import Flask, jsonify, send_from_directory
+import mimetypes
 
 # 获取项目根目录绝对路径
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,6 +30,7 @@ logger = logging.getLogger(__name__)
 db = SQLAlchemy()
 jwt = JWTManager()
 mail = Mail()
+compress = Compress()  # ✅ 初始化压缩扩展
 
 def create_app():
     app = Flask(__name__)
@@ -70,6 +72,7 @@ def create_app():
     db.init_app(app)    # 初始化SQLAlchemy扩展，将应用实例绑定到数据库会话
     jwt.init_app(app)    # 初始化JWTManager扩展，将应用实例绑定到JWT令牌的生成和验证
     CORS(app)    # 允许跨域请求
+    compress.init_app(app)    # ✅ 启用gzip压缩
 
     # 邮箱配置（放在create_app函数内部）
     app.config['MAIL_SERVER'] = 'smtp.163.com'   # SMTP服务器地址
@@ -148,7 +151,16 @@ def create_app():
     # 配置静态文件服务（让前端可以访问上传的图片）
     @app.route('/uploads/<filename>')
     def uploaded_file(filename):
-        return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+        response = make_response(send_from_directory(app.config['UPLOAD_FOLDER'], filename))
+        # ✅ 添加缓存头：图片资源缓存1年
+        ext = os.path.splitext(filename)[1].lower()
+        if ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']:
+            response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+        elif ext in ['.js', '.css']:
+            response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+        else:
+            response.headers['Cache-Control'] = 'public, max-age=86400'
+        return response
     
     # 处理文件过大的错误
     @app.errorhandler(413)

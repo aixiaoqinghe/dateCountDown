@@ -15,7 +15,6 @@ class Countdown(db.Model):
     background_image = db.Column(db.Text(length=4294967295), nullable = True)
     created_at = db.Column(db.DateTime, default = datetime.utcnow)
     updated_at = db.Column(db.DateTime, default = datetime.utcnow, onupdate = datetime.utcnow)
-    reminder_sent = db.Column(db.Boolean, default=False)
 
     # 与user模型的关联
     user = db.relationship('User', backref = db.backref('countdowns', lazy = True))
@@ -29,6 +28,5 @@ class Countdown(db.Model):
             'category': self.category,
             'background_image': self.background_image,
             'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat(),
-            'reminder_sent': self.reminder_sent
+            'updated_at': self.updated_at.isoformat()
         }

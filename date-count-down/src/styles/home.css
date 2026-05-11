@@ -5,12 +5,15 @@
   box-sizing: border-box;
 }
 
+/* ✅ CSS Contain 优化：隔离渲染区域 */
 .home-container {
   padding: 20px;
   min-height: 70vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   position: relative;
   overflow: hidden;
+  contain: layout style paint;
+  will-change: transform;
 }
 
 /* 背景装饰 */
@@ -40,6 +43,46 @@
   margin-bottom: 30px;
   z-index: 1;
   position: relative;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+/* 搜索框样式 */
+.search-box {
+  position: relative;
+  flex: 1;
+  max-width: 300px;
+  min-width: 200px;
+}
+
+.search-input {
+  padding: 10px 40px 10px 15px;
+  border: 1px solid #ddd;
+  border-radius: 25px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  will-change: border-color, box-shadow;
+}
+
+.search-input:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.search-input::placeholder {
+  color: #95a5a6;
+}
+
+.search-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #95a5a6;
 }
 
 .home-title {
@@ -78,6 +121,7 @@
 .delete-icon {
   font-size: 24px;
   transition: all 0.3s ease;
+  will-change: transform;
 }
 
 .delete-icon-btn:hover .delete-icon {
@@ -280,14 +324,14 @@
   justify-content: center;
 }
 
-/* 倒计时卡片样式 - 水平布局：天数在左，信息在右，圆润设计 */
+/* ✅ 倒计时卡片样式 - 使用 GPU 加速 */
 .countdown-card {
   background: rgba(255, 255, 255, 0.95);
   border-radius: 24px;
   padding: 20px 24px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
   backdrop-filter: blur(12px);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -295,6 +339,9 @@
   position: relative;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.6);
+  will-change: transform, box-shadow;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .countdown-card:hover {
@@ -488,6 +535,8 @@
 .home-container.delete-mode .countdown-card:has(.card-checkbox:checked) .countdown-days {
   background: rgba(231, 76, 60, 0.1);
   color: #e74c3c;
+  -webkit-text-fill-color: #e74c3c;
+  background-clip: border-box;
 }
 
 /* 深色主题样式 */

@@ -12,6 +12,8 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URI', 'mysql+pymysql://root:20051021@localhost:3306/countdown_app')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'e7c3640ebf0f26a1fc46c1fa0b59be96')
+    # JWT令牌过期时间（设置为7天）
+    JWT_ACCESS_TOKEN_EXPIRES = 7 * 24 * 60 * 60  # 7天（秒）
     
     # 数据库连接池配置
     SQLALCHEMY_ENGINE_OPTIONS = {
