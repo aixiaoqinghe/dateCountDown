@@ -25,7 +25,8 @@ export const changePassword = (data) => {
 // 修改头像
 export const updateAvatar = (formData) => {
   const token = localStorage.getItem('access_token')
-  return fetch('/api/auth/avatar', {
+  const baseURL = 'https://aixiaoqinghe.pythonanywhere.com/api'
+  return fetch(`${baseURL}/api/auth/avatar`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`

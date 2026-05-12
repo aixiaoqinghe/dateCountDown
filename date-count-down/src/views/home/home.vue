@@ -82,6 +82,7 @@ import { showToast, showSuccessToast } from 'vant'
 import { debounce } from '@/utils/throttle.js'
 import { requestCache } from '@/utils/requestCache.js'
 import Skeleton from '@/components/Skeleton.vue' // ✅ 导入骨架屏组件
+import { get, del } from '@/api/request.js'
 export default {
   name: 'homeHome',
   components: {
@@ -235,31 +236,24 @@ export default {
       if (token) {
         // 如果有token，尝试从后端获取数据
         try {
-          const response = await fetch('/api/countdown', {
-            headers: {
-              Authorization: `Bearer ${token}`
-            }
-          })
+          const data = await get('/api/countdown')
 
-          if (response.ok) {
-            const data = await response.json()
-            // 将后端返回的字段名转换为前端使用的格式
-            const formattedData = data.map(item => ({
-              id: item.id,
-              taskName: item.task_name,
-              targetDate: item.target_date,
-              category: item.category,
-              backgroundImage: item.background_image,
-              createdAt: item.created_at
-            }))
-            this.countdowns = formattedData
-            // 同时保存到本地存储作为缓存（按用户区分）
-            localStorage.setItem(userStorageKey, JSON.stringify(formattedData))
-            this.lastLoadTime = Date.now() // ✅ 更新缓存时间戳
-            this.isLoaded = true // ✅ 设置加载完成状态
-            console.log('[性能优化] 从后端加载数据，更新缓存')
-            return
-          }
+          // 将后端返回的字段名转换为前端使用的格式
+          const formattedData = data.map(item => ({
+            id: item.id,
+            taskName: item.task_name,
+            targetDate: item.target_date,
+            category: item.category,
+            backgroundImage: item.background_image,
+            createdAt: item.created_at
+          }))
+          this.countdowns = formattedData
+          // 同时保存到本地存储作为缓存（按用户区分）
+          localStorage.setItem(userStorageKey, JSON.stringify(formattedData))
+          this.lastLoadTime = Date.now() // ✅ 更新缓存时间戳
+          this.isLoaded = true // ✅ 设置加载完成状态
+          console.log('[性能优化] 从后端加载数据，更新缓存')
+          return
         } catch (error) {
           console.error('从后端获取数据失败:', error)
         }
@@ -309,12 +303,7 @@ export default {
       if (token) {
         try {
           const deletePromises = this.selectedItems.map(id =>
-            fetch(`/api/countdown/${id}`, {
-              method: 'DELETE',
-              headers: {
-                Authorization: `Bearer ${token}`
-              }
-            })
+            del(`/api/countdown/${id}`)
           )
           await Promise.all(deletePromises)
         } catch (error) {
