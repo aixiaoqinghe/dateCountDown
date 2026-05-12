@@ -36,5 +36,5 @@ if __name__ == '__main__':
     else:
         print("调度器已在运行中，跳过启动")
     
-    # 启动应用，监听5000端口，开启调试模式
-    app.run(debug = True, port=5000)
+    # 启动应用，监听所有网络接口，端口5000，开启调试模式
+    app.run(debug=True, host='0.0.0.0', port=5000)
