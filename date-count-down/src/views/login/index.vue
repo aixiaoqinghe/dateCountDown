@@ -89,6 +89,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showSuccessToast, showToast } from 'vant'
+import { post } from '@/api/request.js'
 export default {
   name: 'loginIndex',
   setup () {
@@ -137,38 +138,25 @@ export default {
 
       try {
         // 调用后端登录接口
-        const response = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            username: loginForm.value.username,
-            password: loginForm.value.password
-          })
+        const result = await post('/api/auth/login', {
+          username: loginForm.value.username,
+          password: loginForm.value.password
         })
 
-        const result = await response.json()
+        // 登录成功，保存用户信息和token
+        localStorage.setItem('userInfo', JSON.stringify(result.user))
+        localStorage.setItem('access_token', result.access_token)
 
-        if (response.ok) {
-          // 登录成功，保存用户信息和token
-          localStorage.setItem('userInfo', JSON.stringify(result.user))
-          localStorage.setItem('access_token', result.access_token)
+        // 清除之前的倒计时缓存，确保登录新账号时获取新数据
+        localStorage.removeItem('countdownHistory')
 
-          // 清除之前的倒计时缓存，确保登录新账号时获取新数据
-          localStorage.removeItem('countdownHistory')
+        // 显示登录成功提示
+        showSuccessToast('登录成功')
 
-          // 显示登录成功提示
-          showSuccessToast('登录成功')
-
-          // 跳转到首页
-          router.push('/home')
-        } else {
-          // 登录失败，显示错误信息
-          showToast(result.message || '登录失败')
-        }
+        // 跳转到首页
+        router.push('/home')
       } catch (error) {
-        showToast('网络错误')
+        showToast(error.message || '登录失败')
       }
     }
 
