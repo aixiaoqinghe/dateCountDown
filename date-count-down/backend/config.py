@@ -8,24 +8,19 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'e7c3640ebf0f26a1fc46c1fa0b59be96')
-    
-    # 获取数据库 URI，默认为 SQLite
     DATABASE_URI = os.getenv('DATABASE_URI', 'sqlite:///countdown.db')
-    
     SQLALCHEMY_DATABASE_URI = DATABASE_URI
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'e7c3640ebf0f26a1fc46c1fa0b59be96')
-    # JWT令牌过期时间（设置为7天）
-    JWT_ACCESS_TOKEN_EXPIRES = 7 * 24 * 60 * 60  # 7天（秒）
+    JWT_ACCESS_TOKEN_EXPIRES = 7 * 24 * 60 * 60
     
-    # 只有 MySQL 才需要连接池配置，SQLite 不需要
     if DATABASE_URI.startswith('mysql'):
         SQLALCHEMY_ENGINE_OPTIONS = {
-            'pool_size': 20,  # 增加连接池大小
-            'max_overflow': 50,  # 增加溢出连接数
-            'pool_timeout': 60,  # 增加超时时间
-            'pool_recycle': 300,  # 5分钟回收连接
-            'echo': False  # 关闭SQL日志输出
+            'pool_size': 20,
+            'max_overflow': 50,
+            'pool_timeout': 60,
+            'pool_recycle': 300,
+            'echo': False
         }
     else:
         SQLALCHEMY_ENGINE_OPTIONS = {}
