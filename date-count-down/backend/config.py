@@ -8,7 +8,7 @@ load_dotenv()
 
 class Config:
     SECRET_KEY = os.getenv('SECRET_KEY', 'e7c3640ebf0f26a1fc46c1fa0b59be96')
-    DATABASE_URI = os.getenv('DATABASE_URI', 'sqlite:///countdown.db')
+    DATABASE_URI = os.getenv('DATABASE_URI', 'mysql+pymysql://dateuser:your_password@localhost/datecountdown')
     SQLALCHEMY_DATABASE_URI = DATABASE_URI
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'e7c3640ebf0f26a1fc46c1fa0b59be96')
