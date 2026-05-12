@@ -1,6 +1,9 @@
 // src/api/request.js - 统一请求封装
 import { requestCache } from '@/utils/requestCache.js'
 
+// 后端 API 基础地址
+const baseURL = 'https://aixiaoqinghe.pythonanywhere.com/api'
+
 // 请求拦截器：在发送请求前做一些处理
 const requestInterceptor = (config) => {
   // 添加 token 到请求头
@@ -71,8 +74,11 @@ const errorHandler = (error) => {
 // 封装 fetch 请求（带缓存支持）
 export const request = async (url, options = {}) => {
   try {
+    // 拼接完整的 API 地址
+    const fullUrl = url.startsWith('http') ? url : `${baseURL}${url}`
+
     // 应用请求拦截器
-    const config = requestInterceptor({ url, ...options })
+    const config = requestInterceptor({ url: fullUrl, ...options })
 
     // ✅ GET请求启用缓存
     const method = (options.method || 'GET').toUpperCase()
