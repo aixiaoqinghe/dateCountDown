@@ -236,7 +236,7 @@ export default {
       if (token) {
         // 如果有token，尝试从后端获取数据
         try {
-          const data = await get('/api/countdown')
+          const data = await get('/countdown')
 
           // 将后端返回的字段名转换为前端使用的格式
           const formattedData = data.map(item => ({
@@ -303,7 +303,7 @@ export default {
       if (token) {
         try {
           const deletePromises = this.selectedItems.map(id =>
-            del(`/api/countdown/${id}`)
+            del(`/countdown/${id}`)
           )
           await Promise.all(deletePromises)
         } catch (error) {

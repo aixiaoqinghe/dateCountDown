@@ -298,7 +298,6 @@ export default {
       }
 
       const token = localStorage.getItem('access_token')
-      const baseURL = 'https://aixiaoqinghe.pythonanywhere.com/api'
 
       // 如果有token，调用后端API更新倒计时
       if (token && this.originalItem && this.originalItem.id) {
@@ -311,7 +310,7 @@ export default {
           }
           console.log('更新时发送到后端的数据:', putData)
 
-          const response = await fetch(`${baseURL}/api/countdown/${this.originalItem.id}`, {
+          const response = await fetch(`/api/countdown/${this.originalItem.id}`, {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
