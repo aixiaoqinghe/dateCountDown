@@ -190,12 +190,11 @@ export default {
       }
 
       const token = localStorage.getItem('access_token')
-      const baseURL = 'https://aixiaoqinghe.pythonanywhere.com/api'
 
       // 如果有token，调用后端API创建倒计时
       if (token) {
         try {
-          const response = await fetch(`${baseURL}/api/countdown`, {
+          const response = await fetch('/api/countdown', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
