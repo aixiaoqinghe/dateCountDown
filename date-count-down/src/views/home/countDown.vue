@@ -194,7 +194,7 @@ export default {
       // 如果有token，调用后端API创建倒计时
       if (token) {
         try {
-          const response = await fetch('/api/countdown', {
+          const response = await fetch('/countdown', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
