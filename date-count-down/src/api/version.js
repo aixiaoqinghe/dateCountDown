@@ -4,30 +4,30 @@ import { get, post, put, del } from './request'
 
 // 获取版本列表
 export const getVersionList = () => {
-  return get('/api/version')
+  return get('/version')
 }
 
 // 获取单个版本
 export const getVersion = (id) => {
-  return get(`/api/version/${id}`)
+  return get(`/version/${id}`)
 }
 
 // 检查更新
 export const checkUpdate = (currentVersion) => {
-  return get('/api/version/check_update', { current_version: currentVersion })
+  return get('/version/check_update', { current_version: currentVersion })
 }
 
 // 创建版本（管理员）
 export const createVersion = (data) => {
-  return post('/api/version', data)
+  return post('/version', data)
 }
 
 // 更新版本（管理员）
 export const updateVersion = (id, data) => {
-  return put(`/api/version/${id}`, data)
+  return put(`/version/${id}`, data)
 }
 
 // 删除版本（管理员）
 export const deleteVersion = (id) => {
-  return del(`/api/version/${id}`)
+  return del(`/version/${id}`)
 }
