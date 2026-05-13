@@ -227,6 +227,8 @@ export default {
             history.push(newItem)
             localStorage.setItem(userStorageKey, JSON.stringify(history))
             showSuccessToast('已添加到历史记录！')
+            // 添加成功后通知首页刷新
+            window.dispatchEvent(new Event('countdownAdded'))
           } else {
             // 如果后端失败，降级到本地存储
             this.saveToLocalHistory(category)
