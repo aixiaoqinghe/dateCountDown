@@ -387,6 +387,16 @@ export default {
     handleImageUpload (event) {
       const file = event.target.files[0] // 获取用户选择的第一个文件
       if (file) {
+        // 检查文件类型是否为图片
+        if (!file.type.startsWith('image/')) {
+          showToast('请上传图片文件')
+          return
+        }
+        // 检查文件大小（限制为2MB）
+        if (file.size > 2 * 1024 * 1024) {
+          showToast('图片大小不能超过2MB')
+          return
+        }
         const reader = new FileReader() // 创建文件读取器
         reader.onload = (e) => { // 当文件读取完成时触发
           this.backgroundImage = e.target.result // 将读取结果（base64字符串）赋值给backgroundImage
