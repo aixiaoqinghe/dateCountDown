@@ -25,7 +25,7 @@ export const changePassword = (data) => {
 // 修改头像
 export const updateAvatar = (formData) => {
   const token = localStorage.getItem('access_token')
-  return fetch('/auth/avatar', {
+  return fetch('/api/auth/avatar', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`
