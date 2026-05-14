@@ -774,8 +774,14 @@ export default {
             if (response.ok) {
               // 获取后端返回的头像 URL
               const result = await response.json()
-              // 添加时间戳参数防止浏览器缓存旧图片
-              userInfo.value.avatar = result.avatar + '?t=' + Date.now()
+              // 验证后端返回的头像 URL 是否有效
+              if (result.avatar && result.avatar !== '') {
+                // 添加时间戳参数防止浏览器缓存旧图片
+                userInfo.value.avatar = result.avatar + '?t=' + Date.now()
+              } else {
+                // 如果后端没有返回有效头像，使用本地的 Base64 图片
+                userInfo.value.avatar = editAvatarForm.value.avatar
+              }
               localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
               showSuccessToast('头像修改成功')
               showEditAvatarModal.value = false
