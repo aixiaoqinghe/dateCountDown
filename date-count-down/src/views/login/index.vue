@@ -144,6 +144,14 @@ export default {
         })
 
         // 登录成功，保存用户信息和token
+        // 合并本地存储的头像信息（如果存在）
+        const existingUser = localStorage.getItem('userInfo')
+        if (existingUser) {
+          const existingUserData = JSON.parse(existingUser)
+          if (existingUserData.avatar && !result.user.avatar) {
+            result.user.avatar = existingUserData.avatar
+          }
+        }
         localStorage.setItem('userInfo', JSON.stringify(result.user))
         localStorage.setItem('access_token', result.access_token)
 

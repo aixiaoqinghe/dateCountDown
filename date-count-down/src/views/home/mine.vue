@@ -6,7 +6,7 @@
       <!-- 用户头像和基本信息 -->
       <div class="user-header">
         <div class="avatar-container">
-          <img v-lazy="userInfo.avatar || defaultAvatar" :data-src="userInfo.avatar || defaultAvatar" :src="defaultAvatar" alt="用户头像" class="user-avatar" />
+          <img :src="userInfo.avatar || defaultAvatar" alt="用户头像" class="user-avatar" />
         </div>
         <div class="user-basic-info">
           <div class="name-signature">
@@ -979,8 +979,8 @@ export default {
       try {
         const token = localStorage.getItem('access_token')
         const url = userInfo.value.email
-          ? '/auth/change_email'
-          : '/auth/bind_email'
+          ? '/api/auth/change_email'
+          : '/api/auth/bind_email'
 
         const response = await fetch(url, {
           method: 'POST',
