@@ -274,6 +274,7 @@ export default {
     this.loadCountdowns()
 
     window.addEventListener('countdownAdded', () => {
+      this.lastLoadTime = 0
       this.loadCountdowns()
     })
 

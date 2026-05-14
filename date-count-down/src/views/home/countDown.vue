@@ -286,6 +286,7 @@ export default {
       localStorage.setItem(userStorageKey, JSON.stringify(history))
       console.log('保存后的历史记录:', history)
       showSuccessToast('已添加到历史记录！')
+      window.dispatchEvent(new Event('countdownAdded'))
     },
     async confirmChange () {
       // 输入验证
