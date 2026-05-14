@@ -792,8 +792,17 @@ export default {
               console.log('[saveAvatar] result.avatar:', result.avatar)
               // 验证后端返回的头像 URL 是否有效
               if (result.avatar && result.avatar !== '') {
+                // 后端返回的是相对路径，需要转换为完整URL
+                let avatarUrl = result.avatar
+                console.log('[saveAvatar] 原始头像路径:', avatarUrl)
+                if (!avatarUrl.startsWith('http://') && !avatarUrl.startsWith('https://') && !avatarUrl.startsWith('data:')) {
+                  console.log('[saveAvatar] 检测到相对路径，开始转换')
+                  // 添加服务器地址前缀
+                  avatarUrl = 'http://8.134.150.161' + avatarUrl
+                  console.log('[saveAvatar] 转换后的完整URL:', avatarUrl)
+                }
                 // 添加时间戳参数防止浏览器缓存旧图片
-                userInfo.value.avatar = result.avatar + '?t=' + Date.now()
+                userInfo.value.avatar = avatarUrl + '?t=' + Date.now()
                 console.log('[saveAvatar] 使用后端返回的头像:', userInfo.value.avatar)
               } else {
                 // 如果后端没有返回有效头像，使用本地的 Base64 图片
