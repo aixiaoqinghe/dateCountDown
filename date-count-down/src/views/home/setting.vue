@@ -809,7 +809,7 @@ export default {
         const token = localStorage.getItem('access_token')
         if (!token) return
 
-        const response = await fetch('/auth/user/check-admin', {
+        const response = await fetch('/api/auth/user/check-admin', {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`
