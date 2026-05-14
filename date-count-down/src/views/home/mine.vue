@@ -783,12 +783,24 @@ export default {
                 userInfo.value.avatar = editAvatarForm.value.avatar
               }
               localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+              // 同时保存到用户偏好设置，确保退出登录后可以恢复
+              const userPreferences = {
+                avatar: userInfo.value.avatar,
+                signature: userInfo.value.signature
+              }
+              localStorage.setItem('userPreferences', JSON.stringify(userPreferences))
               showSuccessToast('头像修改成功')
               showEditAvatarModal.value = false
             } else {
               // 如果后端接口失败，降级到本地保存
               userInfo.value.avatar = editAvatarForm.value.avatar
               localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+              // 同时保存到用户偏好设置，确保退出登录后可以恢复
+              const userPreferences = {
+                avatar: userInfo.value.avatar,
+                signature: userInfo.value.signature
+              }
+              localStorage.setItem('userPreferences', JSON.stringify(userPreferences))
               showSuccessToast('头像修改成功（本地）')
               showEditAvatarModal.value = false
             }

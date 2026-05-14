@@ -159,8 +159,13 @@ export default {
         const userPreferences = localStorage.getItem('userPreferences')
         if (userPreferences) {
           const preferences = JSON.parse(userPreferences)
-          if (preferences.avatar && !result.user.avatar) {
-            result.user.avatar = preferences.avatar
+          // 优先使用本地保存的头像（可能是Base64格式），确保跨会话持久化
+          if (preferences.avatar) {
+            // 如果后端返回的头像不是完整URL（不含http），则使用本地保存的头像
+            const isFullUrl = result.user.avatar && (result.user.avatar.startsWith('http://') || result.user.avatar.startsWith('https://') || result.user.avatar.startsWith('data:'))
+            if (!isFullUrl) {
+              result.user.avatar = preferences.avatar
+            }
           }
           if (preferences.signature && !result.user.signature) {
             result.user.signature = preferences.signature
