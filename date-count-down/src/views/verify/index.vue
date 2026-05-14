@@ -37,6 +37,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { showToast, showSuccessToast } from 'vant'
+import { register } from '@/api/auth.js'
 
 export default {
   name: 'verifyIndex',
@@ -75,31 +76,19 @@ export default {
 
       // 调用后端注册接口（包含验证码验证）
       try {
-        const response = await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            username: registerForm.value.username,
-            email: registerForm.value.email,
-            password: registerForm.value.password,
-            captcha: inputCode.value
-          })
+        await register({
+          username: registerForm.value.username,
+          email: registerForm.value.email,
+          password: registerForm.value.password,
+          captcha: inputCode.value
         })
 
-        const result = await response.json()
-
-        if (response.ok) {
-          // 注册成功
-          showSuccessToast('注册成功')
-          router.push('/home')
-        } else {
-          showToast(result.message || '注册失败')
-          refreshCaptcha() // 刷新验证码
-        }
+        // 注册成功
+        showSuccessToast('注册成功')
+        router.push('/home')
       } catch (error) {
-        showToast('网络错误')
+        showToast(error.message || '注册失败')
+        refreshCaptcha() // 刷新验证码
       }
     }
 
