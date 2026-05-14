@@ -708,7 +708,7 @@ export default {
       try {
         const token = localStorage.getItem('access_token')
         if (token) {
-          const response = await fetch('/api/auth/change_password', {
+          const response = await fetch('/auth/change_password', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -762,7 +762,7 @@ export default {
             formData.append('avatar', blob, 'avatar.png')
 
             // 调用后端专门的头像上传接口
-            const response = await fetch('/api/auth/avatar', {
+            const response = await fetch('/auth/avatar', {
               method: 'POST',
               headers: {
                 Authorization: `Bearer ${token}`
@@ -848,7 +848,7 @@ export default {
       try {
         const token = localStorage.getItem('access_token')
         if (token) {
-          const response = await fetch('/api/auth/user', {
+          const response = await fetch('/auth/user', {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -913,8 +913,8 @@ export default {
       try {
         const token = localStorage.getItem('access_token')
         const url = userInfo.value.phone
-          ? '/api/auth/change_phone'
-          : '/api/auth/bind_phone'
+          ? '/auth/change_phone'
+          : '/auth/bind_phone'
 
         const response = await fetch(url, {
           method: 'POST',
@@ -979,8 +979,8 @@ export default {
       try {
         const token = localStorage.getItem('access_token')
         const url = userInfo.value.email
-          ? '/api/auth/change_email'
-          : '/api/auth/bind_email'
+          ? '/auth/change_email'
+          : '/auth/bind_email'
 
         const response = await fetch(url, {
           method: 'POST',
@@ -1145,7 +1145,7 @@ export default {
       try {
         const token = localStorage.getItem('access_token')
         // 根据是否已绑定手机号选择不同的API
-        const url = userInfo.value.phone ? '/api/auth/send_change_phone_code' : '/api/auth/send_bind_phone_code'
+        const url = userInfo.value.phone ? '/auth/send_change_phone_code' : '/auth/send_bind_phone_code'
 
         const response = await fetch(url, {
           method: 'POST',
@@ -1196,8 +1196,8 @@ export default {
       try {
         const token = localStorage.getItem('access_token')
         const url = userInfo.value.email
-          ? '/api/auth/send_change_email_code'
-          : '/api/auth/send_bind_email_code'
+          ? '/auth/send_change_email_code'
+          : '/auth/send_bind_email_code'
 
         const response = await fetch(url, {
           method: 'POST',

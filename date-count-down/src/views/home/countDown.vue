@@ -202,7 +202,7 @@ export default {
             },
             body: JSON.stringify({
               task_name: this.taskName,
-              target_date: this.targetDate,
+              target_date: this.targetDate.split('T')[0],
               category: category,
               background_image: this.backgroundImage
             })
@@ -409,7 +409,7 @@ export default {
 
     if (taskNameParam && targetDateParam) {
       this.taskName = taskNameParam
-      this.targetDate = targetDateParam
+      this.targetDate = targetDateParam.split('T')[0]
       this.backgroundImage = backgroundImageParam || ''
       this.isEditMode = true
       this.originalItem = {

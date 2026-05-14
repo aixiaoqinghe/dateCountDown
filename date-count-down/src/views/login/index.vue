@@ -138,7 +138,7 @@ export default {
 
       try {
         // 调用后端登录接口
-        const result = await post('/api/auth/login', {
+        const result = await post('/auth/login', {
           username: loginForm.value.username,
           password: loginForm.value.password
         })
