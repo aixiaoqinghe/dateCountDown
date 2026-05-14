@@ -784,8 +784,9 @@ export default {
               }
               localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
               // 同时保存到用户偏好设置，确保退出登录后可以恢复
+              // 注意：保存原始的Base64图片，而不是后端返回的URL
               const userPreferences = {
-                avatar: userInfo.value.avatar,
+                avatar: editAvatarForm.value.avatar,
                 signature: userInfo.value.signature
               }
               localStorage.setItem('userPreferences', JSON.stringify(userPreferences))
@@ -796,8 +797,9 @@ export default {
               userInfo.value.avatar = editAvatarForm.value.avatar
               localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
               // 同时保存到用户偏好设置，确保退出登录后可以恢复
+              // 注意：保存原始的Base64图片，而不是后端返回的URL
               const userPreferences = {
-                avatar: userInfo.value.avatar,
+                avatar: editAvatarForm.value.avatar,
                 signature: userInfo.value.signature
               }
               localStorage.setItem('userPreferences', JSON.stringify(userPreferences))
