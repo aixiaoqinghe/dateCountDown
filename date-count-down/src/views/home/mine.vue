@@ -750,6 +750,10 @@ export default {
 
     // 保存头像
     const saveAvatar = async function () {
+      console.log('[saveAvatar] 开始保存头像')
+      console.log('[saveAvatar] editAvatarForm.value:', editAvatarForm.value)
+      console.log('[saveAvatar] editAvatarForm.value.avatar:', editAvatarForm.value.avatar)
+
       if (editAvatarForm.value.avatar) {
         try {
           // 确保 userInfo 有值
@@ -758,6 +762,7 @@ export default {
           }
 
           const token = localStorage.getItem('access_token')
+          console.log('[saveAvatar] token:', token ? '存在' : '不存在')
           if (token) {
             // 将 Base64 图片转换为 Blob 对象
             const blob = await fetch(editAvatarForm.value.avatar).then(res => res.blob())
@@ -1047,7 +1052,9 @@ export default {
 
     // 处理头像上传
     const handleAvatarUpload = function (event) {
+      console.log('[handleAvatarUpload] 触发头像上传')
       const file = event.target.files[0]
+      console.log('[handleAvatarUpload] file:', file)
       if (file) {
         // 检查文件类型
         if (!file.type.startsWith('image/')) {
@@ -1062,7 +1069,10 @@ export default {
         // 读取图片
         const reader = new FileReader()
         reader.onload = function (e) {
+          console.log('[handleAvatarUpload] 图片读取完成')
+          console.log('[handleAvatarUpload] e.target.result:', e.target.result ? '有值' : '空')
           editAvatarForm.value.avatar = e.target.result
+          console.log('[handleAvatarUpload] editAvatarForm.value.avatar:', editAvatarForm.value.avatar ? '有值' : '空')
         }
         reader.readAsDataURL(file)
       }
