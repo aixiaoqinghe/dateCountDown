@@ -144,12 +144,15 @@ export default {
         })
 
         // 登录成功，保存用户信息和token
-        // 合并本地存储的头像信息（如果存在）
+        // 合并本地存储的头像和个性签名信息（如果存在）
         const existingUser = localStorage.getItem('userInfo')
         if (existingUser) {
           const existingUserData = JSON.parse(existingUser)
           if (existingUserData.avatar && !result.user.avatar) {
             result.user.avatar = existingUserData.avatar
+          }
+          if (existingUserData.signature && !result.user.signature) {
+            result.user.signature = existingUserData.signature
           }
         }
         localStorage.setItem('userInfo', JSON.stringify(result.user))
