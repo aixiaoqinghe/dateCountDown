@@ -1,8 +1,8 @@
 <template>
   <div class="home-container" :class="{ 'delete-mode': isDeleteMode }">
     <div class="home-header">
-      <h1 class="home-title">任务�?/h1>
-      <!-- �?添加搜索�?-->
+      <h1 class="home-title">任务</h1>
+      <!-- 添加搜索 -->
       <div class="search-box">
         <input
           type="text"
@@ -14,23 +14,23 @@
         <span class="search-icon">🔍</span>
       </div>
       <div v-if="isDeleteMode" class="delete-controls">
-        <button @click="selectAll" class="control-btn">全�?/button>
+        <button @click="selectAll" class="control-btn">全选</button>
         <button @click="confirmDelete" class="delete-btn">删除</button>
         <button @click="cancelDelete" class="control-btn">取消</button>
       </div>
       <div v-else class="header-actions">
         <button @click="enterDeleteMode" class="delete-icon-btn" title="删除任务">
-          <span class="delete-icon">🗑�?/span>
+          <span class="delete-icon">🗑️</span>
           <span class="delete-tooltip">删除</span>
         </button>
       </div>
     </div>
 
-    <!-- �?骨架屏加载状�?-->
+    <!-- 骨架屏加载状态 -->
     <Skeleton v-if="!isLoaded" />
 
     <div v-else class="countdown-list">
-      <!-- 显示已存储的倒计时记�?-->
+      <!-- 显示已存在的倒计时记录 -->
       <div
         v-for="item in (filteredCountdowns.length > 0 ? filteredCountdowns : sortedCountdowns)"
         :key="item.id"
@@ -59,7 +59,7 @@
       <!-- 添加新任务的按钮 -->
       <div class="countdown-card add-card" @click="navigateToCountdown()">
         <div class="add-icon">+</div>
-        <div class="add-text">添加新任�?/div>
+        <div class="add-text">添加新任务</div>
       </div>
     </div>
 
@@ -67,7 +67,7 @@
     <div v-if="showDeleteModal" class="modal-overlay" @click="showDeleteModal = false">
       <div class="modal-content" @click.stop>
         <h3>确认删除</h3>
-        <p class="confirm-message">确定要删除选中�?{{ selectedItems.length }} 个任务吗�?/p>
+        <p class="confirm-message">确定要删除选中的 {{ selectedItems.length }} 个任务吗？</p>
         <div class="confirm-btn-group">
           <button @click="performDelete" class="confirm-btn">确定</button>
           <button @click="showDeleteModal = false" class="cancel-btn">取消</button>
@@ -80,37 +80,33 @@
 <script>
 import { showToast, showSuccessToast } from 'vant'
 import { debounce } from '@/utils/throttle.js'
-import { requestCache } from '@/utils/requestCache.js'
-import Skeleton from '@/components/Skeleton.vue' // �?导入骨架屏组�?
+import Skeleton from '@/components/Skeleton.vue'
 import { get, del } from '@/api/request.js'
 export default {
   name: 'homeHome',
   components: {
-    Skeleton // �?注册骨架屏组�?
+    Skeleton
   },
   data () {
     return {
-      countdowns: [], // 存储所有倒计时任�?
-      isDeleteMode: false, // 控制是否进入删除模式
-      selectedItems: [], // 存储选中的任务ID数组
-      showDeleteModal: false, // 控制删除确认弹窗的显�?
-      lastLoadTime: 0, // �?上次加载时间�?
-      cacheDuration: 300000, // �?缓存有效期（5分钟�?
-      searchQuery: '', // �?搜索关键�?
-      filteredCountdowns: [], // �?过滤后的倒计时列�?
-      isLoaded: false, // �?加载状态标�?
-      sortedCache: null, // �?排序结果缓存
-      cacheKey: null // �?缓存key
+      countdowns: [],
+      isDeleteMode: false,
+      selectedItems: [],
+      showDeleteModal: false,
+      lastLoadTime: 0,
+      cacheDuration: 300000,
+      searchQuery: '',
+      filteredCountdowns: [],
+      isLoaded: false,
+      sortedCache: null,
+      cacheKey: null
     }
   },
   created () {
-    // �?为搜索添加防�?
     this.debouncedSearch = debounce(this.performSearch, 300)
-    // 初始化缓�?
     this.updateSortedCache()
   },
   watch: {
-    // 监听倒计时列表变化，更新缓存
     countdowns: {
       deep: true,
       handler () {
@@ -119,7 +115,6 @@ export default {
     }
   },
   computed: {
-    // 计算并排序倒计时记录（纯函数，无副作用�?
     sortedCountdowns () {
       return this.sortedCache || this.countdowns.map(item => {
         const target = new Date(item.targetDate).getTime()
@@ -134,7 +129,6 @@ export default {
     }
   },
   methods: {
-    // 更新排序缓存
     updateSortedCache () {
       const currentKey = JSON.stringify(this.countdowns)
       if (this.cacheKey === currentKey) {
@@ -154,18 +148,16 @@ export default {
 
       this.cacheKey = currentKey
     },
-    // 获取分类标签
     getCategoryLabel (category) {
       const categories = {
         life: '生活',
         study: '学习',
         work: '工作',
-        anniversary: '纪念�?,
+        anniversary: '纪念日',
         other: '其他'
       }
       return categories[category] || '其他'
     },
-    // 获取卡片样式（处理背景图片）
     getCardStyle (item) {
       if (item.backgroundImage && item.backgroundImage.trim()) {
         return {
@@ -177,12 +169,10 @@ export default {
       }
       return {}
     },
-    // 格式化日�?
     formatDate (dateString) {
       const date = new Date(dateString)
       return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
     },
-    // 导航到倒计时页�?
     navigateToCountdown (item) {
       if (item) {
         this.$router.push({
@@ -199,94 +189,50 @@ export default {
         this.$router.push('/home/countDown')
       }
     },
-    // 获取当前用户唯一标识（用于区分不同用户的数据�?
-    getUserId () {
-      const userInfo = localStorage.getItem('userInfo')
-      if (userInfo) {
-        try {
-          const parsed = JSON.parse(userInfo)
-          return parsed.id || parsed.user_id || 'anonymous'
-        } catch {
-          return 'anonymous'
-        }
-      }
-      return 'anonymous'
-    },
-
-    // 获取用户专属的本地存储key
-    getUserStorageKey (key) {
-      const userId = this.getUserId()
-      return `${key}_${userId}`
-    },
-
-    // 加载存储的倒计时记录（优化：添加缓存策略）
     async loadCountdowns () {
-      const now = Date.now()
+      try {
+        const now = Date.now()
+        if (now - this.lastLoadTime < this.cacheDuration && this.countdowns.length > 0) {
+          console.log('[性能优化] 使用缓存数据')
+          return
+        }
 
-      // �?缓存检查：如果缓存未过期且已有数据，直接返�?
-      if (now - this.lastLoadTime < this.cacheDuration && this.countdowns.length > 0) {
-        console.log('[性能优化] 使用缓存数据，跳过API请求')
-        this.isLoaded = true // �?设置加载完成状�?
-        return
-      }
+        console.log('[性能优化] 从后端加载数据，更新缓存')
+        const data = await get('/api/countdown')
 
-      const token = localStorage.getItem('access_token')
-      const userStorageKey = this.getUserStorageKey('countdownHistory')
-
-      if (token) {
-        // 如果有token，尝试从后端获取数据
-        try {
-          const data = await get('/countdown')
-
-          // 将后端返回的字段名转换为前端使用的格�?
-          const formattedData = data.map(item => ({
-            id: item.id,
+        if (data && Array.isArray(data)) {
+          this.countdowns = data.map(item => ({
+            ...item,
             taskName: item.task_name,
             targetDate: item.target_date,
-            category: item.category,
-            backgroundImage: item.background_image,
-            createdAt: item.created_at
+            backgroundImage: item.background_image
           }))
-          this.countdowns = formattedData
-          // 同时保存到本地存储作为缓存（按用户区分）
-          localStorage.setItem(userStorageKey, JSON.stringify(formattedData))
-          this.lastLoadTime = Date.now() // �?更新缓存时间�?
-          this.isLoaded = true // �?设置加载完成状�?
-          console.log('[性能优化] 从后端加载数据，更新缓存')
-          return
-        } catch (error) {
-          console.error('从后端获取数据失�?', error)
+        } else {
+          this.countdowns = []
         }
+
+        this.lastLoadTime = now
+        this.isLoaded = true
+      } catch (error) {
+        console.error('从后端获取数据失败', error)
+        this.countdowns = []
+        this.isLoaded = true
       }
-
-      // 如果没有token或后端请求失败，使用本地存储（按用户区分�?
-      const history = JSON.parse(localStorage.getItem(userStorageKey) || '[]')
-      this.countdowns = history
-      this.lastLoadTime = Date.now() // �?更新缓存时间�?
-      this.isLoaded = true // �?设置加载完成状�?
     },
-
-    // 进入删除模式
     enterDeleteMode () {
       this.isDeleteMode = true
-      this.selectedItems = []
     },
-    // 取消删除模式
     cancelDelete () {
       this.isDeleteMode = false
       this.selectedItems = []
     },
-    // 全�?
     selectAll () {
-      if (this.selectedItems.length === this.sortedCountdowns.length) {
-        // 取消全�?
+      if (this.selectedItems.length === this.countdowns.length) {
         this.selectedItems = []
       } else {
-        // 全�?
-        this.selectedItems = this.sortedCountdowns.map(item => item.id)
+        this.selectedItems = this.countdowns.map(item => item.id)
       }
     },
-    // 确认删除
     confirmDelete () {
       if (this.selectedItems.length === 0) {
         showToast('请选择要删除的任务')
@@ -294,60 +240,43 @@ export default {
       }
       this.showDeleteModal = true
     },
-    // 执行删除（优化：删除后不重新加载，直接更新本地数组）
     async performDelete () {
-      const token = localStorage.getItem('access_token')
-      const userStorageKey = this.getUserStorageKey('countdownHistory')
-
-      // 如果有token，并行调用后端删除API（保持并行优化）
-      if (token) {
-        try {
-          const deletePromises = this.selectedItems.map(id =>
-            del(`/countdown/${id}`)
-          )
-          await Promise.all(deletePromises)
-        } catch (error) {
-          console.error('从后端删除失�?', error)
+      try {
+        for (const id of this.selectedItems) {
+          await del(`/api/countdown/${id}`)
         }
+        showSuccessToast('删除成功')
+        this.countdowns = this.countdowns.filter(item => !this.selectedItems.includes(item.id))
+        this.selectedItems = []
+        this.showDeleteModal = false
+        this.isDeleteMode = false
+      } catch (error) {
+        console.error('删除失败:', error)
+        showToast('删除失败')
       }
-
-      // �?优化：直接从内存数组删除，不再调用loadCountdowns()
-      this.countdowns = this.countdowns.filter(item => !this.selectedItems.includes(item.id))
-
-      // 更新本地存储
-      localStorage.setItem(userStorageKey, JSON.stringify(this.countdowns))
-
-      // �?清除API缓存，确保下次加载获取最新数�?
-      requestCache.clear()
-
-      // 关闭弹窗并重置状�?
-      this.showDeleteModal = false
-      this.isDeleteMode = false
-      this.selectedItems = []
-      showSuccessToast('删除成功�?)
     },
-    // �?搜索方法（带防抖�?
     performSearch () {
       if (!this.searchQuery.trim()) {
-        this.filteredCountdowns = [...this.sortedCountdowns]
-      } else {
-        const query = this.searchQuery.toLowerCase()
-        this.filteredCountdowns = this.sortedCountdowns.filter(item =>
-          item.taskName.toLowerCase().includes(query) ||
-          item.category.toLowerCase().includes(query)
-        )
+        this.filteredCountdowns = []
+        return
       }
+
+      const query = this.searchQuery.toLowerCase()
+      this.filteredCountdowns = this.sortedCountdowns.filter(item =>
+        item.taskName.toLowerCase().includes(query)
+      )
     },
-    // �?处理搜索输入
     handleSearchInput () {
       this.debouncedSearch()
     }
   },
   mounted () {
-    // 组件挂载时加载数�?
     this.loadCountdowns()
 
-    // 监听页面可见性，当页面重新可见时刷新数据（带防抖�?
+    window.addEventListener('countdownAdded', () => {
+      this.loadCountdowns()
+    })
+
     this.visibilityHandler = debounce(() => {
       if (!document.hidden) {
         this.loadCountdowns()
@@ -356,7 +285,6 @@ export default {
     window.addEventListener('visibilitychange', this.visibilityHandler)
   },
   beforeUnmount () {
-    // �?清理事件监听
     window.removeEventListener('visibilitychange', this.visibilityHandler)
   }
 }
@@ -365,4 +293,3 @@ export default {
 <style scoped>
 @import '../../styles/home.css';
 </style>
-
