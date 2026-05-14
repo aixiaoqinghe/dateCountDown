@@ -10,8 +10,7 @@
       <!-- 图片验证码区域 -->
       <div class="code-display">
         <img
-          id="captcha-img"
-          src="/api/captcha"
+          :src="captchaUrl"
           alt="验证码"
           @click="refreshCaptcha"
           class="captcha-image"
@@ -45,6 +44,7 @@ export default {
     const router = useRouter()
     const route = useRoute()
     const inputCode = ref('')
+    const captchaUrl = ref('/api/captcha?' + Date.now())
 
     // 从路由参数中获取注册信息
     const registerForm = ref({
@@ -56,7 +56,7 @@ export default {
 
     // 刷新验证码
     const refreshCaptcha = () => {
-      document.getElementById('captcha-img').src = '/api/captcha?' + Date.now()
+      captchaUrl.value = '/api/captcha?' + Date.now()
       inputCode.value = '' // 清空输入
     }
 
@@ -115,6 +115,7 @@ export default {
 
     return {
       inputCode,
+      captchaUrl,
       handleVerify,
       handleCancel,
       handleBack,
