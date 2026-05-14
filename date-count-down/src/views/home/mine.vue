@@ -782,17 +782,25 @@ export default {
               body: formData
             })
 
+            console.log('[saveAvatar] response.ok:', response.ok)
+            console.log('[saveAvatar] response.status:', response.status)
+
             if (response.ok) {
               // 获取后端返回的头像 URL
               const result = await response.json()
+              console.log('[saveAvatar] result:', result)
+              console.log('[saveAvatar] result.avatar:', result.avatar)
               // 验证后端返回的头像 URL 是否有效
               if (result.avatar && result.avatar !== '') {
                 // 添加时间戳参数防止浏览器缓存旧图片
                 userInfo.value.avatar = result.avatar + '?t=' + Date.now()
+                console.log('[saveAvatar] 使用后端返回的头像:', userInfo.value.avatar)
               } else {
                 // 如果后端没有返回有效头像，使用本地的 Base64 图片
                 userInfo.value.avatar = editAvatarForm.value.avatar
+                console.log('[saveAvatar] 使用本地 Base64 图片')
               }
+              console.log('[saveAvatar] userInfo.value.avatar:', userInfo.value.avatar)
               localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
               // 同时保存到用户偏好设置，确保退出登录后可以恢复
               // 注意：保存原始的Base64图片，而不是后端返回的URL
