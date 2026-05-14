@@ -155,6 +155,17 @@ export default {
             result.user.signature = existingUserData.signature
           }
         }
+        // 从用户偏好设置中恢复头像和个性签名
+        const userPreferences = localStorage.getItem('userPreferences')
+        if (userPreferences) {
+          const preferences = JSON.parse(userPreferences)
+          if (preferences.avatar && !result.user.avatar) {
+            result.user.avatar = preferences.avatar
+          }
+          if (preferences.signature && !result.user.signature) {
+            result.user.signature = preferences.signature
+          }
+        }
         localStorage.setItem('userInfo', JSON.stringify(result.user))
         localStorage.setItem('access_token', result.access_token)
 

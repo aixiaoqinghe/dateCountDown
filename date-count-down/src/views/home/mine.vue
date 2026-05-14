@@ -1265,6 +1265,14 @@ export default {
 
     // 确认退出登录
     const confirmLogout = function () {
+      // 在清除用户信息前，保存头像和个性签名到偏好设置
+      if (userInfo.value) {
+        const userPreferences = {
+          avatar: userInfo.value.avatar,
+          signature: userInfo.value.signature
+        }
+        localStorage.setItem('userPreferences', JSON.stringify(userPreferences))
+      }
       // 清除本地存储的用户信息
       localStorage.removeItem('userInfo')
       // 跳转到登录页面
