@@ -6,7 +6,7 @@
       <!-- 用户头像和基本信息 -->
       <div class="user-header">
         <div class="avatar-container">
-          <img :src="userInfo.avatar || defaultAvatar" alt="用户头像" class="user-avatar" />
+          <img :src="userInfo.avatar || defaultAvatar" alt="用户头像" class="user-avatar" @error="handleAvatarError" />
         </div>
         <div class="user-basic-info">
           <div class="name-signature">
@@ -749,6 +749,17 @@ export default {
       showEditAvatarModal.value = false
     }
 
+    // 头像加载失败处理
+    const handleAvatarError = function () {
+      console.log('[handleAvatarError] 头像加载失败，尝试使用本地保存的图片')
+      const localAvatar = localStorage.getItem('localAvatar')
+      if (localAvatar && userInfo.value) {
+        userInfo.value.avatar = localAvatar
+        localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+        console.log('[handleAvatarError] 已切换到本地保存的头像')
+      }
+    }
+
     // 保存头像
     const saveAvatar = async function () {
       console.log('[saveAvatar] 开始保存头像')
@@ -809,6 +820,9 @@ export default {
                 userInfo.value.avatar = editAvatarForm.value.avatar
                 console.log('[saveAvatar] 使用本地 Base64 图片')
               }
+              // 为了确保头像能正常显示，同时保存原始的 Base64 图片到本地存储
+              // 如果后端图片加载失败，下次登录时可以使用本地保存的 Base64 图片
+              localStorage.setItem('localAvatar', editAvatarForm.value.avatar)
               console.log('[saveAvatar] userInfo.value.avatar:', userInfo.value.avatar)
               localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
               // 同时保存到用户偏好设置，确保退出登录后可以恢复
@@ -1804,6 +1818,7 @@ export default {
       savePassword,
       toggleEditAvatarModal,
       closeEditAvatarModal,
+      handleAvatarError,
       saveAvatar,
       toggleEditNicknameModal,
       closeEditNicknameModal,
