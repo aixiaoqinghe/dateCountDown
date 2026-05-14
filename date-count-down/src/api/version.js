@@ -1,4 +1,4 @@
-// src/api/version.js - 版本管理相关 API
+// src/version.js - 版本管理相关 API
 
 import { get, post, put, del } from './request'
 

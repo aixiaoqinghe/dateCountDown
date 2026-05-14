@@ -4,15 +4,15 @@ import { get, post, del } from './request'
 
 // 获取设备列表
 export const getDeviceList = () => {
-  return get('/api/devices')
+  return get('/devices')
 }
 
 // 保存当前设备信息
 export const saveCurrentDevice = (data) => {
-  return post('/api/devices/current', data)
+  return post('/devices/current', data)
 }
 
 // 删除设备
 export const deleteDevice = (id) => {
-  return del(`/api/devices/${id}`)
+  return del(`/devices/${id}`)
 }

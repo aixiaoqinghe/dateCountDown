@@ -1,4 +1,4 @@
-// src/api/auth.js - 认证相关 API
+// src/auth.js - 认证相关 API
 
 import { post, put, get } from './request'
 
@@ -25,7 +25,7 @@ export const changePassword = (data) => {
 // 修改头像
 export const updateAvatar = (formData) => {
   const token = localStorage.getItem('access_token')
-  return fetch('/api/auth/avatar', {
+  return fetch('/auth/avatar', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`

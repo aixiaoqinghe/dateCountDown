@@ -198,7 +198,7 @@ export default {
         }
 
         console.log('[性能优化] 从后端加载数据，更新缓存')
-        const data = await get('/api/countdown')
+        const data = await get('/countdown')
 
         if (data && Array.isArray(data)) {
           this.countdowns = data.map(item => ({
@@ -243,7 +243,7 @@ export default {
     async performDelete () {
       try {
         for (const id of this.selectedItems) {
-          await del(`/api/countdown/${id}`)
+          await del(`/countdown/${id}`)
         }
         showSuccessToast('删除成功')
         this.countdowns = this.countdowns.filter(item => !this.selectedItems.includes(item.id))

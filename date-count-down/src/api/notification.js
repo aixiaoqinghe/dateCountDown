@@ -1,4 +1,4 @@
-// src/api/notification.js - 通知相关 API
+// src/notification.js - 通知相关 API
 
 import { get, put, del } from './request'
 
