@@ -752,6 +752,11 @@ export default {
     const saveAvatar = async function () {
       if (editAvatarForm.value.avatar) {
         try {
+          // 确保 userInfo 有值
+          if (!userInfo.value) {
+            userInfo.value = {}
+          }
+
           const token = localStorage.getItem('access_token')
           if (token) {
             // 将 Base64 图片转换为 Blob 对象
@@ -816,6 +821,10 @@ export default {
         } catch (error) {
           // 网络错误时降级到本地保存
           console.error('头像上传失败:', error)
+          // 确保 userInfo 有值
+          if (!userInfo.value) {
+            userInfo.value = {}
+          }
           userInfo.value.avatar = editAvatarForm.value.avatar
           localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
           showSuccessToast('头像修改成功（本地）')
