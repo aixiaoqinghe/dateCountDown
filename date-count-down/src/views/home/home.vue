@@ -198,7 +198,7 @@ export default {
         }
 
         console.log('[性能优化] 从后端加载数据，更新缓存')
-        const data = await get('/countdown')
+        const data = await get('/countdown?refresh=' + Date.now())
 
         if (data && Array.isArray(data)) {
           this.countdowns = data.map(item => ({
