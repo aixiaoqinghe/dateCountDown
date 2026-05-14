@@ -738,7 +738,8 @@ export default {
     // 切换修改头像弹窗
     const toggleEditAvatarModal = function () {
       showEditAvatarModal.value = !showEditAvatarModal.value
-      if (showEditAvatarModal.value) {
+      // 只有关闭弹窗时才清空表单，避免打开时清空用户已选择的图片
+      if (!showEditAvatarModal.value) {
         editAvatarForm.value = {}
       }
     }
