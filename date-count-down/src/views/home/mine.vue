@@ -919,8 +919,8 @@ export default {
       try {
         const token = localStorage.getItem('access_token')
         const url = userInfo.value.phone
-          ? '/auth/change_phone'
-          : '/auth/bind_phone'
+          ? '/api/auth/change_phone'
+          : '/api/auth/bind_phone'
 
         const response = await fetch(url, {
           method: 'POST',
@@ -1151,7 +1151,7 @@ export default {
       try {
         const token = localStorage.getItem('access_token')
         // 根据是否已绑定手机号选择不同的API
-        const url = userInfo.value.phone ? '/auth/send_change_phone_code' : '/auth/send_bind_phone_code'
+        const url = userInfo.value.phone ? '/api/auth/send_change_phone_code' : '/api/auth/send_bind_phone_code'
 
         const response = await fetch(url, {
           method: 'POST',
