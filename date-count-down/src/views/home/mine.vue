@@ -1723,7 +1723,7 @@ export default {
       const token = localStorage.getItem('access_token')
       if (token) {
         try {
-          await fetch('/api/user/notification-settings', {
+          await fetch('/api/notification/settings', {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
