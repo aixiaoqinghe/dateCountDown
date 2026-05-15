@@ -39,6 +39,11 @@ export const updateNickname = (data) => {
   return put('/auth/user', data)
 }
 
+// 更新个性签名
+export const updateSignature = (data) => {
+  return put('/auth/user', data)
+}
+
 // 绑定/修改手机号
 export const bindPhone = (data) => {
   return post('/auth/bind_phone', data)

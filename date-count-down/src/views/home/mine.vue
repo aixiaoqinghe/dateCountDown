@@ -204,7 +204,7 @@
           <h4>关于应用</h4>
           <div class="about-content">
             <p>应用名称：日期倒计时</p>
-            <p>版本：1.0.0</p>
+            <p>版本：{{ currentAppVersion }}</p>
             <p>开发者：aixiaoqinghe</p>
             <p>© 2026 日期倒计时</p>
           </div>
@@ -554,7 +554,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showToast, showSuccessToast, showFailToast } from 'vant'
-import { getUserInfo } from '../../api/auth'
+import { getUserInfo, updateSignature } from '../../api/auth'
 export default {
   name: 'homeMyself',
   setup () {
@@ -568,6 +568,7 @@ export default {
     const showEditEmailModal = ref(false)
     const showAboutModal = ref(false)
     const defaultAvatar = 'https://a0ai.marscode.cn/api/ide/v1/text_to_image?prompt=default%20user%20avatar%20simple%20flat%20design&image_size=square'
+    const currentAppVersion = ref(localStorage.getItem('appCurrentVersion') || '1.0.0')
 
     // 个性签名相关
     const isEditingSignature = ref(false)
@@ -1700,12 +1701,33 @@ export default {
       notificationFrequency: 'realtime' // 'realtime', 'daily', 'custom'
     })
 
-    const showNotificationSettings = function () {
+    const showNotificationSettings = async function () {
       // 从本地存储加载设置
       const savedSettings = localStorage.getItem('notificationSettings')
       if (savedSettings) {
         notificationSettings.value = JSON.parse(savedSettings)
       }
+
+      // 尝试从后端获取最新设置（实现跨设备同步）
+      const token = localStorage.getItem('access_token')
+      if (token) {
+        try {
+          const response = await fetch('/api/user/notification-settings', {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          })
+          if (response.ok) {
+            const backendSettings = await response.json()
+            notificationSettings.value = { ...notificationSettings.value, ...backendSettings }
+            localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings.value))
+            console.log('[showNotificationSettings] 已从后端同步通知设置')
+          }
+        } catch (error) {
+          console.error('[showNotificationSettings] 从后端获取通知设置失败:', error)
+        }
+      }
+
       showNotificationSettingsModal.value = true
     }
 
@@ -1713,9 +1735,28 @@ export default {
       showNotificationSettingsModal.value = false
     }
 
-    const saveNotificationSettings = function () {
+    const saveNotificationSettings = async function () {
       // 保存设置到本地存储
       localStorage.setItem('notificationSettings', JSON.stringify(notificationSettings.value))
+
+      // 调用后端接口保存到数据库（实现跨设备同步）
+      const token = localStorage.getItem('access_token')
+      if (token) {
+        try {
+          await fetch('/api/user/notification-settings', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`
+            },
+            body: JSON.stringify(notificationSettings.value)
+          })
+          console.log('[saveNotificationSettings] 通知设置已保存到后端')
+        } catch (error) {
+          console.error('[saveNotificationSettings] 保存通知设置到后端失败:', error)
+        }
+      }
+
       showSuccessToast('通知设置已保存')
       showNotificationSettingsModal.value = false
     }
@@ -1834,10 +1875,23 @@ export default {
       }
     }
 
-    const saveSignature = function () {
-      userInfo.value.signature = editSignature.value.trim()
+    const saveSignature = async function () {
+      const signature = editSignature.value.trim()
+      userInfo.value.signature = signature
       // 更新本地存储
       localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+
+      // 调用后端接口保存到数据库（实现跨设备同步）
+      const token = localStorage.getItem('access_token')
+      if (token) {
+        try {
+          await updateSignature({ signature })
+          console.log('[saveSignature] 签名已保存到后端')
+        } catch (error) {
+          console.error('[saveSignature] 保存签名到后端失败:', error)
+        }
+      }
+
       showSuccessToast('个性签名修改成功')
       isEditingSignature.value = false
     }
@@ -1929,7 +1983,8 @@ export default {
       isEditingSignature,
       editSignature,
       toggleSignatureEdit,
-      saveSignature
+      saveSignature,
+      currentAppVersion
     }
   }
 }
