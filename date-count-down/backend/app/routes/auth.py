@@ -564,12 +564,18 @@ def upload_avatar():
     # 保存文件到服务器
     avatar.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
 
-    # 更新用户头像路径（存储相对路径，便于部署）
-    user.avatar = f"/uploads/{filename}"
+    # 获取服务器地址
+    server_address = current_app.config.get('SERVER_ADDRESS', 'http://localhost:5000')
+    
+    # 生成完整的头像URL
+    full_avatar_url = f"{server_address}/uploads/{filename}"
+    
+    # 更新用户头像路径（存储完整URL）
+    user.avatar = full_avatar_url
     db.session.commit()
 
     # 返回成功响应
     return jsonify({
         'message': '头像上传成功',
-        'avatar': user.avatar
+        'avatar': full_avatar_url
     }), 200
