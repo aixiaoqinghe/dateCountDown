@@ -85,9 +85,9 @@ def create_app():
     # 初始化邮件扩展
     mail.init_app(app)
 
-    # 配置文件上传路径
-    app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
-    # 限制上传的文件大小为16MB\
+    # 配置文件上传路径（服务器端路径）
+    app.config['UPLOAD_FOLDER'] = '/var/www/uploads/'
+    # 限制上传的文件大小为16MB
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 
     # 创建上传目录（如果不存在）

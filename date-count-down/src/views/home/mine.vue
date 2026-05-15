@@ -864,8 +864,8 @@ export default {
                 console.log('[saveAvatar] 原始头像路径:', avatarUrl)
                 if (!avatarUrl.startsWith('http://') && !avatarUrl.startsWith('https://') && !avatarUrl.startsWith('data:')) {
                   console.log('[saveAvatar] 检测到相对路径，开始转换')
-                  // 添加服务器地址前缀（包含端口号）
-                  avatarUrl = 'http://8.134.150.161:5000' + avatarUrl
+                  // 添加服务器地址前缀
+                  avatarUrl = 'http://8.134.150.161' + avatarUrl
                   console.log('[saveAvatar] 转换后的完整URL:', avatarUrl)
                 }
                 // 添加时间戳参数防止浏览器缓存旧图片
