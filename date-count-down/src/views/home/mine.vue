@@ -554,6 +554,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { showToast, showSuccessToast, showFailToast } from 'vant'
+import { getUserInfo } from '../../api/auth'
 export default {
   name: 'homeMyself',
   setup () {
@@ -637,10 +638,48 @@ export default {
     })
 
     // 检查登录状态
-    const checkLoginStatus = () => {
-      const storedUser = localStorage.getItem('userInfo')
-      if (storedUser) {
-        userInfo.value = JSON.parse(storedUser)
+    const checkLoginStatus = async () => {
+      const token = localStorage.getItem('access_token')
+      if (token) {
+        try {
+          // 从后端获取最新的用户信息
+          const result = await getUserInfo()
+          if (result && result.user) {
+            // 更新用户信息
+            userInfo.value = result.user
+
+            // 检查后端返回的头像是否有效
+            const isFullUrl = userInfo.value.avatar && (userInfo.value.avatar.startsWith('http://') || userInfo.value.avatar.startsWith('https://') || userInfo.value.avatar.startsWith('data:'))
+
+            // 如果后端返回的头像不是完整URL，尝试从本地偏好设置中恢复
+            if (!isFullUrl) {
+              const userPreferences = localStorage.getItem('userPreferences')
+              if (userPreferences) {
+                const preferences = JSON.parse(userPreferences)
+                if (preferences.avatar) {
+                  userInfo.value.avatar = preferences.avatar
+                }
+              }
+            }
+
+            // 保存到本地存储
+            localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+            console.log('[checkLoginStatus] 从后端获取用户信息成功')
+          }
+        } catch (error) {
+          // 如果后端请求失败，使用本地存储的用户信息
+          const storedUser = localStorage.getItem('userInfo')
+          if (storedUser) {
+            userInfo.value = JSON.parse(storedUser)
+          }
+          console.log('[checkLoginStatus] 从后端获取用户信息失败，使用本地存储')
+        }
+      } else {
+        // 没有token，使用本地存储的用户信息
+        const storedUser = localStorage.getItem('userInfo')
+        if (storedUser) {
+          userInfo.value = JSON.parse(storedUser)
+        }
       }
     }
 
@@ -820,18 +859,16 @@ export default {
                 userInfo.value.avatar = editAvatarForm.value.avatar
                 console.log('[saveAvatar] 使用本地 Base64 图片')
               }
-              // 为了确保头像能正常显示，同时保存原始的 Base64 图片到本地存储
-              // 如果后端图片加载失败，下次登录时可以使用本地保存的 Base64 图片
+              // 保存原始 Base64 图片到本地存储，用于头像加载失败时的降级处理
               localStorage.setItem('localAvatar', editAvatarForm.value.avatar)
-              console.log('[saveAvatar] userInfo.value.avatar:', userInfo.value.avatar)
-              localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
-              // 同时保存到用户偏好设置，确保退出登录后可以恢复
-              // 注意：保存原始的Base64图片，而不是后端返回的URL
+              // 同时保存到用户偏好设置，确保跨设备同步（如果后端支持）
               const userPreferences = {
                 avatar: editAvatarForm.value.avatar,
-                signature: userInfo.value.signature
+                signature: userInfo.value.signature || ''
               }
               localStorage.setItem('userPreferences', JSON.stringify(userPreferences))
+              console.log('[saveAvatar] userInfo.value.avatar:', userInfo.value.avatar)
+              localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
               showSuccessToast('头像修改成功')
               showEditAvatarModal.value = false
             } else {
