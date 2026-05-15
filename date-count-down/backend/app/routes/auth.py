@@ -561,14 +561,30 @@ def upload_avatar():
     # 格式：avatar_用户ID_时间戳.扩展名
     filename = f"avatar_{user_id}_{datetime.now().strftime('%Y%m%d%H%M%S')}.{file_extension}"
 
+    # 确保上传目录存在
+    upload_folder = current_app.config['UPLOAD_FOLDER']
+    os.makedirs(upload_folder, exist_ok=True)
+    
+    # 完整的文件保存路径
+    file_path = os.path.join(upload_folder, filename)
+    
     # 保存文件到服务器
-    avatar.save(os.path.join(current_app.config['UPLOAD_FOLDER'], filename))
+    avatar.save(file_path)
+    
+    # 记录日志
+    logger.info(f'头像文件保存路径: {file_path}')
+    logger.info(f'文件是否存在: {os.path.exists(file_path)}')
+    if os.path.exists(file_path):
+        logger.info(f'文件大小: {os.path.getsize(file_path)} bytes')
 
     # 获取服务器地址
     server_address = current_app.config.get('SERVER_ADDRESS', 'http://localhost:5000')
     
     # 生成完整的头像URL
     full_avatar_url = f"{server_address}/uploads/{filename}"
+    
+    # 记录日志
+    logger.info(f'生成的头像URL: {full_avatar_url}')
     
     # 更新用户头像路径（存储完整URL）
     user.avatar = full_avatar_url
