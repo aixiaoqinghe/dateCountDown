@@ -151,16 +151,26 @@ def create_app():
     # 配置静态文件服务（让前端可以访问上传的图片）
     @app.route('/uploads/<filename>')
     def uploaded_file(filename):
-        response = make_response(send_from_directory(app.config['UPLOAD_FOLDER'], filename))
-        # ✅ 添加缓存头：图片资源缓存1年
-        ext = os.path.splitext(filename)[1].lower()
-        if ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']:
-            response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
-        elif ext in ['.js', '.css']:
-            response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
-        else:
-            response.headers['Cache-Control'] = 'public, max-age=86400'
-        return response
+        # 确保上传目录存在
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+        # 记录访问日志，方便调试
+        logger.info(f'访问上传文件: {filename}')
+        logger.info(f'上传目录: {app.config["UPLOAD_FOLDER"]}')
+        
+        try:
+            response = make_response(send_from_directory(app.config['UPLOAD_FOLDER'], filename))
+            # ✅ 添加缓存头：图片资源缓存1年
+            ext = os.path.splitext(filename)[1].lower()
+            if ext in ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg']:
+                response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+            elif ext in ['.js', '.css']:
+                response.headers['Cache-Control'] = 'public, max-age=31536000, immutable'
+            else:
+                response.headers['Cache-Control'] = 'public, max-age=86400'
+            return response
+        except Exception as e:
+            logger.error(f'访问上传文件失败: {filename}, 错误: {str(e)}')
+            return jsonify({'message': '文件不存在'}), 404
     
     # 处理文件过大的错误
     @app.errorhandler(413)
