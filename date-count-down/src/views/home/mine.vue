@@ -637,49 +637,50 @@ export default {
       return `https://api.pwmqr.com/qrcode/create?url=${encodedData}&size=150x150`
     })
 
-    // 检查登录状态
-    const checkLoginStatus = async () => {
+    // 检查登录状态（同步）
+    const checkLoginStatus = () => {
+      // 先从本地存储获取用户信息（同步，避免页面闪烁）
+      const storedUser = localStorage.getItem('userInfo')
+      if (storedUser) {
+        userInfo.value = JSON.parse(storedUser)
+        console.log('[checkLoginStatus] 从本地存储恢复用户信息')
+      }
+
+      // 如果有token，异步刷新后端数据
       const token = localStorage.getItem('access_token')
-      if (token) {
-        try {
-          // 从后端获取最新的用户信息
-          const result = await getUserInfo()
-          if (result && result.user) {
-            // 更新用户信息
-            userInfo.value = result.user
+      if (token && storedUser) {
+        refreshUserInfoFromBackend()
+      }
+    }
 
-            // 检查后端返回的头像是否有效
-            const isFullUrl = userInfo.value.avatar && (userInfo.value.avatar.startsWith('http://') || userInfo.value.avatar.startsWith('https://') || userInfo.value.avatar.startsWith('data:'))
+    // 从后端刷新用户信息（异步）
+    const refreshUserInfoFromBackend = async () => {
+      try {
+        const result = await getUserInfo()
+        if (result && result.user) {
+          // 更新用户信息
+          userInfo.value = result.user
 
-            // 如果后端返回的头像不是完整URL，尝试从本地偏好设置中恢复
-            if (!isFullUrl) {
-              const userPreferences = localStorage.getItem('userPreferences')
-              if (userPreferences) {
-                const preferences = JSON.parse(userPreferences)
-                if (preferences.avatar) {
-                  userInfo.value.avatar = preferences.avatar
-                }
+          // 检查后端返回的头像是否有效
+          const isFullUrl = userInfo.value.avatar && (userInfo.value.avatar.startsWith('http://') || userInfo.value.avatar.startsWith('https://') || userInfo.value.avatar.startsWith('data:'))
+
+          // 如果后端返回的头像不是完整URL，尝试从本地偏好设置中恢复
+          if (!isFullUrl) {
+            const userPreferences = localStorage.getItem('userPreferences')
+            if (userPreferences) {
+              const preferences = JSON.parse(userPreferences)
+              if (preferences.avatar) {
+                userInfo.value.avatar = preferences.avatar
               }
             }
+          }
 
-            // 保存到本地存储
-            localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
-            console.log('[checkLoginStatus] 从后端获取用户信息成功')
-          }
-        } catch (error) {
-          // 如果后端请求失败，使用本地存储的用户信息
-          const storedUser = localStorage.getItem('userInfo')
-          if (storedUser) {
-            userInfo.value = JSON.parse(storedUser)
-          }
-          console.log('[checkLoginStatus] 从后端获取用户信息失败，使用本地存储')
+          // 保存到本地存储
+          localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+          console.log('[refreshUserInfoFromBackend] 从后端获取用户信息成功')
         }
-      } else {
-        // 没有token，使用本地存储的用户信息
-        const storedUser = localStorage.getItem('userInfo')
-        if (storedUser) {
-          userInfo.value = JSON.parse(storedUser)
-        }
+      } catch (error) {
+        console.log('[refreshUserInfoFromBackend] 从后端获取用户信息失败，继续使用本地存储')
       }
     }
 
