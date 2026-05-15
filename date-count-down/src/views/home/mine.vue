@@ -800,6 +800,22 @@ export default {
       }
     }
 
+    // 验证图片URL是否可访问
+    const validateImageUrl = async function (url) {
+      return new Promise((resolve) => {
+        const img = new Image()
+        img.onload = () => {
+          console.log('[validateImageUrl] 图片URL验证成功:', url)
+          resolve(true)
+        }
+        img.onerror = () => {
+          console.log('[validateImageUrl] 图片URL验证失败:', url)
+          resolve(false)
+        }
+        img.src = url
+      })
+    }
+
     // 保存头像
     const saveAvatar = async function () {
       console.log('[saveAvatar] 开始保存头像')
@@ -853,8 +869,20 @@ export default {
                   console.log('[saveAvatar] 转换后的完整URL:', avatarUrl)
                 }
                 // 添加时间戳参数防止浏览器缓存旧图片
-                userInfo.value.avatar = avatarUrl + '?t=' + Date.now()
-                console.log('[saveAvatar] 使用后端返回的头像:', userInfo.value.avatar)
+                const finalAvatarUrl = avatarUrl + '?t=' + Date.now()
+                console.log('[saveAvatar] 待验证的头像URL:', finalAvatarUrl)
+
+                // 验证图片URL是否可访问
+                const isUrlValid = await validateImageUrl(finalAvatarUrl)
+                if (isUrlValid) {
+                  // 使用后端返回的头像URL
+                  userInfo.value.avatar = finalAvatarUrl
+                  console.log('[saveAvatar] 使用后端返回的头像:', userInfo.value.avatar)
+                } else {
+                  // 使用本地的 Base64 图片作为降级方案
+                  userInfo.value.avatar = editAvatarForm.value.avatar
+                  console.log('[saveAvatar] 后端图片URL不可访问，使用本地 Base64 图片')
+                }
               } else {
                 // 如果后端没有返回有效头像，使用本地的 Base64 图片
                 userInfo.value.avatar = editAvatarForm.value.avatar
