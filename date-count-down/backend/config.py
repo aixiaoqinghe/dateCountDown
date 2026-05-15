@@ -13,8 +13,8 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     JWT_SECRET_KEY = os.getenv('JWT_SECRET_KEY', 'e7c3640ebf0f26a1fc46c1fa0b59be96')
     JWT_ACCESS_TOKEN_EXPIRES = 7 * 24 * 60 * 60
-    # 服务器地址，用于生成完整的头像URL
-    SERVER_ADDRESS = os.getenv('SERVER_ADDRESS', 'http://8.134.150.161')
+    # 服务器地址，用于生成完整的头像URL（包含端口号）
+    SERVER_ADDRESS = os.getenv('SERVER_ADDRESS', 'http://8.134.150.161:5000')
     
     if DATABASE_URI.startswith('mysql'):
         SQLALCHEMY_ENGINE_OPTIONS = {
