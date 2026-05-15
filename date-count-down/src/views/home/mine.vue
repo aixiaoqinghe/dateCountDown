@@ -658,28 +658,32 @@ export default {
     const refreshUserInfoFromBackend = async () => {
       try {
         const result = await getUserInfo()
-        if (result && result.user) {
-          // 更新用户信息
+        // 检查数据结构 - 后端直接返回用户对象，不是 { user: {...} } 格式
+        if (result && result.id) {
+          // 直接使用后端返回的用户对象
+          userInfo.value = result
+        } else if (result && result.user) {
+          // 兼容旧格式（如果有的话）
           userInfo.value = result.user
+        }
 
-          // 检查后端返回的头像是否有效
-          const isFullUrl = userInfo.value.avatar && (userInfo.value.avatar.startsWith('http://') || userInfo.value.avatar.startsWith('https://') || userInfo.value.avatar.startsWith('data:'))
+        // 检查后端返回的头像是否有效
+        const isFullUrl = userInfo.value.avatar && (userInfo.value.avatar.startsWith('http://') || userInfo.value.avatar.startsWith('https://') || userInfo.value.avatar.startsWith('data:'))
 
-          // 如果后端返回的头像不是完整URL，尝试从本地偏好设置中恢复
-          if (!isFullUrl) {
-            const userPreferences = localStorage.getItem('userPreferences')
-            if (userPreferences) {
-              const preferences = JSON.parse(userPreferences)
-              if (preferences.avatar) {
-                userInfo.value.avatar = preferences.avatar
-              }
+        // 如果后端返回的头像不是完整URL，尝试从本地偏好设置中恢复
+        if (!isFullUrl) {
+          const userPreferences = localStorage.getItem('userPreferences')
+          if (userPreferences) {
+            const preferences = JSON.parse(userPreferences)
+            if (preferences.avatar) {
+              userInfo.value.avatar = preferences.avatar
             }
           }
-
-          // 保存到本地存储
-          localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
-          console.log('[refreshUserInfoFromBackend] 从后端获取用户信息成功')
         }
+
+        // 保存到本地存储
+        localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+        console.log('[refreshUserInfoFromBackend] 从后端获取用户信息成功')
       } catch (error) {
         console.log('[refreshUserInfoFromBackend] 从后端获取用户信息失败，继续使用本地存储')
       }
