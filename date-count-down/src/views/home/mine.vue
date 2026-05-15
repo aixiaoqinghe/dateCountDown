@@ -1704,7 +1704,7 @@ export default {
       const token = localStorage.getItem('access_token')
       if (token) {
         try {
-          const response = await fetch('/api/user/notification-settings', {
+          const response = await fetch('/api/notification/settings', {
             headers: {
               Authorization: `Bearer ${token}`
             }
