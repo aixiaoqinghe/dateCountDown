@@ -889,36 +889,28 @@ export default {
                 userInfo.value.avatar = editAvatarForm.value.avatar
                 console.log('[saveAvatar] 使用本地 Base64 图片')
               }
-              // 保存原始 Base64 图片到本地存储，用于头像加载失败时的降级处理
-              localStorage.setItem('localAvatar', editAvatarForm.value.avatar)
-              // 同时保存到用户偏好设置，确保跨设备同步（如果后端支持）
+              // 保存用户偏好设置（不保存大的 Base64 图片，避免 localStorage 超限）
               const userPreferences = {
-                avatar: editAvatarForm.value.avatar,
                 signature: userInfo.value.signature || ''
               }
               localStorage.setItem('userPreferences', JSON.stringify(userPreferences))
               console.log('[saveAvatar] userInfo.value.avatar:', userInfo.value.avatar)
-              localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+              // 只保存头像 URL，不保存完整的用户对象（避免 localStorage 超限）
+              localStorage.setItem('avatarUrl', userInfo.value.avatar)
               showSuccessToast('头像修改成功')
               showEditAvatarModal.value = false
             } else {
               // 如果后端接口失败，降级到本地保存
               userInfo.value.avatar = editAvatarForm.value.avatar
-              localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
-              // 同时保存到用户偏好设置，确保退出登录后可以恢复
-              // 注意：保存原始的Base64图片，而不是后端返回的URL
-              const userPreferences = {
-                avatar: editAvatarForm.value.avatar,
-                signature: userInfo.value.signature
-              }
-              localStorage.setItem('userPreferences', JSON.stringify(userPreferences))
+              // 只保存头像 URL
+              localStorage.setItem('avatarUrl', userInfo.value.avatar)
               showSuccessToast('头像修改成功（本地）')
               showEditAvatarModal.value = false
             }
           } else {
             // 未登录，只保存到本地
             userInfo.value.avatar = editAvatarForm.value.avatar
-            localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+            localStorage.setItem('avatarUrl', userInfo.value.avatar)
             showSuccessToast('头像修改成功（本地）')
             showEditAvatarModal.value = false
           }
@@ -930,7 +922,7 @@ export default {
             userInfo.value = {}
           }
           userInfo.value.avatar = editAvatarForm.value.avatar
-          localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+          localStorage.setItem('avatarUrl', userInfo.value.avatar)
           showSuccessToast('头像修改成功（本地）')
           showEditAvatarModal.value = false
         }
@@ -1878,8 +1870,12 @@ export default {
     const saveSignature = async function () {
       const signature = editSignature.value.trim()
       userInfo.value.signature = signature
-      // 更新本地存储
-      localStorage.setItem('userInfo', JSON.stringify(userInfo.value))
+
+      // 只保存签名到本地存储，不保存完整的 userInfo 对象（避免 localStorage 超限）
+      const userPreferences = {
+        signature: signature
+      }
+      localStorage.setItem('userPreferences', JSON.stringify(userPreferences))
 
       // 调用后端接口保存到数据库（实现跨设备同步）
       const token = localStorage.getItem('access_token')
