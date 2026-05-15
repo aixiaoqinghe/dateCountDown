@@ -17,6 +17,7 @@ class User(db.Model):
     phone = db.Column(db.String(20), nullable = True)   # 手机号，可选
     avatar = db.Column(db.String(255), nullable = True)     # 头像URL,可选
     nickname = db.Column(db.String(50), nullable=True)      # 昵称，可选
+    signature = db.Column(db.String(200), default='')   # 个性签名
     is_admin = db.Column(db.Boolean, default=False)  # 是否为管理员
     created_at = db.Column(db.DateTime, default = datetime.utcnow)    # 创建时间，默认当前时间
 

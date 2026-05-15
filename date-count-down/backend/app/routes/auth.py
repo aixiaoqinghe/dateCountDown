@@ -114,6 +114,7 @@ def get_user_info():
         'avatar': user.avatar,
         'nickname': user.nickname,
         'phone': user.phone,
+        'signature': user.signature,
         'created_at': user.created_at.strftime('%Y-%m-%d %H:%M:%S')
     }), 200
 
@@ -510,6 +511,24 @@ def change_phone():
 
     logger.info(f'用户{user.username}修改手机号成功')
     return jsonify({'message': '手机号修改成功', 'user': {'phone': cleaned_phone}}), 200
+
+# 更新用户签名接口
+@auth_bp.route('/user/signature', methods=['PUT'])
+@jwt_required()
+def update_signature():
+    logger.info('接收到更新用户签名请求')
+    user_id = int(get_jwt_identity())
+    user = User.query.get(user_id)
+    if not user:
+        logger.warning(f'用户ID {user_id} 不存在')
+        return jsonify({'message': '用户不存在'}), 404
+    
+    data = request.get_json()
+    user.signature = data.get('signature', '')
+    db.session.commit()
+    
+    logger.info(f'用户 {user.username} 签名更新成功')
+    return jsonify({'message': '签名更新成功', 'signature': user.signature}), 200
 
 # 检查管理员状态接口
 @auth_bp.route('/user/check-admin', methods=['GET'])
