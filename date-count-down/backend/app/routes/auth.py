@@ -159,6 +159,10 @@ def update_user_info():
     # 更新头像
     if 'avatar' in data:
         user.avatar = data['avatar']
+    
+    # 更新个性签名
+    if 'signature' in data:
+        user.signature = data['signature']
 
     db.session.commit()   # 提交会话，保存到MySQL
     logger.info(f'用户 {user.username} 资料更新成功')
