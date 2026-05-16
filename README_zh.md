@@ -1,7 +1,9 @@
 # dateCountDown - 倒计时应用
 
 一个功能强大的倒计时应用，支持用户认证、倒计时管理和个性化设置
+
 🌐 在线体验: http://8.134.150.161
+
 
 
 ## 🎯 功能特性
@@ -45,6 +47,7 @@
 - **弹窗提醒** - 倒计时到期时弹出提醒窗口
 
 
+
 ## 📋 版本规划
 
 ### ✅ v1.0.0 - 已发布
@@ -79,6 +82,7 @@
 - 数据分析与统计
 
 
+
 ## 🛠️ 技术栈
 
 ### 前端
@@ -89,6 +93,7 @@
 | Tailwind CSS | 3.x | 实用优先的 CSS 框架（样式处理） |
 |Vant|4.x|移动端UI组件库|
 |Lucide Icons|最新|精美图标库（图标展示）|
+|ESLint|最新|代码规范检查工具|
 
 ### 后端
 | 技术 | 版本 | 说明 |
@@ -104,7 +109,9 @@
 | Nginx | 1.18+ | Web 服务器（反向代理） |
 |Gunicorn|最新|WSGI应用服务器（运行Flask）|
 | 阿里云 ECS | - | 云服务器 |
+
 访问地址：http://8.134.150.161
+
 
 
 ## 🚀 快速开始
@@ -114,19 +121,97 @@
 - Node.js 16+
 - MySQL 8.0+
 
+
 ### 后端启动
+
+**方式一：快速启动（适合已有环境）**
+1.激活虚拟环境
 ```
-# 进入后端目录
-cd backend
+source /root/dateCountDown/venv/bin/activate
+```
 
-# 安装依赖
-pip install -r requirements.txt
+2.进入后端项目
+```
+cd ~/dateCountDown/dateCountDown/date-count-down/backend
+```
 
-# 启动后端服务器
+3.启动服务
+```
 python run.py
-
-# 服务器将在http://127.0.0.1:5000运行
 ```
+
+服务将在 http://127.0.0.1:5000 运行
+
+
+**方式二：完整部署（适合首次部署或他人使用）**
+1.创建虚拟环境（仅仅是第一次使用要创建，首次创建之后，后续都不需要创建，直接进行第2步激活虚拟环境）
+```
+python -m venv venv
+```
+
+2.激活虚拟环境
+```
+source venv/bin/activate
+```
+
+3.安装基础依赖
+```
+pip install -r requirements.txt
+```
+
+4.安装额外依赖（根据项目需求）
+```
+pip install flask flask-jwt-extended flask-sqlalchemy pymysql python-dotenv flask-cors
+```
+如果还有缺少的依赖，使用`pip install 缺少的依赖`即可
+
+5.配置数据库（编辑config.py）
+```
+SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://用户名:密码@localhost/数据库名'
+```
+
+6.启动服务
+```
+python run.py
+```
+
+
+### 前端启动
+
+1.进入项目根目录
+```
+cd ~/dateCountDown/dateCountDown/date-count-down
+```
+
+2.安装基础依赖
+```
+npm install
+```
+
+3.安装额外依赖
+```
+npm install vant lucide-vue-next axios vue-router
+```
+
+4.代码规范检查
+```
+npm run lint
+```
+
+5.开发模式（热更新）
+```
+npm run serve
+```
+服务器将在 http://localhost:8080 运行（如果8080端口被占用，可能是8081或者8082等）
+在浏览器中访问该网址即可查看应用
+
+6.生产构建
+```
+npm run build
+```
+构建产物输出到dist目录
+
+
 
 
   
