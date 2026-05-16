@@ -470,6 +470,53 @@ SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://用户名:密码@localhost/数据库�
 
 
 
+## 🛠️ 故障排除
+
+### 常见问题
+
+**Q: 前端无法连接后端？**
+- 检查后端服务是否启动：`ps aux | grep python`
+- 检查端口是否开放：`netstat -tlnp | grep 5000`
+- 检查防火墙设置
+
+**Q: 数据库连接失败？**
+- 确保 MySQL 服务运行：`systemctl status mysql`
+- 检查 `backend/.env` 文件中的数据库配置
+- 确保数据库用户权限正确
+
+**Q: 静态资源无法加载？**
+- 检查 Nginx 配置中的 `root` 路径
+- 确保 `dist` 目录正确部署
+
+**Q: 验证码不显示？**
+- 检查后端日志：`cat backend/app.log`
+- 确保 Pillow 库已安装：`pip install pillow`
+
+
+
+## 🤝 贡献指南
+
+欢迎提交 Issue 和 Pull Request！
+
+### 提交代码规范
+
+- 代码风格：前端遵循 ESLint 规范，后端遵循 PEP8 规范
+- 提交信息：使用英文描述，格式为 `[类型] 描述`
+  - `[feat]` - 新功能
+  - `[fix]` - 修复 Bug
+  - `[docs]` - 文档更新
+  - `[refactor]` - 代码重构
+
+### 开发流程
+
+1. Fork 本仓库
+2. 创建特性分支：`git checkout -b feature/xxx`
+3. 提交代码：`git commit -m "[feat] 添加 xxx 功能"`
+4. 推送到分支：`git push origin feature/xxx`
+5. 创建 Pull Request
+
+
+
 ## 📄 许可证
 
 MIT License
