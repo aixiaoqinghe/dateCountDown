@@ -13,6 +13,12 @@ A powerful countdown application with user authentication, countdown management,
 
 ---
 
+## 🌐 Live Demo
+
+**在线体验**: http://8.134.150.161
+
+---
+
 ## ✨ Features
 
 - 🔐 Secure user authentication (JWT + CAPTCHA)
