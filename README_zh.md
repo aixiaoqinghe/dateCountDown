@@ -373,12 +373,22 @@ server {
     location /api/ {
         proxy_pass http://127.0.0.1:5000/api/;
         proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 
     # 上传文件
     location /uploads/ {
         alias /var/www/uploads/;
         expires 1y;
+        add_header Cache-Control "public, immutable";
+    }
+
+    # 错误页面
+    error_page 404 /index.html;
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+        root /usr/share/nginx/html;
     }
 }
 ```
@@ -386,20 +396,55 @@ server {
 
 
 ### 后端部署
+
+使用 Gunicorn 启动后端（确保进入了虚拟环境）
+
 ```bash
 gunicorn -w 4 -b 127.0.0.1:5000 run:app
 ```
+
+如果没有进入虚拟环境，需要先激活
+```
+cd ~/dateCountDown/dateCountDown/date-count-down/backend
+source /root/dateCountDown/venv/bin/activate
+gunicorn -w 4 -b 127.0.0.1:5000 run:app
+```
+
+### 前端部署
+```
+# 构建并部署前端
+npm run build
+cp -r dist/* /var/www/html/datecountdown
+```
+
+### 数据库配置
+
+确保 `backend/config.py` 中配置正确的数据库连接：
+```python
+SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://用户名:密码@localhost/数据库名'
+```
+
 
 
 ## 📄 许可证
 
 MIT License
 
+Copyright (c) 2024 DateCountDown
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software.
+
 
 
 ## 📧 联系方式
 
-邮箱：xiaoqinghe_verify@163.com
+邮箱：aixiaoqinghe@163.com
+
+如果对项目有什么建议，或者错误，欢迎提出，感谢您的支持^-^。
 
 
 
