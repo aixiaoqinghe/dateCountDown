@@ -57,22 +57,27 @@
 ## 🎬 功能演示
 
 ### 用户登录
-![用户登录演示](docs/images/login_demo.gif)
+<img width="2543" height="1406" alt="image" src="https://github.com/user-attachments/assets/a0ec5c3c-4e31-472c-8628-a8cffd7127c1" />
+
 
 ### 添加倒计时
-![添加倒计时演示](docs/images/add_countdown_demo.gif)
+<img width="2543" height="1406" alt="image" src="https://github.com/user-attachments/assets/319e15bb-3477-4c0e-b3b2-f38ac7fc4411" />
+
 
 ### 实时倒计时
-![实时倒计时演示](docs/images/countdown_live.gif)
+<img width="2543" height="1406" alt="image" src="https://github.com/user-attachments/assets/816029e2-f2df-4d52-b6e2-96244d87c8ea" />
+
 
 ### 个性签名设置
-![个性签名演示](docs/images/signature_demo.gif)
+<img width="2543" height="1406" alt="image" src="https://github.com/user-attachments/assets/d263bde0-abc0-40cf-8daf-da5a72ac4b99" />
+
 
 ### 主题切换
-![主题切换演示](docs/images/theme_demo.gif)
+<img width="2543" height="1406" alt="image" src="https://github.com/user-attachments/assets/adce0729-11a4-4202-af35-786c8cdf6e1d" />
+
 
 ### 修改密码
-![修改密码演示](docs/images/modify_pwd.demo.gif)
+<img width="2543" height="1406" alt="image" src="https://github.com/user-attachments/assets/ce4f9c76-98e2-43aa-b6dd-f6dde517895b" />
 
 
 
