@@ -430,7 +430,7 @@ SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://用户名:密码@localhost/数据库�
 
 MIT License
 
-Copyright (c) 2024 DateCountDown
+Copyright (c) 2026 dateCountDown
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
