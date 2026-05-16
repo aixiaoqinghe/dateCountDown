@@ -1,32 +1,57 @@
-﻿# dateCountDown
+# dateCountDown ⏰
 
-A powerful countdown application with multi-device synchronization support.
+A powerful countdown application with user authentication, countdown management, and personalized settings.
 
-## Documentation
 
-- 📖 [中文文档]()
-- 🌐 English documentation coming soon
+---
 
-## Features
+## 🌐 Languages
 
-- Countdown management
-- Multi-device sync
-- Personalization settings
-- Notification system
+| Language | 文件 |
+|----------|------|
+| 🇨🇳 中文 | [README_zh.md](README_zh.md) |
 
-## Quick Start
+---
+
+## ✨ Features
+
+- 🔐 Secure user authentication (JWT + CAPTCHA)
+- ⏱️ Flexible countdown management
+- 🎨 Personalized settings (avatar, signature, theme)
+- 🔄 Multi-device data synchronization
+- 📱 Responsive design
+
+---
+
+## 🚀 Quick Start
 
 ```bash
-# Frontend
+# Install dependencies
 npm install
+
+# Start development server
 npm run serve
 
-# Backend
-cd backend
-pip install -r requirements.txt
-python run.py
+# Build for production
+npm run build
 ```
 
-## License
+---
+
+## 📦 Tech Stack
+
+- **Frontend**: Vue 3 + Vite + Tailwind CSS + Vant
+- **Backend**: Flask + SQLAlchemy + JWT
+- **Database**: MySQL
+
+---
+
+## 📖 Documentation
+
+For detailed documentation, please refer to the [中文文档](README_zh.md).
+
+---
+
+## 📄 License
 
 MIT License
