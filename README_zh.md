@@ -352,6 +352,50 @@ npm run build
 
 ## 📁 项目结构
 
+```
+date-count-down/
+├── backend/                    # 后端代码
+│   ├── app/                   # Flask 应用核心
+│   │   ├── __init__.py        # 应用初始化
+│   │   ├── routes/            # API 路由定义
+│   │   │   ├── auth.py        # 认证相关接口
+│   │   │   ├── countdown.py   # 倒计时相关接口
+│   │   │   ├── device.py      # 设备管理接口
+│   │   │   ├── notification.py # 通知设置接口
+│   │   │   ├── privacy.py     # 隐私设置接口
+│   │   │   └── version.py     # 版本管理接口
+│   │   ├── models/            # 数据库模型
+│   │   │   ├── user.py        # 用户模型
+│   │   │   └── countdown.py   # 倒计时模型
+│   │   ├── utils/             # 工具函数
+│   │   └── config.py          # 配置文件
+│   ├── requirements.txt       # Python 依赖列表
+│   └── run.py                 # 应用启动脚本
+├── src/                       # 前端代码
+│   ├── components/            # Vue 组件
+│   │   ├── CountdownCard.vue  # 倒计时卡片组件
+│   │   ├── AvatarUpload.vue   # 头像上传组件
+│   │   └── NotificationPanel.vue # 通知面板组件
+│   ├── views/                 # 页面视图
+│   │   ├── home/              # 首页相关视图
+│   │   │   └── mine.vue       # 个人中心页面
+│   │   └── auth/              # 认证相关视图
+│   ├── api/                   # API 封装
+│   │   ├── request.js         # 统一请求封装
+│   │   ├── auth.js            # 认证 API
+│   │   └── countdown.js       # 倒计时 API
+│   ├── utils/                 # 工具函数
+│   ├── App.vue                # 根组件
+│   └── main.js                # 入口文件
+├── dist/                      # 构建产物
+├── index.html                 # HTML 模板
+├── package.json               # Node.js 依赖配置
+├── vite.config.js             # Vite 配置
+├── tailwind.config.js         # Tailwind CSS 配置
+├── README.md                  # 英文说明文档
+└── README_zh.md               # 中文说明文档
+```
+
 
 
 ## 📦 部署说明
@@ -430,21 +474,37 @@ SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://用户名:密码@localhost/数据库�
 
 MIT License
 
+MIT License
+
 Copyright (c) 2026 dateCountDown
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software.
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 
 
 ## 📧 联系方式
 
-邮箱：aixiaoqinghe@163.com
+- 邮箱: axiaoqinghe@163.com
+- 项目地址: [GitHub Repository](https://github.com/aixiaoqinghe/dateCountDown)
+- 在线体验: http://8.134.150.161
 
-如果对项目有什么建议，或者错误，欢迎提出，感谢您的支持^-^。
+如果对项目有什么建议，或者错误，欢迎提出，感谢您的支持😊。
 
 
 
