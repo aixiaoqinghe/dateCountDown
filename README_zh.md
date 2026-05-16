@@ -57,23 +57,22 @@
 ## 🎬 功能演示
 
 ### 用户登录
-<img width="2543" height="1406" alt="login_demo" src="https://github.com/user-attachments/assets/4b3c1d6f-34fd-468d-a2eb-717bcc5c4f26" />
+![用户登录演示](docs/images/login_demo.gif)
 
 ### 添加倒计时
-<img width="2543" height="1406" alt="add_countdown_demo" src="https://github.com/user-attachments/assets/6aff6191-f5b1-4765-985a-067d09526f3d" />
-
+![添加倒计时演示](docs/images/add_countdown_demo.gif)
 
 ### 实时倒计时
-
+![实时倒计时演示](docs/images/countdown_live.gif)
 
 ### 个性签名设置
-<img width="2543" height="1406" alt="signature_demo" src="https://github.com/user-attachments/assets/cf5f2f45-76e8-401a-bf08-f152da199fb8" />
+![个性签名演示](docs/images/signature_demo.gif)
 
 ### 主题切换
-
+![主题切换演示](docs/images/theme_demo.gif)
 
 ### 修改密码
-<img width="2543" height="1406" alt="modify_pwd_demo" src="https://github.com/user-attachments/assets/63ec2540-3a91-46cc-8a96-161966da6429" />
+![修改密码演示](docs/images/modify_pwd.demo.gif)
 
 
 
