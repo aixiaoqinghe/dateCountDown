@@ -1,4 +1,4 @@
-# dateCountDown - 倒计时应用
+# dateCountDown
 
 一个功能强大的倒计时应用，支持用户认证、倒计时管理和个性化设置
 
@@ -211,6 +211,195 @@ npm run build
 ```
 构建产物输出到dist目录
 
+
+### 📋 常用命令
+
+| 操作 | 命令 |
+|------|------|
+| 激活虚拟环境 | `source venv/bin/activate` |
+| 关闭虚拟环境 | `deactivate` |
+| 安装后端依赖 | `pip install -r requirements.txt` |
+| 启动后端 | `python run.py` |
+| 安装前端依赖 | `npm install` |
+| 代码规范检查 | `npm run lint` |
+| 启动前端 | `npm run serve` |
+| 生产构建 | `npm run build` |
+
+
+
+## 🔌 API 接口文档
+
+### 📦 统一请求封装
+
+项目使用 `src/api/request.js` 进行统一的 HTTP 请求封装，具有以下特性：
+
+| 特性 | 说明 |
+|------|------|
+| **请求拦截器** | 自动添加 JWT Token 到请求头 |
+| **响应拦截器** | 统一错误处理，401 自动跳转到登录页 |
+| **GET 请求缓存** | 启用 5 分钟缓存机制，支持请求合并 |
+| **统一错误处理** | 支持 Toast 提示（需引入 vant） |
+
+**请求方法封装**：
+
+| 方法 | 函数 | 说明 |
+|------|------|------|
+| GET | `get(url, params)` | 发送 GET 请求，自动拼接查询参数 |
+| POST | `post(url, data)` | 发送 POST 请求，数据 JSON 序列化 |
+| PUT | `put(url, data)` | 发送 PUT 请求，数据 JSON 序列化 |
+| DELETE | `del(url, params)` | 发送 DELETE 请求 |
+
+---
+
+### 👤用户认证模块接口
+
+| API 路径 | 方法 | 函数名 | 说明 |
+|----------|------|--------|------|
+| `/auth/register` | POST | `register(data)` | 用户注册 |
+| `/auth/login` | POST | `login(data)` | 用户登录 |
+| `/auth/user` | GET | `getUserInfo()` | 获取用户信息 |
+| `/auth/user` | PUT | `updateNickname(data)` | 更新用户资料（昵称等） |
+| `/auth/user` | PUT | `updateSignature(data)` | 更新个性签名 |
+| `/auth/change_password` | POST | `changePassword(data)` | 修改密码 |
+| `/auth/avatar` | POST | `updateAvatar(formData)` | 上传头像（multipart/form-data） |
+| `/auth/bind_phone` | POST | `bindPhone(data)` | 绑定手机号 |
+| `/auth/change_phone` | POST | `changePhone(data)` | 修改手机号 |
+| `/auth/bind_email` | POST | `bindEmail(data)` | 绑定邮箱 |
+| `/auth/change_email` | POST | `changeEmail(data)` | 修改邮箱 |
+
+
+### ⏱️倒计时管理接口
+
+| API 路径 | 方法 | 函数名 | 说明 |
+|----------|------|--------|------|
+| `/countdown` | GET | `getCountdownList()` | 获取倒计时列表 |
+| `/countdown/:id` | GET | `getCountdown(id)` | 获取单个倒计时 |
+| `/countdown` | POST | `createCountdown(data)` | 创建倒计时 |
+| `/countdown/:id` | PUT | `updateCountdown(id, data)` | 更新倒计时 |
+| `/countdown/:id` | DELETE | `deleteCountdown(id)` | 删除倒计时 |
+| `/countdown/batch_delete` | POST | `batchDeleteCountdown(ids)` | 批量删除倒计时 |
+
+
+### 📣消息通知接口
+
+| API 路径 | 方法 | 函数名 | 说明 |
+|----------|------|--------|------|
+| `/notification` | GET | `getNotificationList()` | 获取通知列表 |
+| `/notification/:id` | GET | `getNotification(id)` | 获取单个通知 |
+| `/notification/:id/read` | PUT | `markNotificationAsRead(id)` | 标记通知为已读 |
+| `/notification/:id` | DELETE | `deleteNotification(id)` | 删除通知 |
+
+---
+
+### 🔔用户通知设置接口
+
+| API 路径 | 方法 | 函数名 | 说明 |
+|----------|------|--------|------|
+| `/notification/settings` | GET | `getNotificationSettings()` | 获取用户通知设置 |
+| `/notification/settings` | PUT | `updateNotificationSettings(data)` | 更新用户通知设置 |
+
+---
+
+### 📱设备管理接口
+
+| API 路径 | 方法 | 函数名 | 说明 |
+|----------|------|--------|------|
+| `/devices` | GET | `getDeviceList()` | 获取设备列表 |
+| `/devices/current` | POST | `saveCurrentDevice(data)` | 保存当前设备信息 |
+| `/devices/:id` | DELETE | `deleteDevice(id)` | 删除设备 |
+
+---
+
+### 🛡️隐私设置接口
+
+| API 路径 | 方法 | 函数名 | 说明 |
+|----------|------|--------|------|
+| `/privacy/settings` | GET | `getPrivacySettings()` | 获取隐私设置 |
+| `/privacy/settings` | PUT | `updatePrivacySettings(data)` | 更新隐私设置 |
+
+---
+
+### 🔄版本管理接口
+
+| API 路径 | 方法 | 函数名 | 说明 |
+|----------|------|--------|------|
+| `/version` | GET | `getVersionList()` | 获取版本列表 |
+| `/version/:id` | GET | `getVersion(id)` | 获取单个版本 |
+| `/version/check_update` | GET | `checkUpdate(currentVersion)` | 检查更新 |
+| `/version` | POST | `createVersion(data)` | 创建版本（管理员） |
+| `/version/:id` | PUT | `updateVersion(id, data)` | 更新版本（管理员） |
+| `/version/:id` | DELETE | `deleteVersion(id)` | 删除版本（管理员） |
+
+
+### 🔴错误处理
+
+| HTTP 状态码 | 处理方式 |
+|-------------|----------|
+| 401 | 清除 Token，自动跳转到登录页 |
+| 403 | 抛出错误："无权访问" |
+| 404 | 抛出错误："资源不存在" |
+| 500 | 抛出错误："服务器内部错误" |
+
+---
+
+### 认证机制
+
+- **JWT Token**：登录成功后返回 `access_token`，存储在 `localStorage`
+- **自动携带**：请求拦截器自动添加 `Authorization: Bearer {token}` 头
+- **过期处理**：401 响应自动清除 Token 并跳转登录页
+
+
+
+## 📁 项目结构
+
+
+
+## 📦 部署说明
+
+### Nginx 配置示例
+```nginx
+server {
+    listen 80;
+    server_name 8.134.150.161;
+
+    # 前端静态文件
+    location / {
+        root /var/www/html/datecountdown;
+        index index.html;
+        try_files $uri $uri/ /index.html;
+    }
+
+    # API代理
+    location /api/ {
+        proxy_pass http://127.0.0.1:5000/api/;
+        proxy_set_header Host $host;
+    }
+
+    # 上传文件
+    location /uploads/ {
+        alias /var/www/uploads/;
+        expires 1y;
+    }
+}
+```
+
+
+
+### 后端部署
+```bash
+gunicorn -w 4 -b 127.0.0.1:5000 run:app
+```
+
+
+## 📄 许可证
+
+MIT License
+
+
+
+## 📧 联系方式
+
+邮箱：xiaoqinghe_verify@163.com
 
 
 
